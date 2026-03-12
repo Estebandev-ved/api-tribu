@@ -1,0 +1,665 @@
+/* ===========================
+   TRIBU â€” NEUROMARKETING DESIGN SYSTEM
+   Paleta: CarbÃ³n + Naranja Vibrante + Amarillo ElÃ©ctrico
+   =========================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  /* â”€â”€ Paleta Principal â”€â”€ */
+  --color-bg: #111111;
+  --color-surface: #1A1A1A;
+  --color-surface-2: #222222;
+  --color-surface-3: #2a2a2a;
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-warm: rgba(255, 87, 34, 0.2);
+
+  /* Naranja Vibrante â€” AcciÃ³n e impulso */
+  --color-primary: #FF5722;
+  --color-primary-dark: #E64A19;
+  --color-primary-glow: rgba(255, 87, 34, 0.35);
+
+  /* Amarillo ElÃ©ctrico â€” Alerta y trending */
+  --color-accent: #FEE715;
+  --color-accent-dark: #F5D800;
+  --color-accent-glow: rgba(254, 231, 21, 0.3);
+
+  /* Viral / Urgencia */
+  --color-viral: #FF5722;
+  --color-viral-glow: rgba(255, 87, 34, 0.4);
+
+  /* Estados */
+  --color-success: #00C896;
+  --color-error: #FF3B3B;
+  --color-warning: #FEE715;
+
+  /* TipografÃ­a */
+  --color-text: #F5F5F5;
+  --color-text-muted: #999999;
+  --color-text-faint: #555555;
+
+  /* Fuentes */
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Outfit', system-ui, sans-serif;
+
+  /* Radios */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+
+  /* Sombras */
+  --shadow-orange: 0 4px 20px var(--color-primary-glow);
+  --shadow-yellow: 0 4px 20px var(--color-accent-glow);
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.5);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border-radius: 3px;
+}
+
+/* ===========================
+   LAYOUT
+   =========================== */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* ===========================
+   CARD
+   =========================== */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+  border-color: rgba(255, 87, 34, 0.25);
+  box-shadow: 0 0 24px rgba(255, 87, 34, 0.08);
+}
+
+/* ===========================
+   BUTTONS
+   =========================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.4rem;
+  border-radius: var(--radius-full);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  letter-spacing: 0.01em;
+}
+
+/* CTA Principal: Naranja aislado (Efecto Restorff) */
+.btn-primary {
+  background: var(--color-primary);
+  color: #fff;
+  box-shadow: var(--shadow-orange);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.btn-primary:hover {
+  background: var(--color-primary-dark);
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 8px 28px var(--color-primary-glow);
+}
+
+.btn-primary:hover::after {
+  opacity: 1;
+}
+
+.btn-primary:active {
+  transform: scale(0.97);
+}
+
+/* Ghost */
+.btn-ghost {
+  background: transparent;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+}
+
+.btn-ghost:hover {
+  color: var(--color-text);
+  border-color: var(--color-primary);
+  background: rgba(255, 87, 34, 0.08);
+}
+
+/* Accent Amarillo */
+.btn-accent {
+  background: var(--color-accent);
+  color: #111;
+  font-weight: 800;
+  box-shadow: var(--shadow-yellow);
+}
+
+.btn-accent:hover {
+  transform: translateY(-2px);
+  background: var(--color-accent-dark);
+  box-shadow: 0 8px 24px var(--color-accent-glow);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ===========================
+   BADGE
+   =========================== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.badge-viral {
+  background: var(--color-primary);
+  color: #fff;
+  box-shadow: 0 0 10px var(--color-viral-glow);
+  animation: pulseBadge 2s infinite;
+}
+
+.badge-tiktok {
+  background: #111;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.badge-trending {
+  background: var(--color-accent);
+  color: #111;
+  font-weight: 900;
+}
+
+.badge-bestseller {
+  background: linear-gradient(135deg, #FF5722, #FF8A50);
+  color: #fff;
+}
+
+.badge-admin {
+  background: rgba(255, 87, 34, 0.15);
+  color: var(--color-primary);
+  border: 1px solid rgba(255, 87, 34, 0.25);
+}
+
+.badge-cliente {
+  background: rgba(0, 200, 150, 0.1);
+  color: var(--color-success);
+  border: 1px solid rgba(0, 200, 150, 0.2);
+}
+
+.badge-pendiente {
+  background: rgba(254, 231, 21, 0.12);
+  color: var(--color-accent-dark);
+  border: 1px solid rgba(254, 231, 21, 0.2);
+}
+
+.badge-enviado {
+  background: rgba(255, 87, 34, 0.12);
+  color: var(--color-primary);
+  border: 1px solid rgba(255, 87, 34, 0.2);
+}
+
+.badge-entregado {
+  background: rgba(0, 200, 150, 0.1);
+  color: var(--color-success);
+  border: 1px solid rgba(0, 200, 150, 0.2);
+}
+
+@keyframes pulseBadge {
+
+  0%,
+  100% {
+    box-shadow: 0 0 6px var(--color-viral-glow);
+  }
+
+  50% {
+    box-shadow: 0 0 16px var(--color-viral-glow);
+  }
+}
+
+/* ===========================
+   INPUTS
+   =========================== */
+.input {
+  width: 100%;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  padding: 0.75rem 1rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-glow);
+}
+
+.input::placeholder {
+  color: var(--color-text-faint);
+}
+
+label {
+  display: block;
+  margin-bottom: 0.4rem;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.form-group {
+  margin-bottom: 1.2rem;
+}
+
+/* ===========================
+   TABLE
+   =========================== */
+.table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background: var(--color-surface-2);
+}
+
+th {
+  padding: 0.85rem 1.2rem;
+  text-align: left;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+td {
+  padding: 0.85rem 1.2rem;
+  border-top: 1px solid var(--color-border);
+  font-size: 0.9rem;
+}
+
+tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* ===========================
+   GRADIENT TEXT
+   =========================== */
+.gradient-text {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ===========================
+   PRODUCT GRID
+   =========================== */
+.productos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
+/* ===========================
+   STOCK BAR
+   =========================== */
+.stock-bar-track {
+  background: var(--color-surface-3);
+  border-radius: 9999px;
+  height: 5px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.stock-bar-fill {
+  height: 100%;
+  border-radius: 9999px;
+  background: var(--color-primary);
+  transition: width 1s cubic-bezier(.4, 0, .2, 1);
+}
+
+/* ===========================
+   SOCIAL PROOF TOAST
+   =========================== */
+.sp-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 9999;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-warm);
+  border-radius: var(--radius-lg);
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 300px;
+  box-shadow: var(--shadow-card);
+  font-size: 0.85rem;
+}
+
+.sp-toast-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+/* ===========================
+   STICKY CART (MOBILE)
+   =========================== */
+@media (max-width: 640px) {
+  .sticky-cart-btn {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 90;
+    background: var(--color-primary);
+    color: #fff;
+    font-weight: 800;
+    font-size: 1rem;
+    padding: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    border-top: 2px solid var(--color-primary-dark);
+    box-shadow: 0 -4px 20px var(--color-primary-glow);
+  }
+}
+
+/* ===========================
+   PAGE TITLE
+   =========================== */
+.page-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 900;
+  line-height: 1.15;
+  margin-bottom: 0.5rem;
+}
+
+/* Spinner & Empty State */
+.spinner {
+  width: 38px;
+  height: 38px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin: 2rem auto;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--color-text-muted);
+}
+
+.empty-state svg {
+  opacity: 0.25;
+  margin-bottom: 1rem;
+}
+
+/* Scarcity Bar */
+.scarcity-bar {
+  background: var(--color-surface-2);
+  border: 1px solid rgba(255, 87, 34, 0.15);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  margin-top: 8px;
+}
+/*  Sticky Mobile Cart: solo visible en móvil 768px  */
+@media (max-width: 768px) {
+  .sticky-mobile-cart {
+    display: flex !important;
+  }
+  /* Espacio inferior para que el footer no tape el sticky cart */
+  body {
+    padding-bottom: 80px;
+  }
+}
+
+
+/* ======================================================
+   RESPONSIVE  Tribu E-commerce
+   Breakpoints: 480px (xs), 640px (sm), 768px (md), 1024px (lg)
+   ====================================================== */
+
+/*  Viewport meta safety (asegura escala correcta en iOS)  */
+/* (config en index.html) */
+
+/*  Variables responsive  */
+@media (max-width: 768px) {
+  :root {
+    font-size: 15px;
+  }
+
+  /* Container con padding lateral en móvil */
+  .container {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  /*  NAVBAR  */
+  .nav-links-desktop { display: none !important; }
+  .nav-auth-desktop  { display: none !important; }
+  .nav-hamburger     { display: flex !important; }
+
+  /*  HERO  */
+  section[style*='minHeight: 95vh'] {
+    min-height: 85vh !important;
+  }
+
+  /*  GRIDS  columna única  */
+  .productos-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
+    gap: 0.75rem !important;
+  }
+
+  /*  TABLAS  scroll horizontal  */
+  .table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--radius-md);
+  }
+  .table-wrap table {
+    min-width: 580px;
+  }
+
+  /*  CARDS  */
+  .card {
+    padding: 1.25rem 1rem !important;
+  }
+
+  /*  BOTONES  */
+  .btn {
+    padding: 0.6rem 1.1rem !important;
+    font-size: 0.85rem !important;
+  }
+
+  /*  FORMULARIOS  */
+  .form-group { margin-bottom: 1rem; }
+  .input { font-size: 16px !important; } /* Evita zoom en iOS al hacer focus */
+
+  /*  FOOTER  */
+  footer .container > div:first-child {
+    grid-template-columns: 1fr !important;
+    gap: 2rem !important;
+  }
+
+  /*  COUNTDOWN BANNER  */
+  /* Se envuelve correctamente con flex-wrap */
+  .sticky-mobile-cart { display: flex !important; }
+
+  /* Espacio inferior para el sticky cart */
+  body { padding-bottom: 76px; }
+
+  /*  ADMIN PANEL  */
+  /* Stats en 2 columnas en móvil */
+  .admin-stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /*  MODAL  */
+  .modal-card {
+    padding: 1.25rem !important;
+    margin: 0.5rem !important;
+    max-height: 90vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /*  TABS  */
+  /* Los tabs del admin hacen scroll horizontal */
+  .tabs-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+  }
+
+  /*  PAGE TITLE  */
+  .page-title {
+    font-size: 1.6rem !important;
+  }
+
+  /*  SECCIÓN FEATURES  */
+  /* 2 columnas en tablets, 1 en móvil pequeño */
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/*  Pantallas muy pequeñas (480px)  */
+@media (max-width: 480px) {
+  :root { font-size: 14px; }
+
+  .productos-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.6rem !important;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Stats del admin: 2 columnas compactas */
+  .admin-stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.65rem !important;
+  }
+
+  /* Botones CTA del hero: apilados */
+  .hero-cta-group {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .hero-cta-group a, .hero-cta-group button {
+    text-align: center;
+    justify-content: center !important;
+  }
+}
+
+/*  Tablets (769px  1024px)  */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .productos-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)) !important;
+  }
+  .nav-links-desktop { display: flex !important; }
+  .nav-hamburger    { display: none !important; }
+}
+
+/*  Desktop (>1024px): nunca mostrar hamburguesa  */
+@media (min-width: 1025px) {
+  .nav-hamburger    { display: none !important; }
+  .nav-links-desktop{ display: flex !important; }
+  .nav-auth-desktop { display: flex !important; }
+  .sticky-mobile-cart { display: none !important; }
+  body { padding-bottom: 0 !important; }
+}
