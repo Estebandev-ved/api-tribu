@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const api = axios.create({ baseURL: '/api' })
+export const api = axios.create({ baseURL: '/api' })
 
 // Adjunta el token JWT automáticamente en cada request
 api.interceptors.request.use(config => {
@@ -28,6 +28,9 @@ api.interceptors.response.use(
 // ——— Auth ———
 export const login = (data) => api.post('/auth/login', data)
 export const register = (data) => api.post('/auth/register', data)
+
+// ——— Tiers ———
+export const getTiers = () => api.get('/tiers')
 
 // ——— Productos ———
 export const getProductos = () => api.get('/productos')
@@ -77,6 +80,35 @@ export const crearNota = (data) => api.post('/admin/crm/notas', data)
 export const getMiPerfil = () => api.get('/usuarios/perfil')
 export const updateMiPerfil = (data) => api.put('/usuarios/perfil', data)
 export const getMisMovimientos = () => api.get('/usuarios/perfil/movimientos')
+
+// ——— Tribu Pass ———
+export const getTribuPassEstado = () => api.get('/tribu-pass/mi-estado')
+export const activarTribuPass = (metodoPago) => api.post('/tribu-pass/activar', { metodoPago })
+export const cancelarTribuPass = () => api.post('/tribu-pass/cancelar')
+export const getTribuPassBeneficios = () => api.get('/tribu-pass/beneficios')
+export const getTribuPassHistorial = () => api.get('/tribu-pass/historial')
+export const actualizarRenovacionAutomatica = (enabled) => api.put('/tribu-pass/renovacion-automatica', { enabled })
+
+// ——— Cupones ———
+export const validarCupon = (codigo, totalCarrito) => api.post('/cupones/validar', { codigo, totalCarrito })
+export const getMisCupones = () => api.get('/cupones/mis-cupones')
+
+// ——— Facturas ———
+export const solicitarFactura = (data) => api.post('/facturas/solicitar', data)
+export const getMisFacturas = () => api.get('/facturas/mis-facturas')
+export const getFacturaPorPedido = (pedidoId) => api.get(`/facturas/pedido/${pedidoId}`)
+export const descargarFacturaPdf = (id) => api.get(`/facturas/${id}/pdf`, { responseType: 'blob' })
+
+// ——— Admin: Marketing Expansion ———
+export const getAdminCupones = () => api.get('/admin/cupones')
+export const crearAdminCupon = (data) => api.post('/admin/cupones', data)
+export const actualizarAdminCupon = (id, data) => api.put(`/admin/cupones/${id}`, data)
+export const eliminarAdminCupon = (id) => api.delete(`/admin/cupones/${id}`)
+export const getAdminCuponStats = (id) => api.get(`/admin/cupones/${id}/stats`)
+export const getAdminFacturas = () => api.get('/facturas/admin/todas')
+
+// ——— Admin: Seguridad ———
+export const getSeguridadAccesos = () => api.get('/admin/seguridad/accesos')
 
 // ——— Gamificación ———
 export const girarRuleta = () => api.post('/usuarios/ruleta/girar')

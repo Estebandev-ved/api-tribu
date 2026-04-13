@@ -51,6 +51,12 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.FORBIDDEN, "No tienes permiso para realizar esta acción");
     }
 
+    // 400 — Errores de transferencia
+    @ExceptionHandler(TransferenciaException.class)
+    public ResponseEntity<Map<String, Object>> handleTransferenciaException(TransferenciaException ex) {
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
     // 500 — Cualquier otro error
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {

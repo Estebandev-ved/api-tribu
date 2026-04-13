@@ -1,17 +1,16 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNotification } from '../context/NotificationContext';
-// Usamos Bell de lucide-react que ya está instalado en el proyecto
-import { Bell } from 'lucide-react';
+import { Bell, CheckCheck, Wifi, WifiOff } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
+import { es } from 'date-fns/locale/es';
 
 const NotificacionDropdown = () => {
-    const { notificaciones, noLeidas, marcarComoLeida } = useNotification();
+    const { notificaciones, noLeidas, conectado, marcarComoLeida, marcarTodasComoLeidas } = useNotification();
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
 
-    // Color naranja de tu marca (aproximado basado en tu imagen)
     const brandOrange = "#ff5a1f";
 
-    // Cerrar el menú si se hace clic afuera
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -40,6 +39,18 @@ const NotificacionDropdown = () => {
                 }}
             >
                 <Bell size={22} color={isOpen ? brandOrange : "#d1d5db"} style={{ transition: 'color 0.2s' }} />
+                
+                {/* Indicador de conexión (puntero verde/rojo) */}
+                <div style={{
+                    position: 'absolute',
+                    bottom: '6px',
+                    left: '6px',
+                    width: '7px',
+                    height: '7px',
+                    borderRadius: '50%',
+                    background: conectado ? '#10b981' : '#ef4444',
+                    border: '1px solid #000'
+                }} title={conectado ? 'Conectado' : 'Desconectado'}></div>
 
                 {/* GLOBITO NARANJA DE NO LEÍDAS */}
                 {noLeidas > 0 && (
@@ -56,48 +67,61 @@ const NotificacionDropdown = () => {
                         alignItems: 'center',
                         justifyContent: 'center',
                         fontSize: '10px',
-                        fontWeight: 'bold'
+                        fontWeight: 'bold',
+                        boxShadow: '0 0 10px rgba(255,90,31,0.5)'
                     }}>
                         {noLeidas}
                     </span>
                 )}
             </button>
 
-            {/* MENÚ DESPLEGABLE (Estilo Dark Mode) */}
+            {/* MENÚ DESPLEGABLE */}
             {isOpen && (
                 <div style={{
                     position: 'absolute',
+                    top: '100%',
                     right: '-10px',
                     width: 'calc(100vw - 32px)',
-                    maxWidth: '320px',
-                    background: '#18181b', // Color oscuro de tu fondo
-                    border: '1px solid #27272a', // Borde sutil
-                    borderRadius: '12px',
-                    boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+                    maxWidth: '350px',
+                    background: '#121214',
+                    border: '1px solid #27272a',
+                    borderRadius: '16px',
+                    boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
                     zIndex: 1000,
                     overflow: 'hidden',
-                    color: '#fff'
+                    color: '#fff',
+                    marginTop: '10px'
                 }}>
-                    {/* Header del Dropdown */}
                     <div style={{
                         padding: '16px',
                         borderBottom: '1px solid #27272a',
                         display: 'flex',
                         justifyContent: 'space-between',
-                        alignItems: 'center'
+                        alignItems: 'center',
+                        background: 'rgba(255,255,255,0.02)'
                     }}>
-                        <h4 style={{ margin: 0, fontSize: '16px', fontWeight: '600' }}>Notificaciones</h4>
-                        <span style={{ fontSize: '12px', color: brandOrange, cursor: 'pointer' }}>
-                            Marcar todas leídas
-                        </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '700' }}>Notificaciones</h4>
+                            {conectado ? <Wifi size={14} color="#10b981" /> : <WifiOff size={14} color="#ef4444" />}
+                        </div>
+                        {noLeidas > 0 && (
+                            <button 
+                                onClick={marcarTodasComoLeidas}
+                                style={{ 
+                                    background: 'none', border: 'none', color: brandOrange, 
+                                    fontSize: '12px', cursor: 'pointer', fontWeight: '600',
+                                    display: 'flex', alignItems: 'center', gap: '4px'
+                                }}>
+                                <CheckCheck size={14} /> Marcar todas leídas
+                            </button>
+                        )}
                     </div>
 
-                    {/* Lista de Notificaciones */}
-                    <div style={{ maxHeight: '350px', overflowY: 'auto' }}>
+                    <div style={{ maxHeight: '400px', overflowY: 'auto', background: '#121214' }}>
                         {notificaciones.length === 0 ? (
-                            <div style={{ padding: '30px 16px', textAlign: 'center', color: '#a1a1aa' }}>
-                                <Bell size={32} style={{ marginBottom: '10px', opacity: 0.5 }} />
-                                <p style={{ margin: 0, fontSize: '14px' }}>No tienes notificaciones nuevas</p>
+                            <div style={{ padding: '40px 20px', textAlign: 'center', color: '#52525b' }}>
+                                <Bell size={40} style={{ marginBottom: '12px', opacity: 0.2 }} />
+                                <p style={{ margin: 0, fontSize: '14px' }}>No hay nada nuevo por aquí</p>
                             </div>
                         ) : (
                             notificaciones.map(noti => (
@@ -105,31 +129,34 @@ const NotificacionDropdown = () => {
                                     key={noti.id}
                                     onClick={() => marcarComoLeida(noti.id)}
                                     style={{
-                                        padding: '14px 16px',
-                                        borderBottom: '1px solid #27272a',
-                                        background: noti.leida ? 'transparent' : '#27272a', // Resalta si no está leída
+                                        padding: '16px',
+                                        borderBottom: '1px solid #1f1f23',
+                                        background: noti.leida ? 'transparent' : 'rgba(255, 90, 31, 0.03)',
                                         cursor: 'pointer',
                                         display: 'flex',
-                                        gap: '12px',
-                                        transition: 'background 0.2s'
+                                        gap: '14px',
+                                        transition: 'all 0.2s'
                                     }}
-                                    onMouseEnter={(e) => e.currentTarget.style.background = '#27272a'}
-                                    onMouseLeave={(e) => e.currentTarget.style.background = noti.leida ? 'transparent' : '#27272a'}
+                                    onMouseEnter={(e) => e.currentTarget.style.background = '#1a1a1e'}
+                                    onMouseLeave={(e) => e.currentTarget.style.background = noti.leida ? 'transparent' : 'rgba(255, 90, 31, 0.03)'}
                                 >
-                                    {/* Puntito indicador si no está leída */}
-                                    <div style={{ paddingTop: '6px' }}>
-                                        <div style={{
-                                            width: '8px', height: '8px', borderRadius: '50%',
-                                            background: noti.leida ? 'transparent' : brandOrange
-                                        }}></div>
-                                    </div>
+                                    <div style={{
+                                        minWidth: '10px', height: '10px', borderRadius: '50%',
+                                        background: noti.leida ? 'transparent' : brandOrange,
+                                        marginTop: '6px'
+                                    }}></div>
 
-                                    <div>
-                                        <p style={{ margin: 0, fontSize: '14px', color: noti.leida ? '#d1d5db' : '#fff', lineHeight: '1.4' }}>
+                                    <div style={{ flex: 1 }}>
+                                        <p style={{ 
+                                            margin: 0, fontSize: '14px', 
+                                            color: noti.leida ? '#9ca3af' : '#f3f4f6', 
+                                            lineHeight: '1.5',
+                                            fontWeight: noti.leida ? '400' : '500'
+                                        }}>
                                             {noti.mensaje}
                                         </p>
-                                        <span style={{ fontSize: '11px', color: '#71717a', marginTop: '4px', display: 'block' }}>
-                                            Hace un momento {/* Aquí luego pones la fecha real */}
+                                        <span style={{ fontSize: '11px', color: '#52525b', marginTop: '6px', display: 'block' }}>
+                                            {formatDistanceToNow(new Date(noti.fecha), { addSuffix: true, locale: es })}
                                         </span>
                                     </div>
                                 </div>

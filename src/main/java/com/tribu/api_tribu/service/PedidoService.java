@@ -8,10 +8,8 @@ import com.tribu.api_tribu.model.*;
 import com.tribu.api_tribu.repository.PedidoRepository;
 import com.tribu.api_tribu.repository.ProductoRepository;
 import com.tribu.api_tribu.repository.UsuarioRepository;
-import com.tribu.api_tribu.repository.MovimientoSaldoRepository;
+import com.tribu.api_tribu.websocket.SaldoWebSocketService;
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,174 +19,221 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * CAMBIOS RESPECTO A LA VERSIÓN ANTERIOR:
+ *
+ * ❌ ANTES: usuario.setSaldoFavor(usuario.getSaldoFavor() + montoCashback)
+ * + movimientoSaldoRepository.save(mov) → mutación directa
+ *
+ * ✅ AHORA: saldoService.registrarCashbackDiferido(...) →
+ * crea MovimientoSaldo en ON_HOLD
+ * el Scheduler lo libera 7 días después
+ * WebSocket notifica al frontend cuando se libera
+ */
 @Service
 @RequiredArgsConstructor
 public class PedidoService {
 
-        private final ApplicationEventPublisher eventPublisher;
-        private final PedidoRepository pedidoRepository;
-        private final ProductoRepository productoRepository;
-        private final UsuarioRepository usuarioRepository;
-        private final MovimientoSaldoRepository movimientoSaldoRepository;
-        private final EmailService emailService;
+    private final ApplicationEventPublisher eventPublisher;
+    private final PedidoRepository pedidoRepository;
+    private final ProductoRepository productoRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final EmailService emailService;
+    private final SaldoService saldoService;
+    private final SaldoWebSocketService wsService;
+    private final CashbackTierService cashbackTierService;
+    private final InventarioService inventarioService;
+    private final PushNotificationService pushNotificationService;
+    private final com.tribu.api_tribu.telegram.TelegramNotificationService telegramService;
+    private final TierService tierService;
+    private final AchievementService achievementService;
 
-        @Transactional
-        public PedidoResponse crearPedido(String emailUsuario, CrearPedidoRequest request) {
-                Usuario usuario = usuarioRepository.findByEmail(emailUsuario)
-                                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", emailUsuario));
+    @Transactional
+    public PedidoResponse crearPedido(String emailUsuario, CrearPedidoRequest request) {
+        Usuario usuario = usuarioRepository.findByEmail(emailUsuario)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", emailUsuario));
 
-                Pedido pedido = new Pedido();
-                pedido.setUsuario(usuario);
-                pedido.setDireccionEnvio(request.getDireccionEnvio());
-                pedido.setEstado("PENDIENTE");
+        Pedido pedido = new Pedido();
+        pedido.setUsuario(usuario);
+        pedido.setDireccionEnvio(request.getDireccionEnvio());
 
-                List<DetallePedido> detalles = new ArrayList<>();
-                BigDecimal total = BigDecimal.ZERO;
+        List<DetallePedido> detalles = new ArrayList<>();
+        BigDecimal total = BigDecimal.ZERO;
 
-                for (CrearPedidoRequest.ItemPedidoRequest item : request.getItems()) {
-                        Producto producto = productoRepository.findById(item.getProductoId())
-                                        .orElseThrow(() -> new ResourceNotFoundException("Producto", "id",
-                                                        item.getProductoId()));
+        for (CrearPedidoRequest.ItemPedidoRequest item : request.getItems()) {
+            Producto producto = productoRepository.findById(item.getProductoId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Producto", "id", item.getProductoId()));
 
-                        if (producto.getStock() < item.getCantidad()) {
-                                throw new IllegalArgumentException(
-                                                "Stock insuficiente para el producto: " + producto.getNombre()
-                                                                + ". Stock disponible: " + producto.getStock());
-                        }
+            if (producto.getStock() < item.getCantidad()) {
+                throw new IllegalArgumentException(
+                        "Stock insuficiente para: " + producto.getNombre()
+                                + ". Disponible: " + producto.getStock());
+            }
 
-                        // Descontar stock
-                        producto.setStock(producto.getStock() - item.getCantidad());
-                        productoRepository.save(producto);
+            producto.setStock(producto.getStock() - item.getCantidad());
+            productoRepository.save(producto);
 
-                        BigDecimal subtotal = producto.getPrecio().multiply(BigDecimal.valueOf(item.getCantidad()));
-                        total = total.add(subtotal);
+            inventarioService.verificarStockPostVenta(producto);
 
-                        DetallePedido detalle = new DetallePedido();
-                        detalle.setPedido(pedido);
-                        detalle.setProducto(producto);
-                        detalle.setCantidad(item.getCantidad());
-                        detalle.setPrecioUnitario(producto.getPrecio());
-                        detalle.setSubtotal(subtotal);
-                        detalles.add(detalle);
-                }
+            if (total.doubleValue() >= 500_000) {
+                pushNotificationService.enviarAUsuario(
+                        usuario.getId(),
+                        "💎 Pedido Grande",
+                        "Tu pedido #" + pedido.getId() + " ha sido recibido",
+                        "/mis-pedidos");
+            }
 
-                NotificacionEvent event = new NotificacionEvent(
-                                "PEDIDO",
-                                "Nuevo pedido recibido",
-                                "El usuario " + pedido.getUsuario().getNombreCompleto() + " realizó un nuevo pedido.",
-                                pedido.getUsuario().getId().toString());
-                eventPublisher.publishEvent(event);
+            BigDecimal subtotal = producto.getPrecio().multiply(BigDecimal.valueOf(item.getCantidad()));
+            total = total.add(subtotal);
 
-                pedido.setTotal(total);
-                pedido.setDetalles(detalles);
-                Pedido savedPedido = pedidoRepository.save(pedido);
-
-                // Email de confirmación (async, no bloquea)
-                String totalFormateado = "$" + total.toPlainString();
-                emailService.enviarConfirmacionPedido(
-                                usuario.getEmail(), usuario.getNombreCompleto(),
-                                savedPedido.getId(), totalFormateado);
-
-                return toResponse(savedPedido);
-
+            DetallePedido detalle = new DetallePedido();
+            detalle.setPedido(pedido);
+            detalle.setProducto(producto);
+            detalle.setCantidad(item.getCantidad());
+            detalle.setPrecioUnitario(producto.getPrecio());
+            detalle.setSubtotal(subtotal);
+            detalles.add(detalle);
         }
 
-        public List<PedidoResponse> getMisPedidos(String emailUsuario) {
-                Usuario usuario = usuarioRepository.findByEmail(emailUsuario)
-                                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", emailUsuario));
-                return pedidoRepository.findByUsuarioOrderByFechaPedidoDesc(usuario).stream()
-                                .map(this::toResponse).collect(Collectors.toList());
+        pedido.setTotal(total);
+        pedido.setDetalles(detalles);
+        pedido.setMetodoPago(request.getMetodoPago() != null ? request.getMetodoPago() : "EFECTIVO");
+
+        // ── PAGO CON TRIBU CARD (Simulación Pasarela) ─────────────────────
+        if ("TRIBU_CARD".equalsIgnoreCase(request.getMetodoPago())) {
+            pedido.setEstado("PAGADO");
+        } else {
+            pedido.setEstado("PENDIENTE");
         }
 
-        public List<PedidoResponse> getAllPedidos() {
-                return pedidoRepository.findAllByOrderByFechaPedidoDesc().stream()
-                                .map(this::toResponse).collect(Collectors.toList());
+        Pedido savedPedido = pedidoRepository.save(pedido);
+
+        // Si es Tribu Card, procesamos el descuento real del ledger
+        if ("PAGADO".equals(savedPedido.getEstado())) {
+            saldoService.registrarCompraConSaldo(
+                    usuario,
+                    savedPedido.getTotal().doubleValue(),
+                    savedPedido.getId());
+
+            // Notificar reducción de saldo vía WS
+            wsService.notificarSaldoActualizado(
+                    usuario.getId(),
+                    -savedPedido.getTotal().doubleValue(),
+                    "PURCHASE",
+                    "Pago de Pedido #" + savedPedido.getId());
+
+            // Recalcular tier en tiempo real para feedback inmediato
+            tierService.reevaluarTierUsuario(usuario);
+
+            // Procesar logros y recompensas (Fase Gamificación)
+            achievementService.procesarLogros(usuario);
+
+            // 💎 NUEVO: Registrar cashback inmediatamente si ya está PAGADO (Tribu Card)
+            procesarCashback(savedPedido);
         }
 
-        public List<PedidoResponse> getByEstado(String estado) {
-                return pedidoRepository.findByEstadoOrderByFechaPedidoDesc(estado).stream()
-                                .map(this::toResponse).collect(Collectors.toList());
+        // Evento de notificación (existente)
+        eventPublisher.publishEvent(new NotificacionEvent(
+                "PEDIDO",
+                "Nuevo pedido recibido",
+                "El usuario " + usuario.getNombreCompleto() + " realizó un nuevo pedido.",
+                usuario.getId().toString()));
+
+        emailService.enviarConfirmacionPedido(
+                usuario.getEmail(), usuario.getNombreCompleto(),
+                savedPedido.getId(), "$" + total.toPlainString());
+
+        if (savedPedido.getTotal().doubleValue() >= 500_000) {
+            telegramService.alertaPedidoGrande(savedPedido.getId(), savedPedido.getTotal().doubleValue());
         }
 
-        @Transactional
-        public PedidoResponse actualizarEstado(Long id, ActualizarEstadoPedidoRequest request) {
-                Pedido pedido = pedidoRepository.findById(id)
-                                .orElseThrow(() -> new ResourceNotFoundException("Pedido", "id", id));
+        return toResponse(savedPedido);
+    }
 
-                String estadoAnterior = pedido.getEstado();
-                String nuevoEstado = request.getEstado().toUpperCase();
+    @Transactional
+    public PedidoResponse actualizarEstado(Long id, ActualizarEstadoPedidoRequest request) {
+        Pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido", "id", id));
 
-                pedido.setEstado(nuevoEstado);
-                if (request.getGuiaRastreo() != null) {
-                        pedido.setGuiaRastreo(request.getGuiaRastreo());
-                }
-                Pedido saved = pedidoRepository.save(pedido);
+        String estadoAnterior = pedido.getEstado();
+        String nuevoEstado = request.getEstado().toUpperCase();
 
-                // --- LÓGICA DE CASHBACK AUTOMÁTICO PARA BILLETERA ---
-                if (!"ENTREGADO".equals(estadoAnterior) && "ENTREGADO".equals(nuevoEstado)) {
-                        Usuario usuario = pedido.getUsuario();
-                        double porcentajeCashback = 0.01; // Bronce por defecto (1%)
+        pedido.setEstado(nuevoEstado);
+        if (request.getGuiaRastreo() != null) {
+            pedido.setGuiaRastreo(request.getGuiaRastreo());
+        }
+        Pedido saved = pedidoRepository.save(pedido);
 
-                        if (usuario.getNivelVip() != null) {
-                                if (usuario.getNivelVip() == 2)
-                                        porcentajeCashback = 0.03; // Plata 3%
-                                else if (usuario.getNivelVip() == 3)
-                                        porcentajeCashback = 0.05; // Oro 5%
-                        }
-
-                        double montoCashback = pedido.getTotal().doubleValue() * porcentajeCashback;
-
-                        if (montoCashback > 0) {
-                                usuario.setSaldoFavor(usuario.getSaldoFavor() + montoCashback);
-                                usuarioRepository.save(usuario);
-
-                                MovimientoSaldo mov = MovimientoSaldo.builder()
-                                                .usuario(usuario)
-                                                .monto(montoCashback)
-                                                .tipo("CASHBACK_COMPRA")
-                                                .descripcion("Cashback (" + (porcentajeCashback * 100)
-                                                                + "%) por compra de Pedido #" + pedido.getId())
-                                                .build();
-                                movimientoSaldoRepository.save(mov);
-                        }
-                }
-
-                // Notificar al cliente del cambio de estado (async)
-                emailService.enviarCambioEstado(
-                                pedido.getUsuario().getEmail(),
-                                pedido.getUsuario().getNombreCompleto(),
-                                pedido.getId(),
-                                request.getEstado(),
-                                request.getGuiaRastreo());
-
-                return toResponse(saved);
+        // ── CASHBACK DIFERIDO ──────────────────────────────────────────────
+        // Solo se registra cuando el pedido pasa a ENTREGADO (una sola vez).
+        // Se crea en ON_HOLD — el Scheduler lo libera en 7 días.
+        if (!"ENTREGADO".equals(estadoAnterior) && "ENTREGADO".equals(nuevoEstado)) {
+            procesarCashback(saved);
         }
 
-        // ——— Helper ———
+        emailService.enviarCambioEstado(
+                pedido.getUsuario().getEmail(),
+                pedido.getUsuario().getNombreCompleto(),
+                pedido.getId(),
+                request.getEstado(),
+                request.getGuiaRastreo());
 
-        private PedidoResponse toResponse(Pedido p) {
-                List<PedidoResponse.DetallePedidoResponse> detallesResponse = p.getDetalles().stream()
-                                .map(d -> PedidoResponse.DetallePedidoResponse.builder()
-                                                .id(d.getId())
-                                                .productoId(d.getProducto().getId())
-                                                .productoNombre(d.getProducto().getNombre())
-                                                .productoImagenUrl(d.getProducto().getImagenUrl())
-                                                .cantidad(d.getCantidad())
-                                                .precioUnitario(d.getPrecioUnitario())
-                                                .subtotal(d.getSubtotal())
-                                                .build())
-                                .collect(Collectors.toList());
+        return toResponse(saved);
+    }
 
-                return PedidoResponse.builder()
-                                .id(p.getId())
-                                .clienteNombre(p.getUsuario().getNombreCompleto())
-                                .clienteEmail(p.getUsuario().getEmail())
-                                .fechaPedido(p.getFechaPedido())
-                                .estado(p.getEstado())
-                                .total(p.getTotal())
-                                .direccionEnvio(p.getDireccionEnvio())
-                                .guiaRastreo(p.getGuiaRastreo())
-                                .detalles(detallesResponse)
-                                .build();
-        }
+    // ── Helpers ───────────────────────────────────────────────────────────
+
+    public List<PedidoResponse> getMisPedidos(String emailUsuario) {
+        Usuario usuario = usuarioRepository.findByEmail(emailUsuario)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", emailUsuario));
+        return pedidoRepository.findByUsuarioOrderByFechaPedidoDesc(usuario).stream()
+                .map(this::toResponse).collect(Collectors.toList());
+    }
+
+    public List<PedidoResponse> getAllPedidos() {
+        return pedidoRepository.findAllByOrderByFechaPedidoDesc().stream()
+                .map(this::toResponse).collect(Collectors.toList());
+    }
+
+    public List<PedidoResponse> getByEstado(String estado) {
+        return pedidoRepository.findByEstadoOrderByFechaPedidoDesc(estado).stream()
+                .map(this::toResponse).collect(Collectors.toList());
+    }
+
+    private void procesarCashback(Pedido pedido) {
+        Usuario usuario = pedido.getUsuario();
+        double porcentaje = cashbackTierService.getPorcentajeCashback(usuario);
+
+        saldoService.registrarCashbackDiferido(
+                usuario,
+                pedido.getTotal().doubleValue(),
+                porcentaje,
+                pedido.getId());
+    }
+
+    private PedidoResponse toResponse(Pedido p) {
+        List<PedidoResponse.DetallePedidoResponse> detallesResponse = p.getDetalles().stream()
+                .map(d -> PedidoResponse.DetallePedidoResponse.builder()
+                        .id(d.getId())
+                        .productoId(d.getProducto().getId())
+                        .productoNombre(d.getProducto().getNombre())
+                        .productoImagenUrl(d.getProducto().getImagenUrl())
+                        .cantidad(d.getCantidad())
+                        .precioUnitario(d.getPrecioUnitario())
+                        .subtotal(d.getSubtotal())
+                        .build())
+                .collect(Collectors.toList());
+
+        return PedidoResponse.builder()
+                .id(p.getId())
+                .clienteNombre(p.getUsuario().getNombreCompleto())
+                .clienteEmail(p.getUsuario().getEmail())
+                .fechaPedido(p.getFechaPedido())
+                .estado(p.getEstado())
+                .total(p.getTotal())
+                .direccionEnvio(p.getDireccionEnvio())
+                .guiaRastreo(p.getGuiaRastreo())
+                .detalles(detallesResponse)
+                .build();
+    }
 }

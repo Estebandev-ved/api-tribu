@@ -47,6 +47,9 @@ public class Pedido {
     @Column(name = "guia_rastreo")
     private String guiaRastreo;
 
+    @Column(name = "metodo_pago")
+    private String metodoPago; // TRIBU_CARD, TRANSFERENCIA, etc.
+
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<DetallePedido> detalles = new ArrayList<>();
 }

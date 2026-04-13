@@ -5,23 +5,66 @@ import { useAuth } from '../context/AuthContext'
 import { getMiPerfil, getMisMovimientos } from '../api'
 import RuletaModal from '../components/RuletaModal'
 import { Link } from 'react-router-dom'
+import { useNotification } from '../context/NotificationContext'
+import { toast } from 'react-hot-toast'
 
-export default function BilleteraPage() {
-    const { user } = useAuth()
-    const [perfil, setPerfil] = useState(null)
-    const [movimientos, setMovimientos] = useState([])
-    const [tarjetaCreada, setTarjetaCreada] = useState(false)
-    const [isCreating, setIsCreating] = useState(false)
-    const [showRuleta, setShowRuleta] = useState(false)
+import TribuCard from '../components/TribuCard'
+import TribuCardMinting from '../components/TribuCardMinting'
+import ConfettiCanvas from '../components/ConfettiCanvas'
+import TierUpToast from '../components/TierUpToast'
+import { useWebSocketAnimation } from '../hooks/useWebSocketAnimation'
+
+const BilleteraPage = () => {
+    const { user } = useAuth();
+    const { saldoRealtime, notificaciones: notiContext, ultimoEvento, conectado } = useNotification();
+    const [perfil, setPerfil] = useState(null);
+    const [movimientos, setMovimientos] = useState([]);
+    const [tarjetaCreada, setTarjetaCreada] = useState(false);
+    const [isCreating, setIsCreating] = useState(false);
+    const [showRuleta, setShowRuleta] = useState(false);
+    
+    const cardRef = useRef(null);
+    const [saldoLocal, setSaldoLocal] = useState(null);
+    const [animarSaldo, setAnimarSaldo] = useState(false);
+
+    const { tierPromocion, mostrarConfeti, CoinParticlesComponent } = useWebSocketAnimation({
+        cardRef,
+        onSaldoUpdate: (nuevoSaldo) => {
+            setSaldoLocal(nuevoSaldo);
+            setAnimarSaldo(true);
+            setTimeout(() => setAnimarSaldo(false), 1000);
+        }
+    });
+
+    const tierActual = perfil ? {
+        nombre: perfil.nivelVip === 3 ? 'ORO' : perfil.nivelVip === 2 ? 'PLATA' : 'BRONCE',
+        orden: perfil.nivelVip || 1,
+        beneficios: []
+    } : null;
 
     useEffect(() => {
-        if (!user) return
-        getMiPerfil().then(res => setPerfil(res.data)).catch(() => { })
-        getMisMovimientos().then(res => setMovimientos(res.data)).catch(() => { })
+        if (!user) return;
+        getMiPerfil().then(res => {
+            setPerfil(res.data);
+            setSaldoLocal(res.data.saldoFavor || 0);
+        }).catch(() => { });
+        getMisMovimientos().then(res => setMovimientos(res.data)).catch(() => { });
         if (localStorage.getItem(`tribu_card_created_${user.id}`) === 'true') {
-            setTarjetaCreada(true)
+            setTarjetaCreada(true);
         }
-    }, [user])
+    }, [user]);
+
+    useEffect(() => {
+        if (saldoRealtime !== null) {
+            setSaldoLocal(saldoRealtime);
+        }
+    }, [saldoRealtime]);
+
+    useEffect(() => {
+        if (notiContext.length > 0) {
+            getMisMovimientos().then(res => setMovimientos(res.data)).catch(() => { });
+        }
+    }, [notiContext]);
 
     const canSpinToday = () => {
         if (!perfil || !perfil.fechaUltimoGiroRuleta) return true
@@ -34,7 +77,6 @@ export default function BilleteraPage() {
 
     const handleCrearTarjeta = () => {
         setIsCreating(true)
-        // Simulamos un proceso de validación y emisión de tarjeta
         setTimeout(() => {
             setIsCreating(false)
             setTarjetaCreada(true)
@@ -42,10 +84,8 @@ export default function BilleteraPage() {
         }, 3000)
     }
 
-    // Funciones de formato
     const formatCurrency = (monto) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(monto || 0)
 
-    // Generar un número de tarjeta mock basado en el ID o email del usuario
     const getCardNumber = () => {
         if (!user) return '•••• •••• •••• ••••'
         const seed = user.email.charCodeAt(0).toString().padStart(4, '0')
@@ -67,7 +107,21 @@ export default function BilleteraPage() {
                             Tu saldo, tus devoluciones y tus premios en un solo lugar.
                         </p>
                     </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span style={{ 
+                            width: '8px', 
+                            height: '8px', 
+                            borderRadius: '50%', 
+                            background: conectado ? '#00C896' : '#666',
+                            boxShadow: conectado ? '0 0 10px #00C896' : 'none'
+                        }} />
+                        <span style={{ color: conectado ? '#00C896' : '#666', fontSize: '0.85rem', fontWeight: 600 }}>
+                            {conectado ? 'En vivo' : 'Offline'}
+                        </span>
+                    </div>
                 </div>
+
+                <TribuCardMinting saldo={saldoLocal ?? 0} tierActual={tierActual} />
 
                 <AnimatePresence mode="wait">
                     {!tarjetaCreada ? (
@@ -79,7 +133,6 @@ export default function BilleteraPage() {
                             transition={{ duration: 0.5 }}
                             style={{ background: 'rgba(20,20,20,0.8)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '3rem', textAlign: 'center', position: 'relative', overflow: 'hidden' }}
                         >
-                            {/* Bg Glow */}
                             <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(255,87,34,0.15) 0%, transparent 70%)', filter: 'blur(30px)', pointerEvents: 'none' }} />
 
                             <motion.div
@@ -138,77 +191,37 @@ export default function BilleteraPage() {
                             transition={{ duration: 0.6, type: "spring" }}
                             style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}
                         >
-                            {/* HEADER ACTIONS */}
-                            {canSpinToday() && (
-                                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                                {canSpinToday() && (
                                     <motion.button
                                         whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(255,87,34,0.6)' }}
                                         whileTap={{ scale: 0.95 }}
                                         onClick={() => setShowRuleta(true)}
-                                        style={{ background: 'linear-gradient(45deg, #FF5722, #FF9800)', border: 'none', padding: '1rem 2rem', borderRadius: '14px', color: '#fff', fontWeight: 800, fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '0.8rem', cursor: 'pointer', boxShadow: '0 8px 25px rgba(255,87,34,0.4)' }}
+                                        style={{ background: 'linear-gradient(45deg, #FF5722, #FF9800)', border: 'none', padding: '1rem 2rem', borderRadius: '14px', color: '#fff', fontWeight: 800, fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.8rem', cursor: 'pointer', boxShadow: '0 8px 25px rgba(255,87,34,0.4)' }}
                                     >
-                                        <Gift size={24} /> ¡Tirar la Ruleta Diaria!
+                                        <Gift size={24} /> Ruleta Diaria
                                     </motion.button>
-                                </motion.div>
-                            )}
+                                )}
 
-                            {/* TRIBU CARD VISUALIZATION DEPENDIENDO DEL NIVEL VIP */}
-                            <motion.div
-                                whileHover={{ scale: 1.01, rotateX: 2, rotateY: -2 }}
-                                transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                                style={{
-                                    background: perfil.nivelVip === 3
-                                        ? 'linear-gradient(135deg, #FFB75E, #ED8F03, #c27202)' // ORO
-                                        : perfil.nivelVip === 2
-                                            ? 'linear-gradient(135deg, #E0EAFC, #CFDEF3, #a1aebf)' // PLATA
-                                            : 'linear-gradient(135deg, #2b2b36, #1f1f26, #14141a)', // BRONCE (Oscuro/Minimalista)
-                                    backdropFilter: 'blur(30px)', border: '1px solid rgba(255, 255, 255, 0.2)',
-                                    borderRadius: '24px', padding: '2.5rem', position: 'relative', overflow: 'hidden',
-                                    boxShadow: perfil.nivelVip === 3 ? '0 20px 50px rgba(237,143,3,0.4), inset 0 0 0 1px rgba(255,255,255,0.3)' : '0 20px 50px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.05)',
-                                    aspectRatio: '1.586 / 1', /* Proporción estándar de tarjeta de crédito dorada */
-                                    maxWidth: '480px', margin: '0 auto', /* Centrar y limitar tamaño en desktop */
-                                    display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-                                    color: perfil.nivelVip >= 2 ? '#222' : '#fff' // Texto oscuro para Plata y Oro
-                                }}>
+                                <Link to="/transferir" style={{ textDecoration: 'none' }}>
+                                    <motion.button
+                                        whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(0,200,150,0.4)' }}
+                                        whileTap={{ scale: 0.95 }}
+                                        style={{ background: 'rgba(0, 200, 150, 0.1)', border: '1px solid rgba(0, 200, 150, 0.3)', padding: '1rem 2rem', borderRadius: '14px', color: '#00C896', fontWeight: 800, fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.8rem', cursor: 'pointer' }}
+                                    >
+                                        <Zap size={24} /> Transferir
+                                    </motion.button>
+                                </Link>
+                            </div>
 
-                                {/* Glass Reflections con ajuste VIP */}
-                                <div style={{ position: 'absolute', top: '-50%', left: '-50%', width: '200%', height: '200%', background: 'radial-gradient(circle at top left, rgba(255, 255, 255, 0.25) 0%, transparent 40%)', pointerEvents: 'none' }} />
-                                <div style={{ position: 'absolute', bottom: '-20%', right: '-20%', width: '150%', height: '150%', background: perfil.nivelVip === 3 ? 'radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.4) 0%, transparent 50%)' : 'radial-gradient(circle at bottom right, rgba(255, 87, 34, 0.2) 0%, transparent 50%)', pointerEvents: 'none' }} />
+                            <div ref={cardRef} style={{ display: 'flex', justifyContent: 'center' }}>
+                                <TribuCard
+                                    saldo={saldoLocal ?? perfil?.saldoFavor ?? 0}
+                                    animatorSaldo={animarSaldo}
+                                    tierActual={tierActual}
+                                />
+                            </div>
 
-                                {/* Chip and Logo */}
-                                <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <div style={{ width: '50px', height: '35px', background: 'linear-gradient(135deg, #ffd700, #b8860b)', borderRadius: '6px', opacity: 0.9, position: 'relative', overflow: 'hidden', boxShadow: '0 2px 5px rgba(0,0,0,0.2)' }}>
-                                        <div style={{ position: 'absolute', top: '50%', width: '100%', height: '1px', background: 'rgba(0,0,0,0.2)' }} />
-                                        <div style={{ position: 'absolute', left: '50%', width: '1px', height: '100%', background: 'rgba(0,0,0,0.2)' }} />
-                                    </div>
-                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', opacity: 0.9 }}>
-                                        <h3 style={{ margin: 0, color: 'inherit', fontSize: '1.4rem', fontWeight: 900, letterSpacing: '2px', fontStyle: 'italic' }}>TRIBU</h3>
-                                        <span style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', padding: '2px 6px', borderRadius: '4px', background: perfil.nivelVip >= 2 ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)' }}>
-                                            {perfil.nivelVip === 3 ? 'Gold' : perfil.nivelVip === 2 ? 'Silver' : 'Standard'}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                {/* Balance & Number */}
-                                <div style={{ position: 'relative', zIndex: 1, marginTop: '1rem' }}>
-                                    <div style={{ color: perfil.nivelVip >= 2 ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.6)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '0.5rem', fontWeight: 600 }}>Balance Actual</div>
-                                    <div style={{ fontSize: '3rem', fontWeight: 900, color: 'inherit', textShadow: perfil.nivelVip >= 2 ? 'none' : '0 2px 10px rgba(0,0,0,0.5)', lineHeight: 1 }}>
-                                        {formatCurrency(perfil.saldoFavor)}
-                                    </div>
-                                </div>
-
-                                {/* Footer of Card */}
-                                <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '1.5rem' }}>
-                                    <div style={{ fontSize: '1.1rem', fontWeight: 700, color: perfil.nivelVip >= 2 ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.8)', letterSpacing: '3px', textTransform: 'uppercase' }}>
-                                        {user.nombreCompleto}
-                                    </div>
-                                    <div style={{ fontSize: '1.2rem', fontWeight: 600, color: perfil.nivelVip >= 2 ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.8)', letterSpacing: '4px', fontFamily: 'monospace' }}>
-                                        {getCardNumber()}
-                                    </div>
-                                </div>
-                            </motion.div>
-
-                            {/* PANEL DE REFERIDOS (TRAE A TU TRIBU) */}
                             {perfil.codigoReferido && (
                                 <motion.div
                                     initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
@@ -222,9 +235,19 @@ export default function BilleteraPage() {
                                     <div style={{ background: 'rgba(0,0,0,0.3)', padding: '0.8rem 1.2rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                         <span style={{ color: '#fff', fontSize: '1.2rem', fontWeight: 800, letterSpacing: '1px', fontFamily: 'monospace' }}>{perfil.codigoReferido}</span>
                                         <button
-                                            onClick={() => {
-                                                navigator.clipboard.writeText(perfil.codigoReferido);
-                                                alert('¡Código copiado!');
+                                            onClick={async () => {
+                                                try {
+                                                    await navigator.clipboard.writeText(perfil.codigoReferido);
+                                                    alert('¡Código copiado!');
+                                                } catch (e) {
+                                                    const textArea = document.createElement('textarea');
+                                                    textArea.value = perfil.codigoReferido;
+                                                    document.body.appendChild(textArea);
+                                                    textArea.select();
+                                                    document.execCommand('copy');
+                                                    document.body.removeChild(textArea);
+                                                    alert('¡Código copiado!');
+                                                }
                                             }}
                                             className="btn btn-ghost"
                                             style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}>
@@ -234,31 +257,69 @@ export default function BilleteraPage() {
                                 </motion.div>
                             )}
 
-                            {/* MOVIMIENTOS HISTORIAL */}
                             <div style={{ background: 'rgba(20,20,20,0.6)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '1.5rem', padding: '2rem' }}>
                                 <h3 style={{ fontSize: '1.4rem', fontWeight: 700, margin: '0 0 1.5rem 0', color: '#fff', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                     Últimos Movimientos
                                 </h3>
 
-                                {movimientos.length > 0 ? (
+                                {Array.isArray(movimientos) && movimientos.length > 0 ? (
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                         {movimientos.map(mov => (
                                             <div key={mov.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.02)', padding: '1.2rem 1.5rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.03)' }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem' }}>
-                                                    <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: mov.tipo === 'PREMIO_RULETA' ? 'rgba(255, 87, 34, 0.15)' : 'rgba(0, 200, 150, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', boxShadow: 'inset 0 0 10px rgba(0,0,0,0.2)' }}>
-                                                        {mov.tipo === 'PREMIO_RULETA' ? '🎁' : <img src="/dinero.svg" alt="" style={{ width: '24px', height: '24px' }} />}
+                                                    <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: (mov.tipo === 'PREMIO_RULETA' || mov.tipo === 'ROULETTE_REWARD') ? 'rgba(255, 87, 34, 0.15)' : 'rgba(0, 200, 150, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', boxShadow: 'inset 0 0 10px rgba(0,0,0,0.2)' }}>
+                                                        {(mov.tipo === 'PREMIO_RULETA' || mov.tipo === 'ROULETTE_REWARD') ? '🎁' :
+                                                            (mov.tipo === 'WELCOME_BONUS' || mov.tipo === 'REGALO_BIENVENIDA') ? '🎉' :
+                                                                (mov.tipo === 'REFERRAL_BONUS' || mov.tipo === 'REFERIDO_EXITOSO') ? '🤝' :
+                                                                    <img src="/dinero.svg" alt="" style={{ width: '24px', height: '24px' }} />}
                                                     </div>
                                                     <div>
                                                         <div style={{ fontWeight: 700, fontSize: '1.05rem', color: '#fff', textTransform: 'capitalize' }}>
-                                                            {mov.tipo.replace('_', ' ').toLowerCase()}
+                                                            {mov.tipo.replace('ROULETTE_REWARD', 'Premio Ruleta')
+                                                                .replace('REFERRAL_BONUS', 'Bono Referido')
+                                                                .replace('WELCOME_BONUS', 'Regalo Bienvenida')
+                                                                .replace('PREMIO_RULETA', 'Premio Ruleta')
+                                                                .replace('REFERIDO_EXITOSO', 'Bono Referido')
+                                                                .replace('REGALO_BIENVENIDA', 'Regalo Bienvenida')
+                                                                .replace('CASHBACK_COMPRA', 'Cashback')
+                                                                .replace('CASHBACK', 'Cashback')
+                                                                .replace('_', ' ').toLowerCase()}
+                                                            {mov.estado === 'ON_HOLD' && (
+                                                                <span style={{ 
+                                                                    marginLeft: '0.8rem', 
+                                                                    fontSize: '0.7rem', 
+                                                                    background: 'rgba(255, 184, 77, 0.1)', 
+                                                                    color: '#ffb84d', 
+                                                                    padding: '0.2rem 0.6rem', 
+                                                                    borderRadius: '20px', 
+                                                                    border: '1px solid rgba(255, 184, 77, 0.2)',
+                                                                    verticalAlign: 'middle',
+                                                                    textTransform: 'uppercase',
+                                                                    letterSpacing: '0.5px'
+                                                                }}>
+                                                                    Pendiente
+                                                                </span>
+                                                            )}
                                                         </div>
                                                         <div style={{ fontSize: '0.85rem', color: '#888', marginTop: '0.2rem' }}>
                                                             {new Date(mov.fecha).toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' })} • {mov.descripcion}
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div style={{ fontWeight: 800, color: '#00C896', fontSize: '1.2rem' }}>
-                                                    +{formatCurrency(mov.monto)}
+                                                <div style={{ 
+                                                    fontWeight: 800, 
+                                                    color: mov.estado === 'ON_HOLD' ? '#ffb84d' : (mov.monto < 0 ? '#ff4d4d' : '#00C896'), 
+                                                    fontSize: '1.2rem',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    alignItems: 'flex-end'
+                                                }}>
+                                                    <span>{mov.monto > 0 ? '+' : ''}{formatCurrency(mov.monto)}</span>
+                                                    {mov.estado === 'ON_HOLD' && (
+                                                        <span style={{ fontSize: '0.7rem', fontWeight: 500, opacity: 0.8, marginTop: '2px' }}>
+                                                            En espera
+                                                        </span>
+                                                    )}
                                                 </div>
                                             </div>
                                         ))}
@@ -282,9 +343,25 @@ export default function BilleteraPage() {
                 onClose={() => setShowRuleta(false)}
                 onWin={(montoGanado) => {
                     setPerfil(prev => ({ ...prev, saldoFavor: prev.saldoFavor + montoGanado, fechaUltimoGiroRuleta: new Date().toISOString() }))
+                    setSaldoLocal(prev => prev + montoGanado)
                     getMisMovimientos().then(r => setMovimientos(r.data)).catch(() => { })
                 }}
             />
+
+            <ConfettiCanvas activo={mostrarConfeti} tier={tierActual?.nombre || 'ORO'} />
+            <CoinParticlesComponent />
+
+            <AnimatePresence>
+                {tierPromocion && (
+                    <TierUpToast
+                        mensaje={tierPromocion}
+                        tier={tierActual?.nombre || 'ORO'}
+                        onCerrar={() => {}}
+                    />
+                )}
+            </AnimatePresence>
         </div>
     )
 }
+
+export default BilleteraPage;

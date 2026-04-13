@@ -7,15 +7,15 @@ import com.tribu.api_tribu.model.Devolucion;
 import com.tribu.api_tribu.repository.DevolucionRepository;
 import com.tribu.api_tribu.model.Usuario;
 import com.tribu.api_tribu.repository.UsuarioRepository;
-import com.tribu.api_tribu.model.MovimientoSaldo;
 import com.tribu.api_tribu.model.NotificacionEvent;
-import com.tribu.api_tribu.repository.MovimientoSaldoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.context.ApplicationEventPublisher;
+import com.tribu.api_tribu.websocket.SaldoWebSocketService;
+import com.tribu.api_tribu.service.SaldoService;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -35,9 +35,10 @@ public class DevolucionService {
 
     private final DevolucionRepository devolucionRepository;
     private final UsuarioRepository usuarioRepository;
-    private final MovimientoSaldoRepository movimientoSaldoRepository;
     private final EmailService emailService;
     private final ApplicationEventPublisher eventPublisher;
+    private final SaldoService saldoService;
+    private final SaldoWebSocketService wsService;
 
     @Value("${app.upload.dir:./uploads}")
     private String uploadDir;
@@ -136,16 +137,15 @@ public class DevolucionService {
                 .orElseThrow(() -> new RuntimeException(
                         "No se encontró usuario registrado con el correo: " + devolucion.getEmail()));
 
-        usuario.setSaldoFavor(usuario.getSaldoFavor() + monto);
-        usuarioRepository.save(usuario);
+        // Ledger: crea movimiento REEMBOLSO en CLEARED + sincroniza saldoFavor
+        saldoService.registrarReembolso(usuario, monto, devolucion.getOrderNumber());
 
-        MovimientoSaldo movimiento = MovimientoSaldo.builder()
-                .usuario(usuario)
-                .monto(monto)
-                .tipo("REEMBOLSO")
-                .descripcion("Reembolso por devolución aprobada de la orden: " + devolucion.getOrderNumber())
-                .build();
+        // WebSocket: notificar en tiempo real
+        wsService.notificarSaldoActualizado(
+                usuario.getId(), monto, "REEMBOLSO",
+                "Devolución aprobada de la orden #" + devolucion.getOrderNumber());
 
+        // Notificación y email (igual que antes)
         NotificacionEvent event = new NotificacionEvent(
                 "DEVOLUCION",
                 "Devolución aprobada",
@@ -153,18 +153,12 @@ public class DevolucionService {
                 usuario.getId().toString());
         eventPublisher.publishEvent(event);
 
-        movimientoSaldoRepository.save(movimiento);
-
-        // Update devolucion status automatically
         devolucion.setEstado("COMPLETADA");
         devolucionRepository.save(devolucion);
 
-        // Notify client
         emailService.enviarCambioEstadoDevolucion(
-                devolucion.getEmail(),
-                devolucion.getId(),
-                devolucion.getOrderNumber(),
-                devolucion.getEstado());
+                devolucion.getEmail(), devolucion.getId(),
+                devolucion.getOrderNumber(), devolucion.getEstado());
     }
 
     private DevolucionResponse mapToResponse(Devolucion devolucion) {

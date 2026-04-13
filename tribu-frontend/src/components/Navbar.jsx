@@ -2,10 +2,108 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { Flame, ShoppingCart, LogOut, Menu, X, TrendingUp, WalletCards } from 'lucide-react'
-import { useState } from 'react'
+import { Flame, ShoppingCart, LogOut, Menu, X, TrendingUp, WalletCards, Trophy, Users, ChevronDown, User, Gem, FileText } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
 import CartDrawer from './CartDrawer'
 import NotificacionDropdown from './NotificacionDropdown';
+
+function DropdownMenu({ label, Icon, links, isActive }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const containerRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (containerRef.current && !containerRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    return (
+        <div ref={containerRef} style={{ position: 'relative' }}>
+            <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.96 }}
+                onClick={() => setIsOpen(!isOpen)}
+                style={{
+                    padding: '0.4rem 0.9rem',
+                    borderRadius: 'var(--radius-full)',
+                    fontSize: '0.87rem',
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                    transition: 'all 0.2s',
+                    color: isActive ? '#fff' : '#888',
+                    background: isActive ? 'rgba(255,87,34,0.15)' : 'transparent',
+                    border: isActive ? '1px solid rgba(255,87,34,0.3)' : '1px solid transparent',
+                    cursor: 'pointer'
+                }}
+            >
+                {Icon && <Icon size={14} />}
+                {label}
+                <ChevronDown size={12} style={{ 
+                    transition: 'transform 0.2s', 
+                    transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                    opacity: 0.6
+                }} />
+            </motion.button>
+
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        transition={{ duration: 0.15 }}
+                        style={{
+                            position: 'absolute',
+                            top: '120%',
+                            left: 0,
+                            minWidth: '200px',
+                            background: 'rgba(20, 20, 20, 0.98)',
+                            backdropFilter: 'blur(20px)',
+                            border: '1px solid rgba(255, 255, 255, 0.08)',
+                            borderRadius: '16px',
+                            padding: '0.5rem',
+                            boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                            zIndex: 1000
+                        }}
+                    >
+                        {links.map((link, i) => (
+                            <Link 
+                                key={link.to} 
+                                to={link.to} 
+                                onClick={() => setIsOpen(false)}
+                                style={{ textDecoration: 'none' }}
+                            >
+                                <motion.div 
+                                    whileHover={{ background: 'rgba(255, 255, 255, 0.03)', x: 4 }}
+                                    style={{
+                                        padding: '0.75rem 1rem',
+                                        borderRadius: '10px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.75rem',
+                                        color: '#ccc',
+                                        fontSize: '0.9rem',
+                                        fontWeight: 500,
+                                        transition: 'all 0.2s'
+                                    }}
+                                >
+                                    {link.Icon && <link.Icon size={16} color="var(--color-primary)" />}
+                                    {link.label}
+                                </motion.div>
+                            </Link>
+                        ))}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+}
 
 export default function Navbar() {
     const { user, logout, isAdmin, isAuthenticated } = useAuth()
@@ -18,14 +116,19 @@ export default function Navbar() {
     const handleLogout = () => { logout(); navigate('/'); setMenuOpen(false) }
     const isActive = (path) => location.pathname === path
 
-    const navLinks = [
-        { to: '/', label: 'Tienda' },
-        { to: '/virales', label: 'Virales', Icon: TrendingUp },
-        ...(isAuthenticated ? [{ to: '/billetera', label: 'Tribu Card', Icon: WalletCards }] : []),
-        ...(isAuthenticated ? [{ to: '/perfil', label: 'Mi Perfil' }] : []),
-        ...(isAuthenticated && !isAdmin ? [{ to: '/mis-pedidos', label: 'Mis Pedidos' }] : []),
-        ...(isAdmin ? [{ to: '/admin', label: 'Panel Admin' }] : []),
+    const communityLinks = [
+        { to: '/leaderboard', label: 'Ranking', Icon: Trophy },
+        { to: '/referidos', label: 'Referidos', Icon: Users },
+        { to: '/grupos', label: 'Grupos', Icon: Users },
     ]
+
+    const userLinks = [
+        { to: '/perfil', label: 'Mi Perfil', Icon: User },
+        { to: '/mis-pedidos', label: 'Mis Pedidos', Icon: ShoppingCart },
+        { to: '/facturas', label: 'Mis Facturas', Icon: FileText },
+    ]
+
+    const isCommunityActive = communityLinks.some(link => isActive(link.to))
 
     return (
         <>
@@ -53,30 +156,87 @@ export default function Navbar() {
                     </Link>
 
                     {/* ── Links desktop ── */}
-                    <div className="nav-links-desktop" style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                        {navLinks.map(link => (
-                            <Link key={link.to} to={link.to} style={{ textDecoration: 'none' }}>
-                                <motion.span whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.96 }}
+                    <div className="nav-links-desktop" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Link to="/" style={{ textDecoration: 'none' }}>
+                            <motion.span whileHover={{ scale: 1.05 }}
+                                style={{
+                                    padding: '0.4rem 0.9rem', borderRadius: 'var(--radius-full)',
+                                    fontSize: '0.87rem', fontWeight: 600, color: isActive('/') ? '#fff' : '#888',
+                                    background: isActive('/') ? 'rgba(255,87,34,0.15)' : 'transparent',
+                                }}>
+                                Tienda
+                            </motion.span>
+                        </Link>
+
+                        <Link to="/virales" style={{ textDecoration: 'none' }}>
+                            <motion.span whileHover={{ scale: 1.05 }}
+                                style={{
+                                    padding: '0.4rem 0.9rem', borderRadius: 'var(--radius-full)',
+                                    fontSize: '0.87rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem',
+                                    color: isActive('/virales') ? '#fff' : '#888',
+                                    background: isActive('/virales') ? 'rgba(255,87,34,0.15)' : 'transparent',
+                                }}>
+                                <TrendingUp size={14} />
+                                Virales
+                            </motion.span>
+                        </Link>
+
+                        {isAuthenticated && (
+                            <>
+                                <Link to="/billetera" style={{ textDecoration: 'none' }}>
+                                    <motion.span whileHover={{ scale: 1.05 }}
+                                        style={{
+                                            padding: '0.4rem 0.9rem', borderRadius: 'var(--radius-full)',
+                                            fontSize: '0.87rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem',
+                                            color: isActive('/billetera') ? '#fff' : '#888',
+                                            background: isActive('/billetera') ? 'rgba(255,87,34,0.15)' : 'transparent',
+                                        }}>
+                                        <WalletCards size={14} />
+                                        Tribu Card
+                                    </motion.span>
+                                </Link>
+
+                                <Link to="/tribu-pass" style={{ textDecoration: 'none' }}>
+                                    <motion.span whileHover={{ scale: 1.05 }}
+                                        style={{
+                                            padding: '0.4rem 0.9rem', borderRadius: 'var(--radius-full)',
+                                            fontSize: '0.87rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem',
+                                            color: isActive('/tribu-pass') ? '#fbbf24' : '#888',
+                                            background: isActive('/tribu-pass') ? 'rgba(245, 158, 11, 0.15)' : 'transparent',
+                                            border: isActive('/tribu-pass') ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid transparent',
+                                        }}>
+                                        <Gem size={14} />
+                                        Tribu Pass
+                                    </motion.span>
+                                </Link>
+
+                                <DropdownMenu 
+                                    label="Comunidad" 
+                                    Icon={Users} 
+                                    links={communityLinks} 
+                                    isActive={isCommunityActive} 
+                                />
+                            </>
+                        )}
+                        
+                        {isAdmin && (
+                            <Link to="/admin" style={{ textDecoration: 'none' }}>
+                                <motion.span whileHover={{ scale: 1.05 }}
                                     style={{
                                         padding: '0.4rem 0.9rem', borderRadius: 'var(--radius-full)',
-                                        fontSize: '0.87rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem', transition: 'color 0.2s',
-                                        color: isActive(link.to) ? '#fff' : '#888',
-                                        background: isActive(link.to) ? 'rgba(255,87,34,0.15)' : 'transparent',
-                                        border: isActive(link.to) ? '1px solid rgba(255,87,34,0.3)' : '1px solid transparent',
+                                        fontSize: '0.87rem', fontWeight: 600, color: isActive('/admin') ? '#fff' : '#888',
+                                        background: isActive('/admin') ? 'rgba(255,255,255,0.05)' : 'transparent',
                                     }}>
-                                    {link.Icon && <link.Icon size={14} />}
-                                    {link.label}
+                                    Panel Admin
                                 </motion.span>
                             </Link>
-                        ))}
+                        )}
                     </div>
 
                     {/* ── Derecha ── */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', flexShrink: 0 }}>
-                        {/* Notificaciones (solo si está autenticado) */}
                         {isAuthenticated && <NotificacionDropdown />}
 
-                        {/* Carrito (siempre visible) */}
                         <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
                             onClick={() => setCartOpen(true)}
                             style={{
@@ -106,20 +266,18 @@ export default function Navbar() {
                         </motion.button>
 
                         {/* Auth — solo desktop */}
-                        <div className="nav-auth-desktop" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                        <div className="nav-auth-desktop" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                             {isAuthenticated ? (
-                                <>
-                                    <span style={{ fontSize: '0.85rem', color: '#777' }}>{user.nombreCompleto.split(' ')[0]}</span>
-                                    <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                                        onClick={handleLogout} className="btn btn-ghost"
-                                        style={{ padding: '0.4rem 1rem', fontSize: '0.85rem' }}>
-                                        <LogOut size={14} /> Salir
-                                    </motion.button>
-                                </>
+                                <DropdownMenu 
+                                    label={user.nombreCompleto.split(' ')[0]} 
+                                    Icon={User} 
+                                    links={[...userLinks, { to: '#', label: 'Cerrar Sesión', Icon: LogOut, onClick: handleLogout }]} 
+                                    isActive={isActive('/perfil') || isActive('/mis-pedidos')}
+                                />
                             ) : (
                                 <>
-                                    <Link to="/login" className="btn btn-ghost" style={{ fontSize: '0.85rem' }}>Ingresar</Link>
-                                    <Link to="/register" className="btn btn-primary" style={{ fontSize: '0.85rem' }}>Únete</Link>
+                                    <Link to="/login" className="btn btn-ghost" style={{ fontSize: '0.85rem', padding: '0.4rem 0.8rem' }}>Ingresar</Link>
+                                    <Link to="/register" className="btn btn-primary" style={{ fontSize: '0.85rem', padding: '0.4rem 1rem' }}>Únete</Link>
                                 </>
                             )}
                         </div>
@@ -141,7 +299,7 @@ export default function Navbar() {
                 </div>
             </motion.nav>
 
-            {/* ── Menú móvil desplegable ── */}
+            {/* ── Menú móvil ── */}
             <AnimatePresence>
                 {menuOpen && (
                     <motion.div
@@ -159,11 +317,22 @@ export default function Navbar() {
                             display: 'flex', flexDirection: 'column', gap: '0.35rem',
                         }}
                     >
-                        {navLinks.map((link, i) => (
+                        {/* Adaptar links para móvil (sin dropdowns) */}
+                        {[
+                            { to: '/', label: 'Tienda' },
+                            { to: '/virales', label: 'Virales', Icon: TrendingUp },
+                            ...(isAuthenticated ? [
+                                { to: '/billetera', label: 'Tribu Card', Icon: WalletCards },
+                                { to: '/tribu-pass', label: 'Tribu Pass', Icon: Gem },
+                                ...communityLinks,
+                                ...userLinks
+                            ] : []),
+                            ...(isAdmin ? [{ to: '/admin', label: 'Panel Admin' }] : []),
+                        ].map((link, i) => (
                             <motion.div key={link.to}
                                 initial={{ opacity: 0, x: -16 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: i * 0.06 }}
+                                transition={{ delay: i * 0.05 }}
                             >
                                 <Link to={link.to}
                                     onClick={() => setMenuOpen(false)}
@@ -180,24 +349,11 @@ export default function Navbar() {
                             </motion.div>
                         ))}
 
-                        {/* Auth en menú móvil */}
-                        <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', marginTop: '0.75rem', paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                            {isAuthenticated ? (
-                                <>
-                                    <p style={{ color: '#666', fontSize: '0.85rem', padding: '0 1rem' }}>
-                                        Hola, <strong style={{ color: '#aaa' }}>{user.nombreCompleto.split(' ')[0]}</strong>
-                                    </p>
-                                    <button onClick={handleLogout} className="btn btn-ghost" style={{ justifyContent: 'center' }}>
-                                        <LogOut size={15} /> Cerrar sesión
-                                    </button>
-                                </>
-                            ) : (
-                                <>
-                                    <Link to="/login" onClick={() => setMenuOpen(false)} className="btn btn-ghost" style={{ justifyContent: 'center' }}>Ingresar</Link>
-                                    <Link to="/register" onClick={() => setMenuOpen(false)} className="btn btn-primary" style={{ justifyContent: 'center' }}>Únete a Tribu</Link>
-                                </>
-                            )}
-                        </div>
+                        {isAuthenticated && (
+                            <button onClick={handleLogout} className="btn btn-ghost" style={{ justifyContent: 'center', marginTop: '1rem' }}>
+                                <LogOut size={15} /> Cerrar sesión
+                            </button>
+                        )}
                     </motion.div>
                 )}
             </AnimatePresence>

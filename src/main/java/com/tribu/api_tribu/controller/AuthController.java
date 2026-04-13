@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -17,12 +19,12 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-        return ResponseEntity.ok(authService.login(request));
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
+        return ResponseEntity.ok(authService.login(request, httpRequest));
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
-        return ResponseEntity.ok(authService.register(request));
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request, HttpServletRequest httpRequest) {
+        return ResponseEntity.ok(authService.register(request, httpRequest));
     }
 }

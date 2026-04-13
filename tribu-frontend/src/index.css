@@ -1,4 +1,4 @@
-/* ===========================
+ï»¿/* ===========================
    TRIBU â€” NEUROMARKETING DESIGN SYSTEM
    Paleta: CarbÃ³n + Naranja Vibrante + Amarillo ElÃ©ctrico
    =========================== */
@@ -495,7 +495,7 @@ tr:hover td {
   padding: 8px 10px;
   margin-top: 8px;
 }
-/*  Sticky Mobile Cart: solo visible en móvil 768px  */
+/*  Sticky Mobile Cart: solo visible en mï¿½vil 768px  */
 @media (max-width: 768px) {
   .sticky-mobile-cart {
     display: flex !important;
@@ -521,7 +521,7 @@ tr:hover td {
     font-size: 15px;
   }
 
-  /* Container con padding lateral en móvil */
+  /* Container con padding lateral en mï¿½vil */
   .container {
     padding-left: 1rem !important;
     padding-right: 1rem !important;
@@ -537,7 +537,7 @@ tr:hover td {
     min-height: 85vh !important;
   }
 
-  /*  GRIDS  columna única  */
+  /*  GRIDS  columna ï¿½nica  */
   .productos-grid {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
     gap: 0.75rem !important;
@@ -582,7 +582,7 @@ tr:hover td {
   body { padding-bottom: 76px; }
 
   /*  ADMIN PANEL  */
-  /* Stats en 2 columnas en móvil */
+  /* Stats en 2 columnas en mï¿½vil */
   .admin-stats-grid {
     grid-template-columns: repeat(2, 1fr) !important;
   }
@@ -609,14 +609,14 @@ tr:hover td {
     font-size: 1.6rem !important;
   }
 
-  /*  SECCIÓN FEATURES  */
-  /* 2 columnas en tablets, 1 en móvil pequeño */
+  /*  SECCIï¿½N FEATURES  */
+  /* 2 columnas en tablets, 1 en mï¿½vil pequeï¿½o */
   .features-grid {
     grid-template-columns: repeat(2, 1fr) !important;
   }
 }
 
-/*  Pantallas muy pequeñas (480px)  */
+/*  Pantallas muy pequeï¿½as (480px)  */
 @media (max-width: 480px) {
   :root { font-size: 14px; }
 

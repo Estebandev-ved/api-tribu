@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
-import { crearPedido } from '../api'
+import { crearPedido, validarCupon } from '../api'
 import toast from 'react-hot-toast'
 import { useNotification } from '../context/NotificationContext';
 import { MapPin, CheckCircle, ShoppingBag } from 'lucide-react'
@@ -20,6 +20,30 @@ export default function CheckoutPage() {
     const [direccion, setDireccion] = useState('')
     const [loading, setLoading] = useState(false)
     const [pedidoCreado, setPedidoCreado] = useState(null)
+    const [codigoCupon, setCodigoCupon] = useState('')
+    const [cuponAplicado, setCuponAplicado] = useState(null)
+    const [validandoCupon, setValidandoCupon] = useState(false)
+
+    const handleValidarCupon = async () => {
+        if (!codigoCupon) return;
+        setValidandoCupon(true);
+        try {
+            const res = await validarCupon(codigoCupon, total);
+            if (res.data.valido) {
+                setCuponAplicado(res.data);
+                toast.success('¡Cupón aplicado!');
+            } else {
+                setCuponAplicado(null);
+                toast.error(res.data.error || 'Cupón inválido');
+            }
+        } catch (error) {
+            toast.error('Error al validar cupón');
+        } finally {
+            setValidandoCupon(false);
+        }
+    }
+
+    const totalFinal = cuponAplicado ? Math.max(0, total - cuponAplicado.descuento) : total;
 
     if (!isAuthenticated) { navigate('/login'); return null }
 
@@ -136,25 +160,51 @@ export default function CheckoutPage() {
                             />
                         </div>
 
-                        <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1rem', marginBottom: '1.5rem' }}>
+                        <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1rem', marginBottom: '1rem' }}>
+                            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+                                <input 
+                                    className="tribu-input" 
+                                    placeholder="Código de cupón"
+                                    value={codigoCupon}
+                                    onChange={e => setCodigoCupon(e.target.value.toUpperCase())}
+                                    style={{ flex: 1, padding: '0.6rem 1rem' }}
+                                />
+                                <button 
+                                    className="btn btn-secondary" 
+                                    onClick={handleValidarCupon}
+                                    disabled={validandoCupon}
+                                    style={{ whiteSpace: 'nowrap', padding: '0.6rem 1.2rem' }}
+                                >
+                                    {validandoCupon ? '...' : 'Validar'}
+                                </button>
+                            </div>
+
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                                <span style={{ color: 'var(--color-text-muted)' }}>Subtotal ({items.length} productos)</span>
+                                <span style={{ color: 'var(--color-text-muted)' }}>Subtotal</span>
                                 <span>{formatCOP(total)}</span>
                             </div>
+                            {cuponAplicado && (
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', color: 'var(--color-success)' }}>
+                                    <span>Descuento ({cuponAplicado.codigo})</span>
+                                    <span>-{formatCOP(cuponAplicado.descuento)}</span>
+                                </div>
+                            )}
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                                 <span style={{ color: 'var(--color-text-muted)' }}>Envío</span>
                                 <span style={{ color: 'var(--color-success)', fontWeight: 600 }}>Calculado al despachar</span>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, fontSize: '1.2rem', color: 'var(--color-primary-light)', marginTop: '0.75rem' }}>
                                 <span>Total</span>
-                                <span>{formatCOP(total)}</span>
+                                <span>{formatCOP(totalFinal)}</span>
                             </div>
                         </div>
 
                         {/* Nuevo componente de métodos de pago */}
                         <MetodosDePago 
-                            total={formatCOP(total)} 
+                            total={formatCOP(totalFinal)} 
+                            totalNumber={totalFinal}
                             direccionEnvio={direccion}
+                            cuponCodigo={cuponAplicado?.codigo}
                         />
                     </div>
                 </motion.div>

@@ -8,13 +8,13 @@ import {
     crearProducto, actualizarProducto, eliminarProducto,
     crearCategoria, actualizarCategoria, eliminarCategoria,
     getTodasLasDevoluciones, actualizarEstadoDevolucion, reembolsarSaldoDevolucion,
-    getEstadisticasDevolucion
+    getEstadisticasDevolucion, getSeguridadAccesos
 } from '../api'
 import toast from 'react-hot-toast'
 import {
     Package, Users, FileText, AlertTriangle, Plus, X,
     Check, ShoppingBag, Pencil, Trash2, Image, BarChart3,
-    TrendingUp, TrendingDown, User, Zap, Tag, RotateCcw
+    TrendingUp, TrendingDown, User, Zap, Tag, RotateCcw, ShieldAlert
 } from 'lucide-react'
 
 const ESTADOS = ['PENDIENTE', 'PAGADO', 'ENVIADO', 'ENTREGADO']
@@ -146,6 +146,7 @@ export default function AdminPage() {
     const [categorias, setCategorias] = useState([])
     const [devoluciones, setDevoluciones] = useState([])
     const [statsDevoluciones, setStatsDevoluciones] = useState(null)
+    const [accesos, setAccesos] = useState([])
     const [loading, setLoading] = useState(true)
 
     // Modales
@@ -165,13 +166,15 @@ export default function AdminPage() {
             getStockBajo(5), getCategorias(),
             import('../api').then(m => m.getProductos()),
             getTodasLasDevoluciones().catch(() => ({ data: [] })),
-            getEstadisticasDevolucion().catch(() => ({ data: null }))
-        ]).then(([p, u, n, s, cats, prods, devs, statsDevs]) => {
+            getEstadisticasDevolucion().catch(() => ({ data: null })),
+            getSeguridadAccesos().catch(() => ({ data: [] }))
+        ]).then(([p, u, n, s, cats, prods, devs, statsDevs, seg]) => {
             setPedidos(p.data); setUsuarios(u.data)
             setNotas(n.data); setStockBajo(s.data)
             setCategorias(cats.data); setProductos(prods.data)
             setDevoluciones(devs.data || [])
             setStatsDevoluciones(statsDevs.data || null)
+            setAccesos(seg.data || [])
         }).finally(() => setLoading(false))
     }
 
@@ -293,6 +296,7 @@ export default function AdminPage() {
         { id: 'usuarios', label: 'Usuarios', icon: <Users size={15} />, count: usuarios.length },
         { id: 'crm', label: 'CRM', icon: <FileText size={15} />, count: notas.length },
         { id: 'stock', label: 'Stock Crítico', icon: <AlertTriangle size={15} />, count: stockBajo.length },
+        { id: 'seguridad', label: 'Ciberseguridad', icon: <ShieldAlert size={15} color="#ef4444" />, count: accesos.filter(a => !a.exitoso).length },
     ]
 
     if (loading) return <div className="spinner" style={{ marginTop: '4rem' }} />
@@ -317,12 +321,14 @@ export default function AdminPage() {
                     { label: 'Productos', value: productos.length, color: 'var(--color-primary)', Icon: ShoppingBag },
                     { label: 'Pedidos', value: pedidos.length, color: '#3b82f6', Icon: Package },
                     { label: 'Dev. Pdtes', value: devoluciones.filter(d => d.estado === 'PENDIENTE').length, color: '#00C896', Icon: RotateCcw },
+                    { label: 'Campañas', value: 'Ver', color: '#ff5722', Icon: Zap, link: '/admin/campanas' },
                     { label: 'Usuarios', value: usuarios.length, color: 'var(--color-success)', Icon: Users },
                     { label: 'Stock Crítico', value: stockBajo.length, color: '#ef4444', Icon: AlertTriangle },
                 ].map((s, i) => (
                     <motion.div key={s.label} className="card" whileHover={{ scale: 1.03, borderColor: s.color + '40' }}
+                        onClick={() => s.link && (window.location.href = s.link)}
                         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
-                        style={{ textAlign: 'center' }}>
+                        style={{ textAlign: 'center', cursor: s.link ? 'pointer' : 'default' }}>
                         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.5rem' }}>
                             <s.Icon size={24} color={s.color} strokeWidth={1.5} />
                         </div>
@@ -341,19 +347,30 @@ export default function AdminPage() {
                             padding: '0.6rem 1rem', border: 'none', background: 'transparent', cursor: 'pointer',
                             color: tab === t.id ? 'var(--color-primary)' : 'var(--color-text-muted)',
                             borderBottom: tab === t.id ? '2px solid var(--color-primary)' : '2px solid transparent',
-                            fontWeight: 600, fontSize: '0.87rem', transition: 'all 0.2s',
-                        }}>
-                        {t.icon} {t.label}
-                        {t.count > 0 && (
-                            <span style={{
-                                background: tab === t.id ? 'var(--color-primary)' : 'var(--color-surface-2)',
-                                color: tab === t.id ? '#fff' : 'var(--color-text-muted)',
-                                borderRadius: '9999px', padding: '0 7px', fontSize: '0.7rem', fontWeight: 700,
-                            }}>{t.count}</span>
-                        )}
-                    </button>
-                ))}
-            </div>
+                        fontWeight: 600, fontSize: '0.87rem', transition: 'all 0.2s',
+                    }}>
+                    {t.icon} {t.label}
+                    {t.count > 0 && (
+                        <span style={{
+                            background: tab === t.id ? 'var(--color-primary)' : 'var(--color-surface-2)',
+                            color: tab === t.id ? '#fff' : 'var(--color-text-muted)',
+                            borderRadius: '9999px', padding: '0 7px', fontSize: '0.7rem', fontWeight: 700,
+                        }}>{t.count}</span>
+                    )}
+                </button>
+            ))}
+            <button
+                onClick={() => window.location.href = '/admin/campanas'}
+                style={{
+                    display: 'flex', alignItems: 'center', gap: '0.4rem', whiteSpace: 'nowrap',
+                    padding: '0.6rem 1rem', border: 'none', background: 'transparent', cursor: 'pointer',
+                    color: '#ff5722',
+                    fontWeight: 800, fontSize: '0.87rem', transition: 'all 0.2s',
+                    borderBottom: '2px solid transparent',
+                }}>
+                <Zap size={15} /> Campañas ✨
+            </button>
+        </div>
 
             {/* ═══ TAB: PRODUCTOS ══════════════════════════════════════════════════ */}
             {tab === 'productos' && (
@@ -736,6 +753,62 @@ export default function AdminPage() {
                                                     className="btn btn-ghost" style={{ fontSize: '0.8rem', padding: '0.3rem 0.8rem' }}>
                                                     <Pencil size={13} /> Editar stock
                                                 </motion.button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </motion.div>
+            )}
+
+            {/* ═══ TAB: SEGURIDAD ══════════════════════════════════════════════ */}
+            {tab === 'seguridad' && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                    <h2 style={{ fontWeight: 700, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <ShieldAlert size={24} color="#ef4444" />
+                        Centro de Monitoreo & Ciberseguridad
+                    </h2>
+                    {accesos.length === 0 ? (
+                        <div className="empty-state">
+                            <ShieldAlert size={48} style={{ color: '#ef4444', opacity: 0.5 }} />
+                            <p>No hay registros de acceso todavía.</p>
+                        </div>
+                    ) : (
+                        <div className="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Fecha / Hora</th>
+                                        <th>Usuario (Email)</th>
+                                        <th>Dirección IP</th>
+                                        <th>Estado</th>
+                                        <th>Detalle / Error</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {accesos.map((a, i) => (
+                                        <tr key={a.id || i} style={{ background: !a.exitoso ? 'rgba(239, 68, 68, 0.05)' : 'transparent' }}>
+                                            <td style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
+                                                {new Date(a.fecha).toLocaleString('es-CO')}
+                                            </td>
+                                            <td style={{ fontWeight: 600 }}>{a.email}</td>
+                                            <td style={{ fontFamily: 'monospace', fontWeight: 600, color: 'var(--color-primary)' }}>{a.ipAddress}</td>
+                                            <td>
+                                                <span style={{
+                                                    padding: '0.2rem 0.5rem',
+                                                    borderRadius: '4px',
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: 'bold',
+                                                    background: a.exitoso ? 'rgba(0, 200, 150, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                                                    color: a.exitoso ? '#00C896' : '#ef4444'
+                                                }}>
+                                                    {a.exitoso ? 'EXITOSO' : 'FALLIDO'}
+                                                </span>
+                                            </td>
+                                            <td style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', maxWidth: '300px' }}>
+                                                {a.motivoFallo || '—'}
                                             </td>
                                         </tr>
                                     ))}

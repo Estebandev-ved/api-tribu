@@ -1,5 +1,5 @@
 // src/components/MetodosDePago.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -7,12 +7,26 @@ import { useNotification } from '../context/NotificationContext';
 import { crearPedido } from '../api';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import api from '../api';
 
-const MetodosDePago = ({ total, direccionEnvio, disabled }) => {
+const MetodosDePago = ({ total, totalNumber, direccionEnvio, disabled }) => {
     const { items, clearCart } = useCart();
-    const { agregarNuevaNotificacion } = useNotification();
+    const { user } = useAuth();
+    const { agregarNuevaNotificacion, saldoRealtime } = useNotification();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
+    const [saldoBackend, setSaldoBackend] = useState(null);
+
+    // Cargar saldo real desde el backend al montar
+    useEffect(() => {
+        api.get('/usuarios/perfil')
+            .then(res => setSaldoBackend(res.data.saldoFavor || 0))
+            .catch(() => {})
+    }, []);
+
+    // Priorizar: WS realtime > backend fetch > user context
+    const saldoDisponible = saldoRealtime !== null ? saldoRealtime : (saldoBackend !== null ? saldoBackend : (user?.saldoFavor || 0));
+    const puedePagarConTribu = saldoDisponible >= totalNumber;
 
     const handlePayment = async (method) => {
         if (!direccionEnvio) {
@@ -20,37 +34,49 @@ const MetodosDePago = ({ total, direccionEnvio, disabled }) => {
             return;
         }
 
+        if (method === 'TRIBU_CARD' && !puedePagarConTribu) {
+            toast.error('Saldo insuficiente en tu Tribu Card');
+            return;
+        }
+
         setLoading(true);
         try {
-            // 1. Primero creamos el pedido en el backend para tener un ID
+            // 1. Enviamos el pedido al backend con el método de pago
             const pedidoPayload = {
                 direccionEnvio: direccionEnvio,
+                metodoPago: method,
                 items: items.map(i => ({ productoId: i.id, cantidad: i.cantidad }))
             };
 
             const { data: pedido } = await crearPedido(pedidoPayload);
 
-            // 2. Simulamos la redirección o proceso de pago basado en el método
-            toast.loading(`Conectando con ${method}...`, { duration: 2000 });
+            // 2. Clear cart IMMEDIATELY to prevent double-submitting during simulation
+            clearCart();
+
+            // 3. Simulated payment process
+            toast.loading(`Procesando pago con ${method}...`, { duration: 1500 });
 
             setTimeout(() => {
-                // Notificación interna
+                const mensajeExtra = method === 'TRIBU_CARD' 
+                    ? 'Saldo descontado de tu tarjeta.' 
+                    : `Espera confirmación de ${method}.`;
+
                 agregarNuevaNotificacion({
                     id: Date.now(),
                     tipo: 'COMPRA',
-                    mensaje: `¡Tu pago con ${method} por ${total} se procesó con éxito!`,
+                    mensaje: `¡Pago con ${method} exitoso! ${mensajeExtra}`,
                     leida: false
                 });
 
-                clearCart();
-                toast.success('¡Compra exitosa! 🎉');
+                toast.success('¡Compra confirmada! 🎉');
                 navigate('/mis-pedidos');
-            }, 2000);
+                setLoading(false); // Only stop loading after navigation
+            }, 1600);
 
         } catch (error) {
             console.error('Error al procesar pedido/pago:', error);
-            toast.error(error.response?.data?.mensaje || 'Error al procesar la transacción');
-        } finally {
+            const msg = error.response?.data?.mensaje || 'Error al procesar la transacción';
+            toast.error(msg);
             setLoading(false);
         }
     };
@@ -132,6 +158,57 @@ const MetodosDePago = ({ total, direccionEnvio, disabled }) => {
                 >
                     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Mercado_Pago.svg/1280px-Mercado_Pago.svg.png" alt="Mercado Pago" style={{ width: '24px', height: '24px', borderRadius: '4px' }} />
                     <span>Mercado Pago</span>
+                </motion.button>
+            </div>
+
+            <div style={{ marginTop: '1.5rem' }}>
+                <p style={{ fontSize: '0.85rem', color: '#888', marginBottom: '0.75rem' }}>O usa tu saldo acumulado:</p>
+                <motion.button
+                    whileHover={puedePagarConTribu ? { scale: 1.02 } : {}}
+                    whileTap={puedePagarConTribu ? { scale: 0.98 } : {}}
+                    onClick={() => handlePayment('TRIBU_CARD')}
+                    disabled={loading || !puedePagarConTribu}
+                    style={{
+                        width: '100%',
+                        padding: '1.2rem',
+                        borderRadius: '16px',
+                        background: puedePagarConTribu 
+                            ? 'linear-gradient(45deg, #FF5722, #FF9800)' 
+                            : 'rgba(255,255,255,0.05)',
+                        border: 'none',
+                        color: puedePagarConTribu ? '#fff' : '#666',
+                        cursor: puedePagarConTribu ? 'pointer' : 'not-allowed',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        boxShadow: puedePagarConTribu ? '0 10px 20px rgba(255,87,34,0.3)' : 'none',
+                        transition: 'all 0.3s ease'
+                    }}
+                >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                        <div style={{ 
+                            width: '32px', 
+                            height: '20px', 
+                            background: 'rgba(255,255,255,0.2)', 
+                            borderRadius: '4px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '0.6rem',
+                            fontWeight: 900
+                        }}>TRIBU</div>
+                        <div style={{ textAlign: 'left' }}>
+                            <div style={{ fontWeight: 800 }}>Pagar con Tribu Card</div>
+                            <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>
+                                Saldo disponible: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(saldoDisponible)}
+                            </div>
+                        </div>
+                    </div>
+                    {!puedePagarConTribu && (
+                        <span style={{ fontSize: '0.7rem', background: 'rgba(0,0,0,0.3)', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
+                            SALDO INSUFICIENTE
+                        </span>
+                    )}
                 </motion.button>
             </div>
         </div>

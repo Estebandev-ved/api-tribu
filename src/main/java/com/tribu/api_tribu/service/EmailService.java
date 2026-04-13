@@ -1,5 +1,6 @@
 package com.tribu.api_tribu.service;
 
+import com.tribu.api_tribu.model.FacturaElectronica;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -83,6 +84,98 @@ public class EmailService {
   }
 
   /**
+   * Envía email para campaña de marketing.
+   */
+  @Async
+  public void enviarCampanaMarketing(String toEmail, String nombre, String titulo, String cuerpo) {
+    String subject = "📣 " + titulo;
+    String html = buildEmailHtml(
+        titulo,
+        "Hola <strong>" + nombre + "</strong>",
+        cuerpo,
+        "Gracias por ser parte de Tribu.",
+        "Ver más",
+        "http://localhost:3000");
+    sendEmail(toEmail, subject, html);
+  }
+
+  /**
+   * Envía email de carrito abandonado - Primer recordatorio (suave).
+   */
+  @Async
+  public void enviarCarritoAbandonado1(String toEmail, String nombre, String productosHtml, Double saldo) {
+    String subject = "¡Olvidaste algo! 🛒";
+    String html = """
+        <!DOCTYPE html>
+        <html lang="es">
+        <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+        <body style="margin:0;padding:0;background:#0a0a0f;font-family:'Inter',Arial,sans-serif;">
+          <div style="max-width:580px;margin:0 auto;padding:40px 20px;">
+            <div style="text-align:center;margin-bottom:32px;">
+              <div style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#ec4899);border-radius:16px;padding:12px 24px;">
+                <span style="color:#fff;font-size:22px;font-weight:900;letter-spacing:-0.5px;">🔥 Tribu</span>
+              </div>
+            </div>
+            <div style="background:#12121a;border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:36px;margin-bottom:24px;">
+              <h1 style="color:#f1f5f9;font-size:24px;font-weight:800;margin:0 0 12px 0;">¡Hola <strong>%s</strong>!</h1>
+              <p style="color:#94a3b8;font-size:15px;margin:0 0 20px 0;">Vimos que dejaste algunos productos en tu carrito. ¿Te gustaría completar tu compra?</p>
+              <div style="background:#1a1a28;border-radius:12px;padding:20px;margin-bottom:20px;">
+                %s
+              </div>
+              <p style="color:#f1f5f9;font-size:15px;margin:0 0 10px 0;">💰 Tu saldo disponible en Tribu Card: <strong>$%.0f</strong></p>
+              <a href="http://localhost:3000/carrito" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#9f67ff);color:#fff;text-decoration:none;padding:14px 32px;border-radius:9999px;font-weight:700;font-size:15px;">Completar mi compra →</a>
+            </div>
+            <p style="text-align:center;color:#334155;font-size:12px;">
+              © 2025 Tribu E-commerce · Mocoa, Putumayo, Colombia<br>
+              <a href="http://localhost:3000" style="color:#7c3aed;">tribu.com</a>
+            </p>
+          </div>
+        </body>
+        </html>
+        """.formatted(nombre, productosHtml, saldo);
+    sendEmail(toEmail, subject, html);
+  }
+
+  /**
+   * Envía email de carrito abandonado - Segundo recordatorio (urgente).
+   */
+  @Async
+  public void enviarCarritoAbandonado2(String toEmail, String nombre, String productosHtml, String tierNombre, Double descuento) {
+    String subject = "⏰ Última oportunidad - Tu descuento expira";
+    String html = """
+        <!DOCTYPE html>
+        <html lang="es">
+        <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+        <body style="margin:0;padding:0;background:#0a0a0f;font-family:'Inter',Arial,sans-serif;">
+          <div style="max-width:580px;margin:0 auto;padding:40px 20px;">
+            <div style="text-align:center;margin-bottom:32px;">
+              <div style="display:inline-block;background:linear-gradient(135deg,#ef4444,#f97316);border-radius:16px;padding:12px 24px;">
+                <span style="color:#fff;font-size:22px;font-weight:900;letter-spacing:-0.5px;">🔥 Tribu</span>
+              </div>
+            </div>
+            <div style="background:#12121a;border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:36px;margin-bottom:24px;">
+              <h1 style="color:#f1f5f9;font-size:24px;font-weight:800;margin:0 0 12px 0;">Hola <strong>%s</strong>, última oportunidad</h1>
+              <p style="color:#94a3b8;font-size:15px;margin:0 0 20px 0;">Como miembro <strong>%s</strong>, te damos <span style="color:#22c55e;font-weight:bold;">$%.0f de descuento extra</span> si completas tu compra hoy.</p>
+              <div style="background:#1a1a28;border-radius:12px;padding:20px;margin-bottom:20px;">
+                %s
+              </div>
+              <div style="background:#22c55e20;border:1px solid #22c55e;border-radius:12px;padding:20px;margin-bottom:20px;text-align:center;">
+                <p style="color:#22c55e;font-size:18px;font-weight:bold;margin:0;">¡Usa el código TRIBU2024 para aplicar tu descuento!</p>
+              </div>
+              <a href="http://localhost:3000/carrito" style="display:inline-block;background:linear-gradient(135deg,#ef4444,#f97316);color:#fff;text-decoration:none;padding:14px 32px;border-radius:9999px;font-weight:700;font-size:15px;">Completar mi compra ahora →</a>
+            </div>
+            <p style="text-align:center;color:#334155;font-size:12px;">
+              © 2025 Tribu E-commerce · Mocoa, Putumayo, Colombia<br>
+              <a href="http://localhost:3000" style="color:#7c3aed;">tribu.com</a>
+            </p>
+          </div>
+        </body>
+        </html>
+        """.formatted(nombre, tierNombre, descuento, productosHtml);
+    sendEmail(toEmail, subject, html);
+  }
+
+  /**
    * Envía email cuando el estado de una devolución cambia.
    */
   @Async
@@ -116,7 +209,59 @@ public class EmailService {
     sendEmail(toEmail, subject, html);
   }
 
-  private void sendEmail(String to, String subject, String html) {
+  public void enviarFactura(String toEmail, FacturaElectronica factura, String pdfPath) {
+    String subject = "📄 Tu factura electrónica - " + factura.getNumeroFactura();
+    String html = """
+        <!DOCTYPE html>
+        <html lang="es">
+        <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+        <body style="margin:0;padding:0;background:#0a0a0f;font-family:'Inter',Arial,sans-serif;">
+          <div style="max-width:580px;margin:0 auto;padding:40px 20px;">
+            <div style="text-align:center;margin-bottom:32px;">
+              <div style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#ec4899);border-radius:16px;padding:12px 24px;">
+                <span style="color:#fff;font-size:22px;font-weight:900;letter-spacing:-0.5px;">🔥 Tribu</span>
+              </div>
+            </div>
+            <div style="background:#12121a;border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:36px;margin-bottom:24px;">
+              <h1 style="color:#f1f5f9;font-size:24px;font-weight:800;margin:0 0 12px 0;">Tu factura está lista</h1>
+              <p style="color:#94a3b8;font-size:15px;margin:0 0 20px 0;">Tu factura electrónica ha sido generada exitosamente.</p>
+              <div style="background:#1a1a28;border-radius:12px;padding:20px;margin-bottom:20px;">
+                <p style="color:#f1f5f9;font-size:15px;margin:0;">📄 <strong>Factura:</strong> %s</p>
+                <p style="color:#f1f5f9;font-size:15px;margin:10px 0 0 0;">💰 <strong>Total:</strong> $%.0f</p>
+              </div>
+              <p style="color:#64748b;font-size:14px;margin:0 0 28px 0;">El PDF de tu factura está adjunto a este correo.</p>
+              <a href="http://localhost:3000/mis-facturas" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#9f67ff);color:#fff;text-decoration:none;padding:14px 32px;border-radius:9999px;font-weight:700;font-size:15px;">Ver mis facturas →</a>
+            </div>
+            <p style="text-align:center;color:#334155;font-size:12px;">
+              © 2025 Tribu E-commerce · Mocoa, Putumayo, Colombia<br>
+              <a href="http://localhost:3000" style="color:#7c3aed;">tribu.com</a>
+            </p>
+          </div>
+        </body>
+        </html>
+        """.formatted(factura.getNumeroFactura(), factura.getTotal());
+
+    try {
+      MimeMessage message = mailSender.createMimeMessage();
+      MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+      helper.setFrom(fromEmail);
+      helper.setTo(toEmail);
+      helper.setSubject(subject);
+      helper.setText(html, true);
+      
+      java.io.File file = new java.io.File(pdfPath);
+      if (file.exists()) {
+        helper.addAttachment("factura_" + factura.getNumeroFactura() + ".pdf", file);
+      }
+      
+      mailSender.send(message);
+      log.info("📧 Factura {} enviada a {}", factura.getNumeroFactura(), toEmail);
+    } catch (Exception e) {
+      log.error("❌ Error enviando factura a {}: {}", toEmail, e.getMessage());
+    }
+  }
+
+  public void sendEmail(String to, String subject, String html) {
     try {
       MimeMessage message = mailSender.createMimeMessage();
       MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");

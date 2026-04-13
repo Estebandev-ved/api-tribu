@@ -1,8 +1,9 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { CartProvider } from './context/CartContext'
+import { NotificationProvider } from './context/NotificationContext'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import CountdownBanner from './components/CountdownBanner'
@@ -14,13 +15,23 @@ import RegisterPage from './pages/RegisterPage'
 import AdminPage from './pages/AdminPage'
 import CheckoutPage from './pages/CheckoutPage'
 import MiPerfilPage from './pages/MiPerfilPage'
+import ProfilePage from './pages/ProfilePage'
 import MisPedidosPage from './pages/MisPedidosPage'
 import ProductoDetailPage from './pages/ProductoDetailPage'
 import QuienesSomosPage from './pages/QuienesSomosPage'
 import DevolucionesPage from './pages/DevolucionesPage'
 import PoliticasPage from './pages/PoliticasPage'
 import BilleteraPage from './pages/BilleteraPage'
-import { NotificationProvider } from './context/NotificationContext';
+import TransferirPage from './pages/TransferirPage'
+import LeaderboardPage from './pages/LeaderboardPage'
+import ReferidoArbolPage from './pages/ReferidoArbolPage'
+import GruposPage from './pages/GruposPage'
+import RachaPage from './pages/RachaPage'
+import CampanasPage from './pages/admin/CampanasPage'
+import InventarioPage from './pages/admin/InventarioPage'
+import TelegramConfigPage from './pages/admin/TelegramConfigPage'
+import TribuPassPage from './pages/TribuPassPage'
+import FacturasPage from './pages/FacturasPage'
 
 function AdminRoute({ children }) {
   const { isAdmin, isAuthenticated } = useAuth()
@@ -53,10 +64,20 @@ function AppContent() {
         <Route path="/login" element={<Page><LoginPage /></Page>} />
         <Route path="/register" element={<Page><RegisterPage /></Page>} />
         <Route path="/checkout" element={<PrivateRoute><Page><CheckoutPage /></Page></PrivateRoute>} />
-        <Route path="/perfil" element={<PrivateRoute><Page><MiPerfilPage /></Page></PrivateRoute>} />
+        <Route path="/perfil" element={<PrivateRoute><Page><ProfilePage /></Page></PrivateRoute>} />
         <Route path="/billetera" element={<PrivateRoute><Page><BilleteraPage /></Page></PrivateRoute>} />
+        <Route path="/transferir" element={<PrivateRoute><Page><TransferirPage /></Page></PrivateRoute>} />
+        <Route path="/leaderboard" element={<PrivateRoute><Page><LeaderboardPage /></Page></PrivateRoute>} />
+        <Route path="/referidos" element={<PrivateRoute><Page><ReferidoArbolPage /></Page></PrivateRoute>} />
+        <Route path="/grupos" element={<PrivateRoute><Page><GruposPage /></Page></PrivateRoute>} />
+        <Route path="/racha" element={<PrivateRoute><Page><RachaPage /></Page></PrivateRoute>} />
+        <Route path="/tribu-pass" element={<PrivateRoute><Page><TribuPassPage /></Page></PrivateRoute>} />
+        <Route path="/facturas" element={<PrivateRoute><Page><FacturasPage /></Page></PrivateRoute>} />
         <Route path="/mis-pedidos" element={<PrivateRoute><Page><MisPedidosPage /></Page></PrivateRoute>} />
         <Route path="/admin" element={<AdminRoute><Page><AdminPage /></Page></AdminRoute>} />
+        <Route path="/admin/campanas" element={<AdminRoute><Page><CampanasPage /></Page></AdminRoute>} />
+        <Route path="/admin/inventario" element={<AdminRoute><Page><InventarioPage /></Page></AdminRoute>} />
+        <Route path="/admin/telegram" element={<AdminRoute><Page><TelegramConfigPage /></Page></AdminRoute>} />
         <Route path="/quienes-somos" element={<Page><QuienesSomosPage /></Page>} />
         <Route path="/devoluciones" element={<Page><DevolucionesPage /></Page>} />
         <Route path="/politicas" element={<Page><PoliticasPage /></Page>} />

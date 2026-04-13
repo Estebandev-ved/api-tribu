@@ -43,6 +43,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Rutas públicas de autenticación
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
                         // Catálogo público (GET)
                         .requestMatchers(HttpMethod.GET, "/api/productos/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/categorias/**").permitAll()
@@ -73,7 +74,14 @@ public class SecurityConfig {
         String allowedOriginsStr = System.getenv("CORS_ALLOWED_ORIGINS");
         List<String> allowedOrigins = allowedOriginsStr != null && !allowedOriginsStr.isEmpty()
                 ? List.of(allowedOriginsStr.split(","))
-                : List.of("http://localhost:3000", "http://localhost:5173");
+                : List.of(
+                "http://localhost:3000",
+                "http://localhost:3001",
+                "http://localhost:5173",
+                "http://127.0.0.1:3000",
+                "http://127.0.0.1:3001",
+                "http://127.0.0.1:5173"
+          );
 
         config.setAllowedOrigins(allowedOrigins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));

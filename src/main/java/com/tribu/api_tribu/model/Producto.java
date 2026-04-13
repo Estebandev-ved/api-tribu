@@ -3,6 +3,7 @@ package com.tribu.api_tribu.model;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +33,15 @@ public class Producto {
     @Column(nullable = false)
     private Integer stock;
 
+    @Column(name = "stock_minimo")
+    private Integer stockMinimo = 5;
+
+    @Column(name = "stock_critico")
+    private Integer stockCritico = 3;
+
+    @Column(name = "alerta_enviada_en")
+    private LocalDateTime alertaEnviadaEn;
+
     @Column(name = "imagen_url")
     private String imagenUrl;
 
@@ -39,6 +49,9 @@ public class Producto {
     private Boolean esViral = false;
 
     private Boolean activo = true;
+    
+    @Column(name = "ventas_totales")
+    private Integer ventasTotales = 0;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoria_id")

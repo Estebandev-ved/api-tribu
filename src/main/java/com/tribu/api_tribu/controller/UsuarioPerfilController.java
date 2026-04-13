@@ -5,6 +5,7 @@ import com.tribu.api_tribu.model.Usuario;
 import com.tribu.api_tribu.model.MovimientoSaldo;
 import com.tribu.api_tribu.repository.UsuarioRepository;
 import com.tribu.api_tribu.repository.MovimientoSaldoRepository;
+import com.tribu.api_tribu.repository.PedidoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,6 +23,7 @@ public class UsuarioPerfilController {
 
     private final UsuarioRepository usuarioRepository;
     private final MovimientoSaldoRepository movimientoSaldoRepository;
+    private final PedidoRepository pedidoRepository;
 
     private Usuario obtenerUsuarioAutenticado() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -41,15 +43,29 @@ public class UsuarioPerfilController {
             usuarioRepository.save(u);
         }
 
+        // Calcular gasto del mes actual para el frontend
+        java.time.YearMonth mesActual = java.time.YearMonth.now();
+        java.time.LocalDateTime inicio = mesActual.atDay(1).atStartOfDay();
+        java.time.LocalDateTime fin = mesActual.atEndOfMonth().atTime(23, 59, 59);
+        Double gastadoMes = pedidoRepository.calculateTotalValidoTierEnPeriodo(u.getId(), inicio, fin);
+
         Map<String, Object> m = new HashMap<>();
         m.put("id", u.getId());
         m.put("nombreCompleto", u.getNombreCompleto());
         m.put("email", u.getEmail());
         m.put("telefono", u.getTelefono() != null ? u.getTelefono() : "");
         m.put("direccion", u.getDireccion() != null ? u.getDireccion() : "");
-        m.put("saldoFavor", u.getSaldoFavor());
+        
+        Double saldoReal = movimientoSaldoRepository.calcularSaldoReal(u.getId());
+        m.put("saldoFavor", saldoReal != null ? saldoReal : 0.0);
         m.put("fechaUltimoGiroRuleta", u.getFechaUltimoGiroRuleta());
         m.put("nivelVip", u.getNivelVip() != null ? u.getNivelVip() : 1);
+        m.put("gastadoMes", gastadoMes != null ? gastadoMes : 0.0);
+        
+        // Resolver nombre del tier
+        String tierName = u.getTierActual() != null ? u.getTierActual().getNombre() : 
+                        (u.getNivelVip() == 3 ? "ORO" : u.getNivelVip() == 2 ? "PLATA" : "BRONCE");
+        m.put("tier", tierName);
         m.put("codigoReferido", u.getCodigoReferido());
 
         return ResponseEntity.ok(m);

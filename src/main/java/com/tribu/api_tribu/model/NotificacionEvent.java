@@ -6,7 +6,10 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "notificaciones")
-@Data
+@Getter
+@Setter
+@ToString
+@EqualsAndHashCode(of = "id")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

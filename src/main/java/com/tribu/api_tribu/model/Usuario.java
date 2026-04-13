@@ -2,6 +2,7 @@ package com.tribu.api_tribu.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @ToString(exclude = "notasCreadas") // Excluir colecciones del toString para evitar lazy init
 @EqualsAndHashCode(of = "id") // Solo comparar por ID, no por relaciones
 @Entity
@@ -44,13 +46,38 @@ public class Usuario {
     private Rol rol;
 
     @Column(name = "saldo_favor", nullable = false)
+    @Builder.Default
     private Double saldoFavor = 0.0;
 
     @Column(name = "nivel_vip", nullable = false)
+    @Builder.Default
     private Integer nivelVip = 1; // 1: Bronce, 2: Plata, 3: Oro
+
+    /** Tier VIP actual del usuario (Fase 2). Se mantiene nivelVip por compatibilidad. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tier_actual_id")
+    private Tier tierActual;
 
     @Column(name = "codigo_referido", unique = true)
     private String codigoReferido;
+
+    @Column(name = "codigo_referido_usado")
+    private String codigoReferidoUsado;
+
+    @Column(name = "racha_actual")
+    @Builder.Default
+    private Integer rachaActual = 0;
+
+    @Column(name = "racha_maxima")
+    @Builder.Default
+    private Integer rachaMaxima = 0;
+
+    @Column(name = "ultima_actividad_fecha")
+    private LocalDate ultimaActividadFecha;
+
+    @Column(name = "tribu_pass_activa")
+    @Builder.Default
+    private Boolean tribuPassActiva = false;
 
     @Column(name = "fecha_ultimo_giro_ruleta")
     private LocalDateTime fechaUltimoGiroRuleta;
@@ -69,5 +96,6 @@ public class Usuario {
     // FetchType.LAZY es el default para @OneToMany, pero se especifica
     // explícitamente para claridad
     @OneToMany(mappedBy = "creadoPor", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<CrmNota> notasCreadas = new ArrayList<>();
 }
