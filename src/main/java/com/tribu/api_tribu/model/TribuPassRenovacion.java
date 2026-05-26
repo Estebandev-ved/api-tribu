@@ -2,6 +2,7 @@ package com.tribu.api_tribu.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
 
 @Getter
@@ -20,6 +21,7 @@ public class TribuPassRenovacion {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pass_id", nullable = false)
+    @JsonIgnore
     private TribuPass pass;
 
     @Column(nullable = false)
