@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import { Client } from '@stomp/stompjs'
 
 const guessWsUrl = () => {
+    if (import.meta.env.VITE_WS_URL) {
+        return import.meta.env.VITE_WS_URL
+    }
     const proto = window.location.protocol === 'https:' ? 'wss' : 'ws'
     const port = String(window.location.port || '')
 

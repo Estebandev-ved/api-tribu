@@ -34,7 +34,7 @@ export function useSaldoWebSocket(usuarioId, token) {
 
     const client = new Client({
       // Usar native WebSocket (ws://) es lo estándar hoy y evita el warning de 'unload' de SockJS
-      brokerURL: 'ws://localhost:8080/ws',
+      brokerURL: import.meta.env.VITE_WS_URL || 'ws://localhost:8080/ws',
 
       // Autenticación: el JwtFilter del backend lo valida
       connectHeaders: {
