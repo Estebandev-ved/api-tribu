@@ -277,8 +277,53 @@ public class EmailService {
     }
   }
 
+  /**
+   * Envía email de restablecimiento de contraseña.
+   * Seguridad: el enlace contiene un token UUID aleatorio que expira en 15 minutos.
+   * El token solo es válido para el email especificado.
+   */
+  @Async
+  public void enviarResetPassword(String toEmail, String nombreCliente, String resetLink) {
+    String subject = "🔐 Restablece tu contraseña — Tribu";
+    String html = """
+        <!DOCTYPE html>
+        <html lang="es">
+        <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+        <body style="margin:0;padding:0;background:#0a0a0f;font-family:'Inter',Arial,sans-serif;">
+          <div style="max-width:580px;margin:0 auto;padding:40px 20px;">
+            <div style="text-align:center;margin-bottom:32px;">
+              <div style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#ec4899);border-radius:16px;padding:12px 24px;">
+                <span style="color:#fff;font-size:22px;font-weight:900;letter-spacing:-0.5px;">🔥 Tribu</span>
+              </div>
+            </div>
+            <div style="background:#12121a;border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:36px;margin-bottom:24px;">
+              <h1 style="color:#f1f5f9;font-size:24px;font-weight:800;margin:0 0 12px 0;">🔐 Restablecer Contraseña</h1>
+              <p style="color:#94a3b8;font-size:15px;margin:0 0 20px 0;">Hola <strong>%s</strong>, recibimos una solicitud para restablecer la contraseña de tu cuenta Tribu.</p>
+              <div style="background:#1a1a28;border-radius:12px;padding:20px;margin-bottom:20px;">
+                <p style="color:#f1f5f9;font-size:14px;margin:0;">⏱️ Este enlace es válido por <strong>15 minutos</strong> y solo puede usarse <strong>una vez</strong>.</p>
+                <p style="color:#94a3b8;font-size:13px;margin:8px 0 0 0;">Si no solicitaste este cambio, puedes ignorar este correo. Tu contraseña no cambiará.</p>
+              </div>
+              <div style="text-align:center;margin-bottom:24px;">
+                <a href="%s" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#9f67ff);color:#fff;text-decoration:none;padding:16px 40px;border-radius:9999px;font-weight:700;font-size:16px;letter-spacing:0.3px;">
+                  Restablecer mi contraseña →
+                </a>
+              </div>
+              <p style="color:#475569;font-size:12px;margin:0;word-break:break-all;">O copia este enlace en tu navegador:<br><span style="color:#7c3aed;">%s</span></p>
+            </div>
+            <p style="text-align:center;color:#334155;font-size:12px;">
+              © 2025 Tribu E-commerce · Mocoa, Putumayo, Colombia<br>
+              <a href="http://localhost:3000" style="color:#7c3aed;">tribu.com</a>
+            </p>
+          </div>
+        </body>
+        </html>
+        """.formatted(nombreCliente, resetLink, resetLink);
+    sendEmail(toEmail, subject, html);
+  }
+
   private String buildEmailHtml(String titulo, String subtitulo, String cuerpo,
       String nota, String btnTexto, String btnUrl) {
+
     return """
         <!DOCTYPE html>
         <html lang="es">

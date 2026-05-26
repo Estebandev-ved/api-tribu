@@ -6,9 +6,8 @@ import com.tribu.api_tribu.model.MovimientoSaldo.TipoMovimiento;
 import com.tribu.api_tribu.model.Usuario;
 import com.tribu.api_tribu.repository.MovimientoSaldoRepository;
 import com.tribu.api_tribu.repository.UsuarioRepository;
+import com.tribu.api_tribu.websocket.AdminMonitoringWebSocketService;
 import com.tribu.api_tribu.websocket.SaldoWebSocketService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,14 +23,24 @@ import java.time.LocalDateTime;
  * que se sincroniza cada vez que un movimiento pasa a CLEARED.
  * La fuente de verdad es siempre MovimientoSaldoRepository.calcularSaldoReal().
  */
-@Slf4j
 @Service
-@RequiredArgsConstructor
 public class SaldoService {
 
     private final MovimientoSaldoRepository movimientoRepo;
     private final UsuarioRepository usuarioRepo;
     private final SaldoWebSocketService wsService;
+    private final AdminMonitoringWebSocketService adminWsService;
+
+    public SaldoService(
+            MovimientoSaldoRepository movimientoRepo,
+            UsuarioRepository usuarioRepo,
+            SaldoWebSocketService wsService,
+            AdminMonitoringWebSocketService adminWsService) {
+        this.movimientoRepo = movimientoRepo;
+        this.usuarioRepo = usuarioRepo;
+        this.wsService = wsService;
+        this.adminWsService = adminWsService;
+    }
 
     // ── Días de espera por tipo de cashback ───────────────────────────────
     private static final int DIAS_HOLD_CASHBACK_COMPRA = 7;
@@ -116,7 +125,6 @@ public class SaldoService {
 
         // 1. Evitar duplicados (Idempotencia)
         if (pedidoId != null && movimientoRepo.existsByPedidoIdAndTipo(pedidoId, TipoMovimiento.CASHBACK)) {
-            log.warn("⚠️ Intento de cashback duplicado para pedido #{}", pedidoId);
             return null;
         }
 
@@ -125,20 +133,22 @@ public class SaldoService {
 
         LocalDateTime unlockDate = LocalDateTime.now().plusDays(DIAS_HOLD_CASHBACK_COMPRA);
 
-        MovimientoSaldo mov = MovimientoSaldo.builder()
-                .usuario(usuario)
-                .monto(montoCashback)
-                .tipo(TipoMovimiento.CASHBACK)
-                .estado(EstadoMovimiento.ON_HOLD)
-                .unlockDate(unlockDate)
-                .pedidoId(pedidoId)
-                .descripcion(String.format(
-                        "Cashback (%.0f%%) por Pedido #%d — disponible el %s",
-                        porcentaje * 100, pedidoId,
-                        unlockDate.toLocalDate().toString()))
-                .build();
+        MovimientoSaldo mov = new MovimientoSaldo();
+        mov.setUsuario(usuario);
+        mov.setMonto(montoCashback);
+        mov.setTipo(TipoMovimiento.CASHBACK);
+        mov.setEstado(EstadoMovimiento.ON_HOLD);
+        mov.setUnlockDate(unlockDate);
+        mov.setPedidoId(pedidoId);
+        mov.setDescripcion(String.format(
+                "Cashback (%.0f%%) por Pedido #%d — disponible el %s",
+                porcentaje * 100, pedidoId,
+                unlockDate.toLocalDate().toString()));
 
         MovimientoSaldo guardado = movimientoRepo.save(mov);
+
+        // Admin monitoring: ledger global
+        adminWsService.emitirMovimiento(guardado);
 
         // 2. Notificar al frontend vía WS (para efecto visual de "Dopamina")
         // Se envía tipo "CASHBACK_PENDING" para que el frontend sepa que no suma al saldo real pero sí aparece en la lista
@@ -148,8 +158,6 @@ public class SaldoService {
                 "CASHBACK_PENDING",
                 "Cashback pendiente por Pedido #" + pedidoId);
 
-        log.info("💳 Cashback ON_HOLD: ${} para usuario {} — unlock: {}",
-                montoCashback, usuario.getId(), unlockDate);
         return guardado;
     }
 
@@ -173,11 +181,12 @@ public class SaldoService {
         mov.setEstado(EstadoMovimiento.CLEARED);
         MovimientoSaldo liberado = movimientoRepo.save(mov);
 
+        // Admin monitoring: update estado
+        adminWsService.emitirMovimiento(liberado);
+
         // Sincronizar caché de saldoFavor
         sincronizarSaldoCache(mov.getUsuario().getId());
 
-        log.info("✅ Movimiento #{} CLEARED — usuario {} recibe ${}",
-                mov.getId(), mov.getUsuario().getId(), mov.getMonto());
         return liberado;
     }
 
@@ -193,37 +202,39 @@ public class SaldoService {
             Usuario usuario, double monto, TipoMovimiento tipo,
             Long pedidoId, String descripcion) {
 
-        MovimientoSaldo mov = MovimientoSaldo.builder()
-                .usuario(usuario)
-                .monto(monto)
-                .tipo(tipo)
-                .estado(EstadoMovimiento.CLEARED)
-                .pedidoId(pedidoId)
-                .descripcion(descripcion)
-                .build();
+        MovimientoSaldo mov = new MovimientoSaldo();
+        mov.setUsuario(usuario);
+        mov.setMonto(monto);
+        mov.setTipo(tipo);
+        mov.setEstado(EstadoMovimiento.CLEARED);
+        mov.setPedidoId(pedidoId);
+        mov.setDescripcion(descripcion);
 
         MovimientoSaldo guardado = movimientoRepo.save(mov);
         sincronizarSaldoCache(usuario.getId());
 
-        log.info("💰 Movimiento CLEARED: ${} ({}) para usuario {}",
-                monto, tipo, usuario.getId());
+        // Admin monitoring: ledger global
+        adminWsService.emitirMovimiento(guardado);
+
         return guardado;
     }
 
     @Transactional
     public MovimientoSaldo crearBonoOnHold(Usuario usuario, double monto, TipoMovimiento tipo, Long pedidoId, String descripcion) {
         LocalDateTime unlockDate = LocalDateTime.now().plusDays(DIAS_HOLD_CASHBACK_COMPRA);
-        MovimientoSaldo mov = MovimientoSaldo.builder()
-                .usuario(usuario)
-                .monto(monto)
-                .tipo(tipo)
-                .estado(EstadoMovimiento.ON_HOLD)
-                .unlockDate(unlockDate)
-                .pedidoId(pedidoId)
-                .descripcion(descripcion)
-                .build();
+        MovimientoSaldo mov = new MovimientoSaldo();
+        mov.setUsuario(usuario);
+        mov.setMonto(monto);
+        mov.setTipo(tipo);
+        mov.setEstado(EstadoMovimiento.ON_HOLD);
+        mov.setUnlockDate(unlockDate);
+        mov.setPedidoId(pedidoId);
+        mov.setDescripcion(descripcion);
                 
         MovimientoSaldo guardado = movimientoRepo.save(mov);
+
+        // Admin monitoring: ledger global
+        adminWsService.emitirMovimiento(guardado);
         
         wsService.notificarSaldoActualizado(
                 usuario.getId(),
@@ -231,8 +242,6 @@ public class SaldoService {
                 "BONO_PENDING",
                 "Bono pendiente por liberar: " + descripcion);
                 
-        log.info("💳 Bono ON_HOLD: ${} para usuario {} — unlock: {}",
-                monto, usuario.getId(), unlockDate);
         return guardado;
     }
 

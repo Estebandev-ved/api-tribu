@@ -1,27 +1,52 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { RotateCcw, Truck, Clock, Sparkles } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { crearDevolucion } from '../api'
+import { crearDevolucion, getMisPedidos } from '../api'
+import { useAuth } from '../context/AuthContext'
 
 export default function DevolucionesPage() {
+    const { isAuthenticated, user } = useAuth()
     const [formData, setFormData] = useState({
         orderNumber: '',
         email: '',
         reason: '',
-        evidencia: null
+        evidencia: null,
+        pedidoId: '',
+        productoId: '',
+        productoNombre: ''
     });
+    const [pedidosEntregados, setPedidosEntregados] = useState([])
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
+
+    useEffect(() => {
+        if (!isAuthenticated) return
+        getMisPedidos()
+            .then(res => {
+                const entregados = (res.data || []).filter(p => p.estado === 'ENTREGADO')
+                setPedidosEntregados(entregados)
+            })
+            .catch(() => setPedidosEntregados([]))
+    }, [isAuthenticated])
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
             const dataToSubmit = new FormData();
+            const emailValue = isAuthenticated ? (user?.email || '') : formData.email
+            if (!emailValue) {
+                toast.error('No pudimos identificar tu email')
+                return
+            }
+
             const jsonPart = new Blob([JSON.stringify({
                 orderNumber: formData.orderNumber,
-                email: formData.email,
-                reason: formData.reason
+                email: emailValue,
+                reason: formData.reason,
+                pedidoId: formData.pedidoId ? Number(formData.pedidoId) : null,
+                productoId: formData.productoId ? Number(formData.productoId) : null,
+                productoNombre: formData.productoNombre || null
             })], { type: 'application/json' });
 
             dataToSubmit.append('data', jsonPart);
@@ -101,7 +126,7 @@ export default function DevolucionesPage() {
                                 Nuestro equipo la revisará y te enviaremos las instrucciones de envío a {formData.email} en menos de 24 horas.
                             </p>
                             <button
-                                onClick={() => { setIsSuccess(false); setFormData({ orderNumber: '', email: '', reason: '' }) }}
+                                onClick={() => { setIsSuccess(false); setFormData({ orderNumber: '', email: '', reason: '', evidencia: null, pedidoId: '', productoId: '', productoNombre: '' }) }}
                                 className="btn btn-primary"
                                 style={{ padding: '0.75rem 2rem', fontWeight: 'bold', borderRadius: 'var(--radius-md)' }}
                             >
@@ -117,6 +142,29 @@ export default function DevolucionesPage() {
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
                                 <div>
                                     <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--color-text-muted)', marginBottom: '0.5rem' }}>Número de Pedido</label>
+                                {isAuthenticated ? (
+                                    <select
+                                        required
+                                        value={formData.pedidoId}
+                                        onChange={(e) => {
+                                            const pedidoId = e.target.value
+                                            const pedido = pedidosEntregados.find(p => String(p.id) === String(pedidoId))
+                                            setFormData({
+                                                ...formData,
+                                                pedidoId,
+                                                orderNumber: pedidoId,
+                                                productoId: '',
+                                                productoNombre: ''
+                                            })
+                                        }}
+                                        style={{ width: '100%', padding: '0.85rem 1rem', background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', color: 'var(--color-text)', outline: 'none' }}
+                                    >
+                                        <option value="" disabled>Selecciona un pedido entregado</option>
+                                        {pedidosEntregados.map(p => (
+                                            <option key={p.id} value={p.id}>#{p.id} - {p.detalles?.[0]?.productoNombre || 'Pedido'}</option>
+                                        ))}
+                                    </select>
+                                ) : (
                                     <input
                                         type="text"
                                         required
@@ -125,19 +173,48 @@ export default function DevolucionesPage() {
                                         onChange={(e) => setFormData({ ...formData, orderNumber: e.target.value })}
                                         style={{ width: '100%', padding: '0.85rem 1rem', background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', color: 'var(--color-text)', outline: 'none' }}
                                     />
-                                </div>
-                                <div>
-                                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--color-text-muted)', marginBottom: '0.5rem' }}>Correo Electrónico</label>
-                                    <input
-                                        type="email"
-                                        required
-                                        placeholder="tu@email.com"
-                                        value={formData.email}
-                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                        style={{ width: '100%', padding: '0.85rem 1rem', background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', color: 'var(--color-text)', outline: 'none' }}
-                                    />
-                                </div>
+                                )}
                             </div>
+                            <div>
+                                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--color-text-muted)', marginBottom: '0.5rem' }}>Correo Electrónico</label>
+                                <input
+                                    type="email"
+                                    required
+                                    placeholder="tu@email.com"
+                                    value={isAuthenticated ? (user?.email || '') : formData.email}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                    disabled={isAuthenticated}
+                                    style={{ width: '100%', padding: '0.85rem 1rem', background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', color: 'var(--color-text)', outline: 'none', opacity: isAuthenticated ? 0.7 : 1 }}
+                                />
+                            </div>
+                        </div>
+
+                        {isAuthenticated && (
+                            <div>
+                                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--color-text-muted)', marginBottom: '0.5rem' }}>Producto recibido</label>
+                                <select
+                                    required
+                                    value={formData.productoId}
+                                    onChange={(e) => {
+                                        const productoId = e.target.value
+                                        const pedido = pedidosEntregados.find(p => String(p.id) === String(formData.pedidoId))
+                                        const detalle = pedido?.detalles?.find(d => String(d.productoId) === String(productoId))
+                                        setFormData({
+                                            ...formData,
+                                            productoId,
+                                            productoNombre: detalle?.productoNombre || ''
+                                        })
+                                    }}
+                                    disabled={!formData.pedidoId}
+                                    style={{ width: '100%', padding: '0.85rem 1rem', background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', color: 'var(--color-text)', outline: 'none', opacity: !formData.pedidoId ? 0.6 : 1 }}
+                                >
+                                    <option value="" disabled>Selecciona un producto</option>
+                                    {(pedidosEntregados.find(p => String(p.id) === String(formData.pedidoId))?.detalles || []).map(d => (
+                                        <option key={d.id} value={d.productoId}>#{d.productoId} - {d.productoNombre} (x{d.cantidad})</option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
 
                             <div>
                                 <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--color-text-muted)', marginBottom: '0.5rem' }}>¿Por qué deseas devolver el producto?</label>

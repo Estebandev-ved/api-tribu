@@ -13,4 +13,10 @@ public interface RegistroAccesoRepository extends JpaRepository<RegistroAcceso, 
 
     @Query("SELECT COUNT(r) FROM RegistroAcceso r WHERE r.ipAddress = :ipAddress AND r.exitoso = false AND r.fecha >= :desde")
     long countFailedAttemptsByIpSince(@Param("ipAddress") String ipAddress, @Param("desde") LocalDateTime desde);
+
+    @Query("SELECT r FROM RegistroAcceso r WHERE r.exitoso = true ORDER BY r.fecha DESC LIMIT 100")
+    java.util.List<RegistroAcceso> findRecentSuccessfulAccesses();
+
+    @Query("SELECT r FROM RegistroAcceso r WHERE r.exitoso = false ORDER BY r.fecha DESC LIMIT 100")
+    java.util.List<RegistroAcceso> findRecentFailedAccesses();
 }

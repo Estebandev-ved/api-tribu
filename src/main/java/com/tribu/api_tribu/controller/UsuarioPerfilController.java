@@ -6,9 +6,9 @@ import com.tribu.api_tribu.model.MovimientoSaldo;
 import com.tribu.api_tribu.repository.UsuarioRepository;
 import com.tribu.api_tribu.repository.MovimientoSaldoRepository;
 import com.tribu.api_tribu.repository.PedidoRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -18,12 +18,23 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/usuarios/perfil")
-@RequiredArgsConstructor
 public class UsuarioPerfilController {
 
     private final UsuarioRepository usuarioRepository;
     private final MovimientoSaldoRepository movimientoSaldoRepository;
     private final PedidoRepository pedidoRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    public UsuarioPerfilController(
+            UsuarioRepository usuarioRepository,
+            MovimientoSaldoRepository movimientoSaldoRepository,
+            PedidoRepository pedidoRepository,
+            PasswordEncoder passwordEncoder) {
+        this.usuarioRepository = usuarioRepository;
+        this.movimientoSaldoRepository = movimientoSaldoRepository;
+        this.pedidoRepository = pedidoRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     private Usuario obtenerUsuarioAutenticado() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -31,19 +42,16 @@ public class UsuarioPerfilController {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", email));
     }
 
-    // Obtener Perfil del Usuario Autenticado
     @GetMapping
     public ResponseEntity<Map<String, Object>> getMiPerfil() {
         Usuario u = obtenerUsuarioAutenticado();
 
-        // Generación "Just-in-time" para usuarios antiguos que no tienen código
         if (u.getCodigoReferido() == null || u.getCodigoReferido().isBlank()) {
             String newCode = "TRIBU-" + UUID.randomUUID().toString().substring(0, 5).toUpperCase();
             u.setCodigoReferido(newCode);
             usuarioRepository.save(u);
         }
 
-        // Calcular gasto del mes actual para el frontend
         java.time.YearMonth mesActual = java.time.YearMonth.now();
         java.time.LocalDateTime inicio = mesActual.atDay(1).atStartOfDay();
         java.time.LocalDateTime fin = mesActual.atEndOfMonth().atTime(23, 59, 59);
@@ -62,16 +70,15 @@ public class UsuarioPerfilController {
         m.put("nivelVip", u.getNivelVip() != null ? u.getNivelVip() : 1);
         m.put("gastadoMes", gastadoMes != null ? gastadoMes : 0.0);
         
-        // Resolver nombre del tier
         String tierName = u.getTierActual() != null ? u.getTierActual().getNombre() : 
                         (u.getNivelVip() == 3 ? "ORO" : u.getNivelVip() == 2 ? "PLATA" : "BRONCE");
         m.put("tier", tierName);
         m.put("codigoReferido", u.getCodigoReferido());
+        m.put("tienePin", u.getPinSeguridadHash() != null && !u.getPinSeguridadHash().isBlank());
 
         return ResponseEntity.ok(m);
     }
 
-    // Actualizar Perfil del Usuario Autenticado
     @PutMapping
     public ResponseEntity<Map<String, Object>> actualizarMiPerfil(@RequestBody Map<String, String> payload) {
         Usuario u = obtenerUsuarioAutenticado();
@@ -97,11 +104,66 @@ public class UsuarioPerfilController {
         return ResponseEntity.ok(m);
     }
 
-    // Historial de Movimientos del Usuario Autenticado
     @GetMapping("/movimientos")
     public ResponseEntity<List<MovimientoSaldo>> getMisMovimientos() {
         Usuario u = obtenerUsuarioAutenticado();
         List<MovimientoSaldo> movimientos = movimientoSaldoRepository.findByUsuarioIdOrderByFechaDesc(u.getId());
         return ResponseEntity.ok(movimientos);
+    }
+
+    @PostMapping("/pin")
+    public ResponseEntity<Map<String, Object>> setPin(@RequestBody Map<String, String> payload) {
+        Usuario u = obtenerUsuarioAutenticado();
+        String pinActual = payload.get("pinActual");
+        String pinNuevo = payload.get("pinNuevo");
+
+        if (pinNuevo == null || pinNuevo.length() < 4 || pinNuevo.length() > 6) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("mensaje", "El PIN debe tener entre 4 y 6 digitos");
+            return ResponseEntity.badRequest().body(error);
+        }
+
+        // Si ya tiene PIN, requiere el actual para cambiarlo
+        if (u.getPinSeguridadHash() != null && !u.getPinSeguridadHash().isBlank()) {
+            if (pinActual == null || !passwordEncoder.matches(pinActual, u.getPinSeguridadHash())) {
+                Map<String, Object> error = new HashMap<>();
+                error.put("success", false);
+                error.put("mensaje", "PIN actual incorrecto");
+                return ResponseEntity.badRequest().body(error);
+            }
+        }
+
+        u.setPinSeguridadHash(passwordEncoder.encode(pinNuevo));
+        usuarioRepository.save(u);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("mensaje", "PIN configurado correctamente");
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/verificar-pin")
+    public ResponseEntity<Map<String, Object>> verificarPin(@RequestBody Map<String, String> payload) {
+        Usuario u = obtenerUsuarioAutenticado();
+        String pin = payload.get("pin");
+
+        Map<String, Object> response = new HashMap<>();
+
+        if (u.getPinSeguridadHash() == null || u.getPinSeguridadHash().isBlank()) {
+            response.put("success", false);
+            response.put("mensaje", "PIN no configurado");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        if (pin == null || !passwordEncoder.matches(pin, u.getPinSeguridadHash())) {
+            response.put("success", false);
+            response.put("mensaje", "PIN incorrecto");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        response.put("success", true);
+        response.put("mensaje", "PIN verificado correctamente");
+        return ResponseEntity.ok(response);
     }
 }

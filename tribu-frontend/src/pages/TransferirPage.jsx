@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, User, Send, ArrowLeft, Check, Loader2, Copy, CheckCircle } from 'lucide-react'
-import { transferenciaService } from '../services/services'
+import { Search, User, Send, ArrowLeft, Check, Loader2, Copy, CheckCircle, Shield, Lock, Wallet } from 'lucide-react'
+import { transferenciaService, pinService } from '../services/services'
+import profileService from '../services/profileService'
 import { useAuth } from '../context/AuthContext'
 import { useNotification } from '../context/NotificationContext'
 import { formatCOP } from '../utils/formatters'
@@ -14,6 +15,7 @@ const QUICK_AMOUNTS = [10000, 20000, 50000, 100000]
 export default function TransferirPage() {
   const { user } = useAuth()
   const { saldoRealtime } = useNotification()
+  const [saldoBase, setSaldoBase] = useState(null)
   const [step, setStep] = useState(1)
   const [busqueda, setBusqueda] = useState('')
   const [destinatario, setDestinatario] = useState(null)
@@ -24,8 +26,18 @@ export default function TransferirPage() {
   const [limite, setLimite] = useState(null)
   const [enviando, setEnviando] = useState(false)
   const [pin, setPin] = useState('')
-  const [showPinInput, setShowPinInput] = useState(false)
-  const [transferExito, setTransferExito] = useState(false)
+  const [showPinSetup, setShowPinSetup] = useState(false)
+  const [pinSetup, setPinSetup] = useState('')
+  const [pinConfirm, setPinConfirm] = useState('')
+  const [transferResult, setTransferResult] = useState(null)
+
+  const saldo = saldoRealtime !== null ? saldoRealtime : (saldoBase !== null ? saldoBase : 0)
+
+  useEffect(() => {
+    profileService.getPerfil()
+      .then(res => setSaldoBase(res.data.saldoFavor || 0))
+      .catch(() => setSaldoBase(0))
+  }, [])
 
   useEffect(() => {
     if (step >= 2) {
@@ -59,7 +71,7 @@ export default function TransferirPage() {
     return () => clearTimeout(timeout)
   }, [busqueda])
 
-  const handleMontoSelect = (value) => {
+  const handleMontoAdd = (value) => {
     setMonto(prev => {
       const num = parseInt(prev) || 0
       return (num + value).toString()
@@ -74,95 +86,152 @@ export default function TransferirPage() {
     setMonto(prev => prev.slice(0, -1))
   }
 
-  const handleConfirm = async () => {
-    if (!destinatario || !monto || parseInt(monto) <= 0) return
+  const validateMonto = () => {
+    const val = parseInt(monto)
+    if (!val || val <= 0) return { ok: false, msg: 'Ingresa un monto valido' }
+    if (limite && val < limite.minimoPorTransferencia) {
+      return { ok: false, msg: `El monto minimo es ${formatCOP(limite.minimoPorTransferencia)}` }
+    }
+    if (limite && val > limite.maximoPorTransferencia) {
+      return { ok: false, msg: `El monto maximo para tu nivel es ${formatCOP(limite.maximoPorTransferencia)}` }
+    }
+    if (val > saldo) {
+      return { ok: false, msg: `Saldo insuficiente. Tienes ${formatCOP(saldo)}` }
+    }
+    return { ok: true }
+  }
 
-    if (parseInt(monto) > 100000) {
-      setShowPinInput(true)
+  const handleTransferConfirm = async () => {
+    const validation = validateMonto()
+    if (!validation.ok) {
+      toast.error(validation.msg)
       return
     }
 
-    await realizarTransferencia()
-  }
-
-  const realizarTransferencia = async (pinConfirm = null) => {
     setEnviando(true)
     try {
-      await transferenciaService.enviar(destinatario.email, parseInt(monto), mensaje)
-      setTransferExito(true)
-      toast.success(`✓ ${formatCOP(monto)} enviados a ${destinatario.nombre}`)
+      const res = await transferenciaService.enviar(
+        destinatario.codigoReferido || busqueda,
+        parseInt(monto),
+        mensaje,
+        pin
+      )
+      setTransferResult({
+        referencia: res.data.referencia,
+        monto: parseInt(monto),
+        contraparte: destinatario.nombre,
+        nuevoSaldo: res.data.nuevoSaldo,
+        fecha: new Date().toLocaleDateString('es-CO', {
+          day: '2-digit', month: '2-digit', year: 'numeric',
+          hour: '2-digit', minute: '2-digit'
+        })
+      })
+      toast.success(`¡${formatCOP(monto)} enviados a ${destinatario.nombre}!`)
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Error al realizar transferencia')
+      const msg = err.response?.data?.message || 'Error al realizar transferencia'
+      toast.error(msg)
     } finally {
       setEnviando(false)
     }
   }
 
-  const handlePinSubmit = () => {
-    const storedPin = localStorage.getItem('tribu_pin')
-    if (storedPin && storedPin !== btoa(pin)) {
-      toast.error('PIN incorrecto')
-      return
-    }
-    setShowPinInput(false)
-    realizarTransferencia(pin)
-  }
-
   const tierColor = getTierColor(getTierFromOrden(user?.nivelVip || 1))
 
-  if (transferExito) {
+  if (transferResult) {
     return (
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         style={{
           minHeight: '100vh',
           background: 'var(--color-background, #0a0a0a)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '2rem'
+          padding: '1rem'
         }}
       >
         <div style={{
-          textAlign: 'center',
+          maxWidth: 440,
+          width: '100%',
           background: 'var(--color-background-primary, #1a1a1a)',
           borderRadius: 24,
-          padding: '3rem 2rem',
+          padding: '2rem',
           border: '1px solid #1D9E7540'
         }}>
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: 'spring', delay: 0.2 }}
-          >
-            <CheckCircle size={64} color="#1D9E75" />
-          </motion.div>
-          <h2 style={{ color: '#fff', marginTop: '1.5rem', fontSize: '1.5rem' }}>
-            ¡Transferencia exitosa!
-          </h2>
-          <p style={{ color: '#888', marginTop: '0.5rem' }}>
-            {formatCOP(monto)} enviados a {destinatario?.nombre}
-          </p>
+          <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: 'spring', delay: 0.2 }}
+            >
+              <CheckCircle size={56} color="#00C896" />
+            </motion.div>
+            <h2 style={{ color: '#fff', margin: '1rem 0 0.3rem', fontSize: '1.4rem' }}>
+              Transferencia exitosa
+            </h2>
+            <p style={{ color: '#888', fontSize: '0.9rem' }}>Los puntos se acreditaron al instante</p>
+          </div>
+
+          <div style={{
+            background: 'rgba(0,200,150,0.06)',
+            border: '1px solid rgba(0,200,150,0.15)',
+            borderRadius: 16,
+            padding: '1.25rem',
+            marginBottom: '1rem'
+          }}>
+            <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+              <div style={{ fontSize: 12, color: '#888', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Monto transferido</div>
+              <div style={{ fontSize: '2rem', fontWeight: 800, color: '#00C896' }}>{formatCOP(transferResult.monto)}</div>
+            </div>
+
+            <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '0.8rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: 6 }}>
+                <span style={{ color: '#888' }}>Destinatario</span>
+                <span style={{ color: '#fff', fontWeight: 600 }}>{transferResult.contraparte}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: 6 }}>
+                <span style={{ color: '#888' }}>ID Transaccion</span>
+                <span style={{ color: '#7dd3fc', fontWeight: 700, fontSize: '0.8rem' }}>{transferResult.referencia}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: 6 }}>
+                <span style={{ color: '#888' }}>Fecha</span>
+                <span style={{ color: '#fff' }}>{transferResult.fecha}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+                <span style={{ color: '#888' }}>Nuevo saldo</span>
+                <span style={{ color: '#fff', fontWeight: 700 }}>{formatCOP(transferResult.nuevoSaldo)}</span>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ background: 'rgba(255,183,77,0.08)', borderRadius: 12, padding: '0.8rem 1rem', marginBottom: '1.5rem', border: '1px solid rgba(255,183,77,0.15)' }}>
+            <p style={{ margin: 0, fontSize: '0.8rem', color: '#FFB84D' }}>
+              Los Puntos Tribu no son dinero real y solo se usan en la app.
+            </p>
+          </div>
+
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => {
-              setTransferExito(false)
+              setTransferResult(null)
               setStep(1)
               setBusqueda('')
               setDestinatario(null)
               setMonto('')
               setMensaje('')
+              setPin('')
             }}
             style={{
-              marginTop: '2rem',
-              padding: '0.75rem 2rem',
+              width: '100%',
+              padding: '0.9rem',
               background: tierColor.primary,
               color: '#000',
               border: 'none',
-              borderRadius: 10,
-              fontWeight: 600,
+              borderRadius: 12,
+              fontWeight: 700,
+              fontSize: '1rem',
               cursor: 'pointer'
             }}
           >
@@ -216,19 +285,19 @@ export default function TransferirPage() {
                 marginBottom: '1.5rem'
               }}>
                 <h3 style={{ color: '#fff', fontSize: '1rem', marginBottom: '1rem' }}>
-                  ¿A quién quieres enviar?
+                  ¿A quien quieres enviar?
                 </h3>
                 <div style={{ position: 'relative' }}>
-                  <Search size={18} style={{ 
-                    position: 'absolute', 
-                    left: 12, 
-                    top: '50%', 
+                  <Search size={18} style={{
+                    position: 'absolute',
+                    left: 12,
+                    top: '50%',
                     transform: 'translateY(-50%)',
                     color: '#666'
                   }} />
                   <input
                     type="text"
-                    placeholder="Email o código TRIBU-XXXXX"
+                    placeholder="Email o codigo TRIBU-XXXXX"
                     value={busqueda}
                     onChange={(e) => setBusqueda(e.target.value)}
                     style={{
@@ -252,10 +321,10 @@ export default function TransferirPage() {
                 )}
 
                 {noEncontrado && (
-                  <div style={{ 
-                    marginTop: 12, 
-                    padding: 12, 
-                    background: '#E24B4A20', 
+                  <div style={{
+                    marginTop: 12,
+                    padding: 12,
+                    background: '#E24B4A20',
                     borderRadius: 8,
                     color: '#E24B4A',
                     fontSize: '0.9rem'
@@ -264,7 +333,7 @@ export default function TransferirPage() {
                   </div>
                 )}
 
-                {destinatario && (
+                {destinatario && destinatario.encontrado && (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -274,50 +343,53 @@ export default function TransferirPage() {
                       background: 'var(--color-background-secondary, #2a2a2a)',
                       borderRadius: 12,
                       border: `1px solid ${tierColor.primary}40`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 12
                     }}>
-                    <div style={{
-                      width: 48, height: 48,
-                      borderRadius: '50%',
-                      background: tierColor.primary,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: '#000', fontWeight: 700
-                    }}>
-                      {destinatario.nombre?.[0]}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+                      <div style={{
+                        width: 44, height: 44, borderRadius: '50%',
+                        background: tierColor.primary,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: '#000', fontWeight: 700, fontSize: '1.1rem'
+                      }}>
+                        {destinatario.nombre?.[0]}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ color: '#fff', fontWeight: 600 }}>{destinatario.nombre}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                          <TierBadge tier={getTierFromOrden(destinatario.nivelVip || 1)} size="sm" />
+                          {destinatario.ciudad && (
+                            <span style={{ fontSize: '0.78rem', color: '#888' }}>{destinatario.ciudad}</span>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <Check size={16} color={tierColor.primary} />
-                        <span style={{ color: '#fff', fontWeight: 600 }}>{destinatario.nombre}</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
-                        <TierBadge tier={getTierFromOrden(destinatario.nivelVip || 1)} size="sm" />
-                        {destinatario.ciudad && (
-                          <span style={{ fontSize: '0.8rem', color: '#888' }}>📍 {destinatario.ciudad}</span>
-                        )}
-                      </div>
+                    <div style={{ fontSize: '0.82rem', color: '#666', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: 8 }}>
+                      {destinatario.email && (
+                        <div style={{ marginBottom: 2 }}>Email: {destinatario.email}</div>
+                      )}
+                      {destinatario.codigoReferido && (
+                        <div>Codigo: {destinatario.codigoReferido}</div>
+                      )}
                     </div>
                   </motion.div>
                 )}
               </div>
 
               <motion.button
-                whileHover={{ scale: destinatario ? 1.02 : 1 }}
-                whileTap={{ scale: destinatario ? 0.98 : 1 }}
-                disabled={!destinatario}
+                whileHover={{ scale: destinatario?.encontrado ? 1.02 : 1 }}
+                whileTap={{ scale: destinatario?.encontrado ? 0.98 : 1 }}
+                disabled={!destinatario?.encontrado}
                 onClick={() => setStep(2)}
                 style={{
                   width: '100%',
                   padding: '1rem',
-                  background: destinatario ? tierColor.primary : '#333',
-                  color: destinatario ? '#000' : '#666',
+                  background: destinatario?.encontrado ? tierColor.primary : '#333',
+                  color: destinatario?.encontrado ? '#000' : '#666',
                   border: 'none',
                   borderRadius: 12,
                   fontWeight: 700,
                   fontSize: '1rem',
-                  cursor: destinatario ? 'pointer' : 'not-allowed',
+                  cursor: destinatario?.encontrado ? 'pointer' : 'not-allowed',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -339,18 +411,27 @@ export default function TransferirPage() {
               <div style={{
                 background: 'var(--color-background-primary, #1a1a1a)',
                 borderRadius: 16,
-                padding: '1.25rem',
+                padding: '1rem 1.25rem',
                 marginBottom: '1rem',
-                textAlign: 'center'
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
               }}>
-                <p style={{ color: '#888', fontSize: '0.9rem' }}>Disponible</p>
-                <p style={{ color: '#fff', fontSize: '1.5rem', fontWeight: 700 }}>
-                  {formatCOP(saldoRealtime || 0)}
-                </p>
-                {limite && (
-                  <p style={{ color: '#666', fontSize: '0.8rem', marginTop: 4 }}>
-                    Límite hoy: {formatCOP(limite.restante)} disponibles
+                <div>
+                  <p style={{ color: '#888', fontSize: '0.8rem', margin: 0 }}>Saldo disponible</p>
+                  <p style={{ color: '#fff', fontSize: '1.2rem', fontWeight: 700, margin: '2px 0 0' }}>
+                    {formatCOP(saldo)}
                   </p>
+                </div>
+                {limite && (
+                  <div style={{ textAlign: 'right' }}>
+                    <p style={{ color: '#888', fontSize: '0.75rem', margin: 0 }}>
+                      Limite: {formatCOP(limite.maximoPorTransferencia)} / trans.
+                    </p>
+                    <p style={{ color: '#666', fontSize: '0.75rem', margin: '2px 0 0' }}>
+                      Hoy: {limite.transaccionesHoy}/{limite.limiteTransaccionesDiarias} trans.
+                    </p>
+                  </div>
                 )}
               </div>
 
@@ -360,10 +441,10 @@ export default function TransferirPage() {
                 padding: '1.5rem',
                 marginBottom: '1rem'
               }}>
-                <div style={{ 
-                  textAlign: 'center', 
-                  fontSize: '2.5rem', 
-                  fontWeight: 700, 
+                <div style={{
+                  textAlign: 'center',
+                  fontSize: '2.5rem',
+                  fontWeight: 700,
                   color: '#fff',
                   marginBottom: '1.5rem',
                   fontFamily: 'monospace'
@@ -392,7 +473,7 @@ export default function TransferirPage() {
                         cursor: d ? 'pointer' : 'default'
                       }}
                     >
-                      {d === '⌫' ? '←' : d}
+                      {d === '⌫' ? '-' : d}
                     </motion.button>
                   ))}
                 </div>
@@ -414,7 +495,7 @@ export default function TransferirPage() {
                         cursor: 'pointer'
                       }}
                     >
-                      {formatCOP(amt)}
+                      +{formatCOP(amt)}
                     </button>
                   ))}
                 </div>
@@ -470,74 +551,102 @@ export default function TransferirPage() {
               <div style={{
                 background: 'var(--color-background-primary, #1a1a1a)',
                 borderRadius: 16,
-                padding: '2rem',
-                textAlign: 'center',
-                marginBottom: '1.5rem'
+                padding: '1.5rem',
+                marginBottom: '1rem'
               }}>
-                <Send size={32} color={tierColor.primary} style={{ marginBottom: '1rem' }} />
-                <h3 style={{ color: '#fff', fontSize: '1.1rem', marginBottom: '0.5rem' }}>
-                  Confirmar envío
-                </h3>
-                <p style={{ color: '#888', fontSize: '0.9rem' }}>
-                  Enviarás <span style={{ color: '#fff', fontWeight: 700 }}>{formatCOP(monto)}</span> a
-                </p>
-                <p style={{ color: '#fff', fontWeight: 600, fontSize: '1.1rem', marginTop: 8 }}>
-                  {destinatario?.nombre}
-                </p>
-                {mensaje && (
-                  <p style={{ color: '#666', fontSize: '0.85rem', marginTop: 12, fontStyle: 'italic' }}>
-                    "{mensaje}"
-                  </p>
-                )}
-              </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '1rem' }}>
+                  <Send size={24} color={tierColor.primary} />
+                  <h3 style={{ color: '#fff', fontSize: '1.05rem', margin: 0 }}>
+                    Confirmar transferencia
+                  </h3>
+                </div>
 
-              {showPinInput && (
                 <div style={{
-                  background: 'var(--color-background-primary, #1a1a1a)',
-                  borderRadius: 16,
-                  padding: '1.5rem',
+                  background: 'rgba(255,255,255,0.03)',
+                  borderRadius: 12,
+                  padding: '1rem',
                   marginBottom: '1rem'
                 }}>
-                  <p style={{ color: '#fff', fontSize: '0.9rem', marginBottom: 12, textAlign: 'center' }}>
-                    Ingresa tu PIN de seguridad
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <span style={{ color: '#888', fontSize: '0.85rem' }}>Destinatario</span>
+                    <span style={{ color: '#fff', fontWeight: 600, fontSize: '0.9rem' }}>{destinatario?.nombre}</span>
+                  </div>
+                  {destinatario?.email && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                      <span style={{ color: '#888', fontSize: '0.85rem' }}>Email</span>
+                      <span style={{ color: '#666', fontSize: '0.85rem' }}>{destinatario.email}</span>
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <span style={{ color: '#888', fontSize: '0.85rem' }}>Monto</span>
+                    <span style={{ color: '#fff', fontWeight: 800 }}>{formatCOP(monto)}</span>
+                  </div>
+                  {mensaje && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: '#888', fontSize: '0.85rem' }}>Mensaje</span>
+                      <span style={{ color: '#666', fontSize: '0.85rem', fontStyle: 'italic' }}>"{mensaje}"</span>
+                    </div>
+                  )}
+                </div>
+
+                <div style={{
+                  background: 'rgba(226,75,74,0.06)',
+                  border: '1px solid rgba(226,75,74,0.12)',
+                  borderRadius: 10,
+                  padding: '0.7rem 1rem',
+                  marginBottom: '1rem'
+                }}>
+                  <p style={{ margin: 0, fontSize: '0.8rem', color: '#E24B4A' }}>
+                    Esta operacion no se puede deshacer una vez confirmada.
                   </p>
+                </div>
+
+                <div style={{
+                  background: 'rgba(255,255,255,0.03)',
+                  borderRadius: 12,
+                  padding: '1rem'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                    <Lock size={16} color="#FFB84D" />
+                    <span style={{ color: '#fff', fontSize: '0.9rem', fontWeight: 600 }}>PIN de seguridad</span>
+                  </div>
                   <input
                     type="password"
-                    maxLength={4}
+                    maxLength={6}
                     value={pin}
                     onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
-                    placeholder="••••"
+                    placeholder="Ingresa tu PIN de 4-6 digitos"
                     style={{
                       width: '100%',
-                      padding: '1rem',
+                      padding: '0.875rem 1rem',
                       background: 'var(--color-background-secondary, #2a2a2a)',
                       border: '1px solid var(--color-border-tertiary, #333)',
                       borderRadius: 10,
                       color: '#fff',
-                      fontSize: '1.5rem',
+                      fontSize: '1.2rem',
                       textAlign: 'center',
-                      letterSpacing: 16,
+                      letterSpacing: 12,
                       outline: 'none'
                     }}
                   />
                 </div>
-              )}
+              </div>
 
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                disabled={enviando || (parseInt(monto) > 100000 && pin.length !== 4)}
-                onClick={showPinInput ? handlePinSubmit : handleConfirm}
+                disabled={enviando || pin.length < 4}
+                onClick={handleTransferConfirm}
                 style={{
                   width: '100%',
                   padding: '1rem',
-                  background: tierColor.primary,
-                  color: '#000',
+                  background: pin.length >= 4 ? tierColor.primary : '#333',
+                  color: pin.length >= 4 ? '#000' : '#666',
                   border: 'none',
                   borderRadius: 12,
                   fontWeight: 700,
                   fontSize: '1rem',
-                  cursor: 'pointer',
+                  cursor: pin.length >= 4 ? 'pointer' : 'not-allowed',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -547,12 +656,12 @@ export default function TransferirPage() {
                 {enviando ? (
                   <>
                     <Loader2 size={20} className="animate-spin" />
-                    Enviando...
+                    Transferiendo...
                   </>
                 ) : (
                   <>
-                    <Send size={18} />
-                    Confirmar envío
+                    <Shield size={18} />
+                    Confirmar y enviar
                   </>
                 )}
               </motion.button>

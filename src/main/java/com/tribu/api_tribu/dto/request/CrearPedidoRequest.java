@@ -11,6 +11,7 @@ public class CrearPedidoRequest {
     private String direccionEnvio;
 
     private String metodoPago; // TRIBU_CARD, etc.
+    private String cuponCodigo;
 
     @NotEmpty(message = "El pedido debe tener al menos un producto")
     @Valid

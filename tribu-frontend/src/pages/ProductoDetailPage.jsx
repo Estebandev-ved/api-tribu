@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getProductoById } from '../api'
 import { useCart } from '../context/CartContext'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { ShoppingCart, ArrowLeft, ShieldCheck, Truck, RotateCcw } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -20,6 +20,24 @@ export default function ProductoDetailPage() {
     const [isZooming, setIsZooming] = useState(false)
     const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 })
     const imageRef = useRef(null)
+
+    // Tarea 5: Botón de Compra Persistente (Sticky Add to Cart)
+    const [showSticky, setShowSticky] = useState(false)
+    const mainButtonRef = useRef(null)
+
+    useEffect(() => {
+        if (!producto || producto.stock === 0) return
+
+        const observer = new IntersectionObserver(([entry]) => {
+            setShowSticky(!entry.isIntersecting)
+        }, { threshold: 0 })
+
+        if (mainButtonRef.current) {
+            observer.observe(mainButtonRef.current)
+        }
+
+        return () => observer.disconnect()
+    }, [producto])
 
     useEffect(() => {
         const fetchProducto = async () => {
@@ -192,7 +210,8 @@ export default function ProductoDetailPage() {
                                 </p>
                             </div>
 
-                            <button
+                             <button
+                                ref={mainButtonRef}
                                 onClick={handleAddToCart}
                                 disabled={producto.stock === 0}
                                 className={producto.stock > 0 ? "btn btn-primary" : ""}
@@ -204,6 +223,31 @@ export default function ProductoDetailPage() {
                                 <ShoppingCart size={20} style={{ marginRight: '0.5rem' }} />
                                 {producto.stock > 0 ? 'Agregar al Carrito' : 'Agotado'}
                             </button>
+
+                            {/* Tarea 7: Sellos de Garantía Visuales Integrados */}
+                            {producto.stock > 0 && (
+                                <div style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    marginTop: '1.25rem',
+                                    paddingTop: '1rem',
+                                    borderTop: '1px solid var(--color-border)',
+                                    gap: '0.5rem'
+                                }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.72rem', color: 'var(--color-text-muted)' }}>
+                                        <ShieldCheck size={14} style={{ color: 'var(--color-success)', flexShrink: 0 }} />
+                                        <span>Garantía de 30 días</span>
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.72rem', color: 'var(--color-text-muted)' }}>
+                                        <Truck size={14} style={{ color: 'var(--color-primary)', flexShrink: 0 }} />
+                                        <span>Envío Seguro</span>
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.72rem', color: 'var(--color-text-muted)' }}>
+                                        <RotateCcw size={14} style={{ color: '#4facfe', flexShrink: 0 }} />
+                                        <span>Devolución Gratis</span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* Beneficios (Tipo MercadoLibre) */}
@@ -236,6 +280,62 @@ export default function ProductoDetailPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Sticky Mobile Add to Cart (Tarea 5) */}
+            <AnimatePresence>
+                {showSticky && producto && producto.stock > 0 && (
+                    <motion.div
+                        initial={{ y: 100, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: 100, opacity: 0 }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+                        style={{
+                            position: 'fixed',
+                            bottom: 0, left: 0, right: 0,
+                            background: 'rgba(26, 26, 26, 0.95)',
+                            backdropFilter: 'blur(12px)',
+                            borderTop: '1px solid rgba(255, 87, 34, 0.2)',
+                            padding: '0.75rem 1rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            zIndex: 999,
+                            boxShadow: '0 -4px 20px rgba(0,0,0,0.3)',
+                        }}
+                        className="mobile-sticky-buy"
+                    >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0 }}>
+                            <div style={{ width: 44, height: 44, borderRadius: 8, overflow: 'hidden', background: 'var(--color-surface-2)', flexShrink: 0 }}>
+                                <img src={producto.imagenUrl} alt={producto.nombre} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            </div>
+                            <div style={{ minWidth: 0 }}>
+                                <p style={{ fontWeight: 700, fontSize: '0.85rem', color: '#fff', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    {producto.nombre}
+                                </p>
+                                <p style={{ fontSize: '0.8rem', color: 'var(--color-primary)', fontWeight: 800, margin: 0 }}>
+                                    {formatCOP(producto.precio)}
+                                </p>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={handleAddToCart}
+                            className="btn btn-primary"
+                            style={{
+                                padding: '0.5rem 1.2rem',
+                                fontSize: '0.85rem',
+                                fontWeight: 800,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px'
+                            }}
+                        >
+                            <ShoppingCart size={14} />
+                            Añadir
+                        </button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     )
 }

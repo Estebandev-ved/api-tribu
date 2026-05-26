@@ -8,4 +8,6 @@ public interface GrupoParticipanteRepository extends JpaRepository<GrupoParticip
     List<GrupoParticipante> findByUsuarioId(Long usuarioId);
     List<GrupoParticipante> findByGrupoId(Long grupoId);
     boolean existsByGrupoIdAndUsuarioId(Long grupoId, Long usuarioId);
+    long countByGrupoId(Long grupoId);
+    java.util.Optional<GrupoParticipante> findByGrupoIdAndUsuarioId(Long grupoId, Long usuarioId);
 }

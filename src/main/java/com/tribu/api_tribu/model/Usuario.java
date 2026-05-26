@@ -41,6 +41,12 @@ public class Usuario {
     @Column(length = 500)
     private String direccion;
 
+    @Column(name = "nit_fiscal", length = 20)
+    private String nitFiscal;
+
+    @Column(name = "razon_social_fiscal", length = 200)
+    private String razonSocialFiscal;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "rol_id")
     private Rol rol;
@@ -82,8 +88,26 @@ public class Usuario {
     @Column(name = "fecha_ultimo_giro_ruleta")
     private LocalDateTime fechaUltimoGiroRuleta;
 
-    // Se usa @PrePersist para asignar la fecha correctamente al momento de
-    // persistir
+    // ─── Seguridad: Autenticación de Doble Factor (2FA/TOTP) ───────────────────
+    /** Secreto TOTP único por usuario, cifrado en la columna. */
+    @Column(name = "secret_2fa", length = 64)
+    private String secret2fa;
+
+    /** true cuando el usuario ha verificado y activado el 2FA. */
+    @Column(name = "is_2fa_habilitado", nullable = false)
+    @Builder.Default
+    private Boolean is2faHabilitado = false;
+
+    // ─── Seguridad: Reset de Contraseña ────────────────────────────────────────
+    /** Token UUID aleatorio enviado por correo para restablecer contraseña. */
+    @Column(name = "reset_password_token", length = 128)
+    private String resetPasswordToken;
+
+    /** Fecha/hora de expiración del token (15 minutos). */
+    @Column(name = "reset_password_expires")
+    private LocalDateTime resetPasswordExpires;
+
+    // Se usa @PrePersist para asignar la fecha correctamente al momento de persistir
     @Column(name = "fecha_creacion", updatable = false)
     private LocalDateTime fechaCreacion;
 
@@ -92,10 +116,93 @@ public class Usuario {
         this.fechaCreacion = LocalDateTime.now();
     }
 
+    @Column(name = "pin_seguridad_hash", length = 128)
+    private String pinSeguridadHash;
+
+    @Column(name = "bloqueado", nullable = false)
+    @Builder.Default
+    private Boolean bloqueado = false;
+
     // Relación para el CRM: Notas escritas por este administrador
     // FetchType.LAZY es el default para @OneToMany, pero se especifica
     // explícitamente para claridad
     @OneToMany(mappedBy = "creadoPor", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<CrmNota> notasCreadas = new ArrayList<>();
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setSaldoFavor(Double saldoFavor) {
+        this.saldoFavor = saldoFavor;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setRol(Rol rol) {
+        this.rol = rol;
+    }
+
+    public void setNombreCompleto(String nombreCompleto) {
+        this.nombreCompleto = nombreCompleto;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public Rol getRol() {
+        return rol;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getNombreCompleto() {
+        return nombreCompleto;
+    }
+
+    public Integer getNivelVip() {
+        return nivelVip;
+    }
+
+    public String getCiudad() {
+        return ciudad;
+    }
+
+    public String getPinSeguridadHash() {
+        return pinSeguridadHash;
+    }
+
+    public void setPinSeguridadHash(String pinSeguridadHash) {
+        this.pinSeguridadHash = pinSeguridadHash;
+    }
+
+    public String getCodigoReferido() {
+        return codigoReferido;
+    }
+
+    public String getTelefono() {
+        return telefono;
+    }
+
+    public LocalDateTime getFechaUltimoGiroRuleta() {
+        return fechaUltimoGiroRuleta;
+    }
+
+    public void setFechaUltimoGiroRuleta(LocalDateTime fechaUltimoGiroRuleta) {
+        this.fechaUltimoGiroRuleta = fechaUltimoGiroRuleta;
+    }
+
+    public String getDireccion() {
+        return direccion;
+    }
 }

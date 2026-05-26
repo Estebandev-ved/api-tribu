@@ -8,6 +8,7 @@ import com.tribu.api_tribu.dto.request.SolicitarFacturaRequest;
 import com.tribu.api_tribu.model.*;
 import com.tribu.api_tribu.repository.FacturaRepository;
 import com.tribu.api_tribu.repository.PedidoRepository;
+import com.tribu.api_tribu.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,11 +30,123 @@ public class FacturaService {
     private final FacturaRepository facturaRepo;
     private final PedidoRepository pedidoRepo;
     private final EmailService emailService;
+    private final UsuarioRepository usuarioRepo;
 
     @Value("${app.facturas.ruta:/tmp/facturas}")
     private String rutaFacturas;
 
     private static final double IVA_TASA = 0.19;
+
+    @Transactional
+    public FacturaElectronica generarFacturaAutomatica(Long pedidoId, String nit, String razonSocial) {
+        Pedido pedido = pedidoRepo.findById(pedidoId)
+                .orElseThrow(() -> new IllegalArgumentException("Pedido no encontrado"));
+
+        if (!"PAGADO".equalsIgnoreCase(pedido.getEstado())) {
+            throw new IllegalStateException("El pedido no está pagado");
+        }
+
+        FacturaElectronica existente = facturaRepo.findByPedido_Id(pedido.getId()).orElse(null);
+        if (existente != null) {
+            return existente;
+        }
+
+        double total = pedido.getTotal().doubleValue();
+        double subtotal = total / (1 + IVA_TASA);
+        double iva = total - subtotal;
+
+        String numeroFactura = generarNumero();
+        String nitFinal = nit != null && !nit.trim().isEmpty()
+                ? normalizarNit(nit)
+                : normalizarNit(pedido.getUsuario().getNitFiscal());
+        String razonSocialFinal = razonSocial != null && !razonSocial.trim().isEmpty()
+                ? normalizarRazonSocial(razonSocial)
+                : normalizarRazonSocial(pedido.getUsuario().getRazonSocialFiscal());
+
+        FacturaElectronica factura = FacturaElectronica.builder()
+                .pedido(pedido)
+                .usuario(pedido.getUsuario())
+                .numeroFactura(numeroFactura)
+                .nit(nitFinal)
+                .razonSocial(razonSocialFinal)
+                .subtotal(subtotal)
+                .iva(iva)
+                .total(total)
+                .estado(FacturaElectronica.EstadoFactura.GENERADA)
+                .build();
+
+        factura = facturaRepo.save(factura);
+
+        String pdfPath = generarFacturaPDF(factura, pedido);
+        factura.setPdfUrl(pdfPath);
+        factura = facturaRepo.save(factura);
+
+        factura.setEstado(FacturaElectronica.EstadoFactura.ENVIADA);
+        facturaRepo.save(factura);
+
+        emailService.enviarFactura(pedido.getUsuario().getEmail(), factura, pdfPath);
+        log.info("📄 Factura {} generada automáticamente para pedido {}", numeroFactura, pedido.getId());
+        return factura;
+    }
+
+    @Transactional
+    public FacturaElectronica completarDatosYEmitir(Long pedidoId, String nit, String razonSocial) {
+        if (nit == null || nit.trim().isEmpty() || razonSocial == null || razonSocial.trim().isEmpty()) {
+            throw new IllegalArgumentException("NIT y razón social son obligatorios");
+        }
+
+        FacturaElectronica facturaExistente = facturaRepo.findByPedido_Id(pedidoId).orElse(null);
+        if (facturaExistente != null) {
+            String nitFinal = normalizarNit(nit);
+            String razonFinal = normalizarRazonSocial(razonSocial);
+            if (!nitFinal.equals(facturaExistente.getNit())) {
+                facturaExistente.setNit(nitFinal);
+            }
+            if (!razonFinal.equals(facturaExistente.getRazonSocial())) {
+                facturaExistente.setRazonSocial(razonFinal);
+            }
+            return facturaRepo.save(facturaExistente);
+        }
+
+        return generarFacturaAutomatica(pedidoId, nit.trim(), razonSocial.trim());
+    }
+
+    @Transactional
+    public FacturaElectronica actualizarDatosFactura(Long facturaId, String nit, String razonSocial) {
+        FacturaElectronica factura = facturaRepo.findById(facturaId)
+                .orElseThrow(() -> new IllegalArgumentException("Factura no encontrada"));
+
+        if (nit != null && !nit.trim().isEmpty()) {
+            factura.setNit(nit.trim());
+        }
+        if (razonSocial != null && !razonSocial.trim().isEmpty()) {
+            factura.setRazonSocial(razonSocial.trim());
+        }
+        return facturaRepo.save(factura);
+    }
+
+    private String normalizarNit(String nit) {
+        if (nit == null || nit.trim().isEmpty()) {
+            return "N/A";
+        }
+        return nit.trim();
+    }
+
+    private String normalizarRazonSocial(String razonSocial) {
+        if (razonSocial == null || razonSocial.trim().isEmpty()) {
+            return "CONSUMIDOR FINAL";
+        }
+        return razonSocial.trim();
+    }
+
+    private void guardarDatosFiscales(Usuario usuario, String nit, String razonSocial) {
+        if (usuario == null) {
+            return;
+        }
+        usuario.setNitFiscal(normalizarNit(nit));
+        usuario.setRazonSocialFiscal(normalizarRazonSocial(razonSocial));
+        usuarioRepo.save(usuario);
+    }
 
     @Transactional
     public FacturaElectronica generarFactura(SolicitarFacturaRequest request, Long usuarioId) {
@@ -44,8 +157,18 @@ public class FacturaService {
             throw new IllegalArgumentException("El pedido no pertenece a este usuario");
         }
 
-        if (facturaRepo.existsByPedidoId(pedido.getId())) {
-            throw new IllegalArgumentException("Ya existe una factura para este pedido");
+        FacturaElectronica existente = facturaRepo.findByPedido_Id(pedido.getId()).orElse(null);
+        if (existente != null) {
+            if (request.getNit() != null && !request.getNit().trim().isEmpty()) {
+                existente.setNit(request.getNit().trim());
+            }
+            if (request.getRazonSocial() != null && !request.getRazonSocial().trim().isEmpty()) {
+                existente.setRazonSocial(request.getRazonSocial().trim());
+            }
+            if (Boolean.TRUE.equals(request.getGuardarDatos())) {
+                guardarDatosFiscales(pedido.getUsuario(), request.getNit(), request.getRazonSocial());
+            }
+            return facturaRepo.save(existente);
         }
 
         double total = pedido.getTotal().doubleValue();
@@ -54,12 +177,16 @@ public class FacturaService {
 
         String numeroFactura = generarNumero();
 
+        if (Boolean.TRUE.equals(request.getGuardarDatos())) {
+            guardarDatosFiscales(pedido.getUsuario(), request.getNit(), request.getRazonSocial());
+        }
+
         FacturaElectronica factura = FacturaElectronica.builder()
                 .pedido(pedido)
                 .usuario(pedido.getUsuario())
                 .numeroFactura(numeroFactura)
-                .nit(request.getNit())
-                .razonSocial(request.getRazonSocial())
+                .nit(normalizarNit(request.getNit()))
+                .razonSocial(normalizarRazonSocial(request.getRazonSocial()))
                 .subtotal(subtotal)
                 .iva(iva)
                 .total(total)
@@ -84,7 +211,9 @@ public class FacturaService {
     public String generarFacturaPDF(FacturaElectronica factura, Pedido pedido) {
         try {
             String fileName = "factura_" + factura.getNumeroFactura() + ".pdf";
-            String filePath = rutaFacturas + "/" + fileName;
+            java.nio.file.Path dirPath = java.nio.file.Paths.get(rutaFacturas);
+            java.nio.file.Files.createDirectories(dirPath);
+            String filePath = dirPath.resolve(fileName).toString();
 
             Document document = new Document(PageSize.A4);
             PdfWriter.getInstance(document, new FileOutputStream(filePath));
@@ -234,11 +363,11 @@ public class FacturaService {
     }
 
     public FacturaElectronica getFacturaPorPedido(Long pedidoId) {
-        return facturaRepo.findByPedidoId(pedidoId).orElse(null);
+        return facturaRepo.findByPedido_Id(pedidoId).orElse(null);
     }
 
     public java.util.List<FacturaElectronica> getMisFacturas(Long usuarioId) {
-        return facturaRepo.findByUsuarioId(usuarioId);
+        return facturaRepo.findByUsuario_Id(usuarioId);
     }
 
     public java.util.List<FacturaElectronica> listarTodas() {

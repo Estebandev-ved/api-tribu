@@ -19,7 +19,7 @@ const PASOS = [
     {
         Icon: Package,
         titulo: 'Recibe en tu puerta',
-        desc: 'Tu pedido sale desde Mocoa, Putumayo. Rastreo en tiempo real y notificación de cada estado por email.',
+        desc: 'Tu pedido sale desde Medellín, Antioquia. Rastreo en tiempo real y notificación de cada estado por email.',
     },
 ]
 

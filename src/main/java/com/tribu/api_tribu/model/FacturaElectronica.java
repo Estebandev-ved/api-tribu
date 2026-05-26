@@ -1,5 +1,8 @@
 package com.tribu.api_tribu.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -12,6 +15,7 @@ import java.time.LocalDateTime;
 @Entity
 @Builder
 @Table(name = "facturas")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class FacturaElectronica {
 
     @Id
@@ -20,10 +24,12 @@ public class FacturaElectronica {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pedido_id", nullable = false, unique = true)
+    @JsonIgnore
     private Pedido pedido;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false)
+    @JsonIgnore
     private Usuario usuario;
 
     @Column(name = "numero_factura", nullable = false, unique = true, length = 20)
@@ -79,5 +85,15 @@ public class FacturaElectronica {
         GENERADA,
         ENVIADA,
         ANULADA
+    }
+
+    @JsonProperty("pedidoId")
+    public Long getPedidoId() {
+        return pedido != null ? pedido.getId() : null;
+    }
+
+    @JsonProperty("usuarioId")
+    public Long getUsuarioId() {
+        return usuario != null ? usuario.getId() : null;
     }
 }

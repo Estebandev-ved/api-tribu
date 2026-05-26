@@ -1,10 +1,32 @@
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { Users, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
+import { Users, Clock, CheckCircle, XCircle, AlertCircle, Pizza, Gift, Sparkles, ShoppingCart } from 'lucide-react'
 import { formatCOP } from '../utils/formatters'
 import { getTierColor } from '../utils/tierColors'
+import { grupoService } from '../services/services'
+import toast from 'react-hot-toast'
 
-export default function GrupoCard({ grupo, index = 0 }) {
+const getGrupoIcon = (emoji) => {
+  switch (emoji) {
+    case '🍕':
+      return <Pizza size={24} color="#FF5722" />
+    case '🎉':
+      return <Sparkles size={24} color="#FF9800" />
+    case '👕':
+      return <ShoppingCart size={24} color="#2196F3" />
+    case '🎁':
+      return <Gift size={24} color="#E91E63" />
+    case '🛒':
+      return <ShoppingCart size={24} color="#4CAF50" />
+    case '🎂':
+      return <Gift size={24} color="#9C27B0" />
+    default:
+      return <Users size={24} color="#888" />
+  }
+}
+
+export default function GrupoCard({ grupo, index = 0, onPaymentSuccess }) {
   const {
     id,
     nombre,
@@ -17,6 +39,25 @@ export default function GrupoCard({ grupo, index = 0 }) {
     estado,
     tuEstado
   } = grupo
+
+  const [pagando, setPagando] = useState(false)
+
+  const handlePagar = async () => {
+    setPagando(true)
+    try {
+      await grupoService.pagar(id)
+      toast.success('¡Parte pagada con éxito con tus Puntos Tribu!')
+      if (onPaymentSuccess) {
+        onPaymentSuccess()
+      } else {
+        window.location.reload()
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Error al procesar el pago')
+    } finally {
+      setPagando(false)
+    }
+  }
 
   const expiraEn = new Date(expiresAt)
   const ahora = new Date()
@@ -61,10 +102,9 @@ export default function GrupoCard({ grupo, index = 0 }) {
           background: 'var(--color-background-secondary, #2a2a2a)',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: 24
+          justifyContent: 'center'
         }}>
-          {emoji || '👥'}
+          {getGrupoIcon(emoji)}
         </div>
         <div style={{ flex: 1 }}>
           <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: '#fff' }}>
@@ -128,20 +168,22 @@ export default function GrupoCard({ grupo, index = 0 }) {
         
         {tuEstado !== 'PAGADO' ? (
           <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={{ scale: pagando ? 1 : 1.02 }}
+            whileTap={{ scale: pagando ? 1 : 0.98 }}
+            disabled={pagando}
+            onClick={handlePagar}
             style={{
-              background: 'var(--color-primary, #ff5722)',
+              background: pagando ? '#666' : 'var(--color-primary, #ff5722)',
               color: '#fff',
               border: 'none',
               padding: '0.5rem 1rem',
               borderRadius: 8,
               fontWeight: 600,
               fontSize: '0.85rem',
-              cursor: 'pointer'
+              cursor: pagando ? 'not-allowed' : 'pointer'
             }}
           >
-            Pagar
+            {pagando ? 'Pagando...' : 'Pagar con Puntos'}
           </motion.button>
         ) : (
           <span style={{ 

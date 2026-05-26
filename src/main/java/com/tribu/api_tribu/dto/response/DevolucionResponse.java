@@ -14,6 +14,9 @@ import java.time.LocalDateTime;
 public class DevolucionResponse {
     private Long id;
     private String orderNumber;
+    private Long pedidoId;
+    private Long productoId;
+    private String productoNombre;
     private String email;
     private String reason;
     private String estado;

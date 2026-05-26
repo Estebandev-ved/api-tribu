@@ -12,7 +12,7 @@ const CIUDADES_COLOMBIA = [
     'Bucaramanga', 'Cúcuta', 'Pereira', 'Manizales', 'Ibagué',
     'Santa Marta', 'Villavicencio', 'Pasto', 'Montería', 'Valledupar',
     'Neiva', 'Armenia', 'Popayán', 'Sincelejo', 'Riohacha',
-    'Mocoa', 'Florencia', 'Tunja', 'Leticia', 'Quibdó',
+    'Medellín', 'Florencia', 'Tunja', 'Leticia', 'Quibdó',
     'Mitú', 'Puerto Carreño', 'San José del Guaviare', 'Inírida', 'Yopal',
     'Otra ciudad'
 ]
@@ -65,12 +65,12 @@ export default function RegisterPage() {
                         transition={{ type: 'spring', stiffness: 260, damping: 20 }}
                         style={{
                             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                            width: 64, height: 64, borderRadius: '18px',
-                            background: 'var(--color-primary)', marginBottom: '1rem',
-                            boxShadow: '0 0 24px var(--color-primary-glow)',
+                            width: 72, height: 72, borderRadius: '18px',
+                            background: 'linear-gradient(135deg, rgba(255,87,34,0.95), rgba(255,122,51,0.95))', marginBottom: '1rem',
+                            boxShadow: '0 0 24px rgba(255,87,34,0.35)',
                         }}
                     >
-                        <Flame size={30} color="#fff" />
+                        <img src="/logo-tribu.png" alt="Tribu" style={{ width: 44, height: 44, objectFit: 'contain' }} />
                     </motion.div>
                     <h1 style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 900, fontSize: '1.8rem' }}>Únete a la Tribu</h1>
                     <p style={{ color: 'var(--color-text-muted)', marginTop: '0.4rem' }}>

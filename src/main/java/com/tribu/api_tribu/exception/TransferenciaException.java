@@ -34,4 +34,16 @@ public class TransferenciaException extends RuntimeException {
             super("El monto mínimo es $1.000");
         }
     }
+
+    public static class PinIncorrectoException extends TransferenciaException {
+        public PinIncorrectoException() {
+            super("PIN de seguridad incorrecto");
+        }
+    }
+
+    public static class PinNoConfiguradoException extends TransferenciaException {
+        public PinNoConfiguradoException() {
+            super("Debes configurar un PIN de seguridad antes de realizar esta operación");
+        }
+    }
 }

@@ -52,4 +52,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     @Query("SELECT u FROM Usuario u WHERE u.rachaActual > :rachaLimit AND u.ultimaActividadFecha < :fecha")
     List<Usuario> findByRachaActualGreaterThanAndUltimaActividadFechaBefore(
         @Param("rachaLimit") int rachaLimit, @Param("fecha") LocalDate fecha);
+
+    Optional<Usuario> findByResetPasswordToken(String token);
 }
+

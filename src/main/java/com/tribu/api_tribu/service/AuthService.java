@@ -16,6 +16,7 @@ import com.tribu.api_tribu.websocket.SaldoWebSocketService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -26,7 +27,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
 /**
@@ -52,7 +55,18 @@ public class AuthService {
     private final CashbackTierService cashbackTierService;
     private final TierRepository tierRepository;
     private final SecurityAuditService securityAuditService;
+    private final TwoFactorService twoFactorService;
+    private final EmailService emailService;
 
+    @Value("${app.frontend.url:http://localhost:3000}")
+    private String frontendUrl;
+
+    /**
+     * Login con soporte de doble factor (2FA).
+     * Si el usuario tiene 2FA activo, devuelve requires2fa=true sin emitir JWT real.
+     * El JWT definitivo se obtiene llamando a verify2fa() con el código TOTP.
+     * Seguridad: la autenticación principal (contraseña) siempre se realiza primero.
+     */
     public AuthResponse login(LoginRequest request, HttpServletRequest httpRequest) {
         // Validar primero si no está bloqueado
         securityAuditService.validarFuerzaBruta(httpRequest);
@@ -60,7 +74,6 @@ public class AuthService {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
-                    
             securityAuditService.registrarIntento(request.getEmail(), httpRequest, true, null);
         } catch (org.springframework.security.core.AuthenticationException e) {
             securityAuditService.registrarIntento(request.getEmail(), httpRequest, false, "Credenciales inválidas");
@@ -69,6 +82,14 @@ public class AuthService {
 
         Usuario usuario = usuarioRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", request.getEmail()));
+
+        // Si tiene 2FA activo, no emitir el token definitivo todavía
+        if (Boolean.TRUE.equals(usuario.getIs2faHabilitado())) {
+            return AuthResponse.builder()
+                    .requires2fa(true)
+                    .email(usuario.getEmail())
+                    .build();
+        }
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
         String token = jwtUtil.generateToken(userDetails);
@@ -79,9 +100,89 @@ public class AuthService {
                 .nombreCompleto(usuario.getNombreCompleto())
                 .email(usuario.getEmail())
                 .rol(usuario.getRol() != null ? usuario.getRol().getNombre() : "CLIENTE")
-                .tierActual(buildTierInfo(usuario))  // ← FASE 2
+                .tierActual(buildTierInfo(usuario))
                 .build();
     }
+
+    /**
+     * Verifica el código TOTP de 6 dígitos y entrega el JWT final.
+     * Seguridad: sin el código correcto, no se entrega ningún token.
+     */
+    @Transactional
+    public AuthResponse verify2fa(String email, int codigo) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", email));
+
+        if (!Boolean.TRUE.equals(usuario.getIs2faHabilitado()) || usuario.getSecret2fa() == null) {
+            throw new IllegalStateException("Este usuario no tiene 2FA habilitado");
+        }
+
+        if (!twoFactorService.validarCodigo(usuario.getSecret2fa(), codigo)) {
+            throw new IllegalArgumentException("Código 2FA incorrecto o expirado");
+        }
+
+        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+        String token = jwtUtil.generateToken(userDetails);
+
+        return AuthResponse.builder()
+                .token(token)
+                .id(usuario.getId())
+                .nombreCompleto(usuario.getNombreCompleto())
+                .email(usuario.getEmail())
+                .rol(usuario.getRol() != null ? usuario.getRol().getNombre() : "CLIENTE")
+                .tierActual(buildTierInfo(usuario))
+                .build();
+    }
+
+    /**
+     * Genera un token de recuperación de contraseña y envía el correo.
+     * Seguridad: token UUID criptográficamente seguro, expira en 15 min.
+     * No revela si el email existe (prevención de enumeración de usuarios).
+     */
+    @Transactional
+    public void forgotPassword(String email) {
+        Optional<Usuario> opt = usuarioRepository.findByEmail(email);
+        if (opt.isEmpty()) {
+            // No revelar si el email existe o no (anti-enumeración)
+            return;
+        }
+        Usuario usuario = opt.get();
+        String token = UUID.randomUUID().toString().replace("-", "");
+        usuario.setResetPasswordToken(token);
+        usuario.setResetPasswordExpires(LocalDateTime.now().plusMinutes(15));
+        usuarioRepository.save(usuario);
+
+        String resetLink = frontendUrl + "/reset-password?token=" + token;
+        emailService.enviarResetPassword(email, usuario.getNombreCompleto(), resetLink);
+        log.info("🔐 Token de reset enviado a {}", email);
+    }
+
+    /**
+     * Valida el token y actualiza la contraseña con BCrypt.
+     * Seguridad: el token se invalida inmediatamente después de usarse.
+     */
+    @Transactional
+    public void resetPassword(String token, String nuevaPassword) {
+        Usuario usuario = usuarioRepository.findByResetPasswordToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("Token inválido o expirado"));
+
+        if (usuario.getResetPasswordExpires() == null ||
+            LocalDateTime.now().isAfter(usuario.getResetPasswordExpires())) {
+            throw new IllegalArgumentException("El enlace de restablecimiento ha expirado. Solicita uno nuevo.");
+        }
+
+        if (nuevaPassword == null || nuevaPassword.length() < 8) {
+            throw new IllegalArgumentException("La contraseña debe tener al menos 8 caracteres");
+        }
+
+        // Invalidar token inmediatamente (uso único)
+        usuario.setPassword(passwordEncoder.encode(nuevaPassword));
+        usuario.setResetPasswordToken(null);
+        usuario.setResetPasswordExpires(null);
+        usuarioRepository.save(usuario);
+        log.info("🔑 Contraseña restablecida para usuario ID {}", usuario.getId());
+    }
+
 
     @Transactional
     public AuthResponse register(RegisterRequest request, HttpServletRequest httpRequest) {

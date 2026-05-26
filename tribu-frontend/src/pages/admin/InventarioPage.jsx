@@ -1,392 +1,1126 @@
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { Package, AlertTriangle, CheckCircle, Download, Search, Edit2, Save, X, Filter } from 'lucide-react'
-import { api } from '../../api'
+import { motion, AnimatePresence } from 'framer-motion'
+import { 
+  Package, AlertTriangle, CheckCircle, Download, Search, Edit2, Save, X, 
+  Filter, Boxes, TrendingDown, Coins, Percent, Scale, TrendingUp, Calendar,
+  User, DollarSign, ArrowUpRight, ArrowDownRight, Settings2, FileText, Check, AlertCircle
+} from 'lucide-react'
+import { 
+  getProductosFinancieros, getDashboardKpis, getResumenCaja, 
+  getRegistroVentas, getProductosRentabilidad, api 
+} from '../../api'
 import { formatCOP } from '../../utils/formatters'
 import Skeleton from '../../components/Skeleton'
 
 export default function InventarioPage() {
-  const [productos, setProductos] = useState([])
-  const [stats, setStats] = useState({ critico: 0, bajo: 0, normal: 0 })
+  const [activeTab, setActiveTab] = useState('caja') // 'caja', 'rentabilidad', 'configuracion'
+  
+  // Data States
+  const [resumenCaja, setResumenCaja] = useState({
+    ingresosTotales: 0,
+    egresosTotalesCogs: 0,
+    utilidadNeta: 0,
+    efectivoCaja: 0,
+    dineroPendiente: 0,
+    totalVentas: 0,
+    totalItemsVendidos: 0
+  })
+  const [registroVentas, setRegistroVentas] = useState([])
+  const [productosRentabilidad, setProductosRentabilidad] = useState([])
+  const [productosFinancieros, setProductosFinancieros] = useState([]) // For configuration tab
+  
+  // General UI States
   const [loading, setLoading] = useState(true)
-  const [filtro, setFiltro] = useState('todos')
   const [busqueda, setBusqueda] = useState('')
-  const [editando, setEditando] = useState(null)
-  const [editStock, setEditStock] = useState('')
-  const [editUmbrales, setEditUmbrales] = useState({ minimo: 5, critico: 3 })
-  const [showUmbrales, setShowUmbrales] = useState(null)
+  const [filtroRentabilidad, setFiltroRentabilidad] = useState('todos') // 'todos', 'excelente', 'moderado', 'critico'
+  
+  // Editing State for Manual Cost Configuration
+  const [editandoId, setEditandoId] = useState(null)
+  const [valoresEdit, setValoresEdit] = useState({
+    precio: 0,
+    stock: 0,
+    costoProveedor: 0,
+    costoEmpaqueEnvio: 0,
+    comisionPasarelaFija: 0
+  })
+
+  // Toast notification state
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' })
+
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type })
+    setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 4000)
+  }
 
   useEffect(() => {
     fetchData()
-  }, [])
+  }, [activeTab])
 
   const fetchData = async () => {
     setLoading(true)
     try {
-      const res = await api.get('/productos')
-      const prods = res.data || []
-      setProductos(prods)
-      
-      const critico = prods.filter(p => p.stock <= (p.umbralCritico || 3)).length
-      const bajo = prods.filter(p => p.stock > (p.umbralCritico || 3) && p.stock <= (p.umbralMinimo || 10)).length
-      const normal = prods.length - critico - bajo
-      setStats({ critico, bajo, normal })
+      if (activeTab === 'caja') {
+        const [cajaRes, ventasRes] = await Promise.all([
+          getResumenCaja(),
+          getRegistroVentas()
+        ])
+        setResumenCaja(cajaRes.data || {
+          ingresosTotales: 0,
+          egresosTotalesCogs: 0,
+          utilidadNeta: 0,
+          efectivoCaja: 0,
+          dineroPendiente: 0,
+          totalVentas: 0,
+          totalItemsVendidos: 0
+        })
+        setRegistroVentas(ventasRes.data || [])
+      } else if (activeTab === 'rentabilidad') {
+        const rentRes = await getProductosRentabilidad()
+        setProductosRentabilidad(rentRes.data || [])
+      } else if (activeTab === 'configuracion') {
+        const prodsRes = await getProductosFinancieros()
+        setProductosFinancieros(prodsRes.data || [])
+      }
     } catch (err) {
-      console.error('Error:', err)
+      console.error('Error cargando datos financieros:', err)
+      showToast('Error al conectar con la base de datos financiera', 'error')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleSaveStock = async (id) => {
+  const iniciarEdicion = (prod) => {
+    setEditandoId(prod.id)
+    setValoresEdit({
+      precio: prod.precio || 0,
+      stock: prod.stock || 0,
+      costoProveedor: prod.costoProveedor || 0,
+      costoEmpaqueEnvio: prod.costoEmpaqueEnvio || 0,
+      comisionPasarelaFija: prod.comisionPasarelaFija || 0
+    })
+  }
+
+  const guardarConfiguracionManual = async (prod) => {
     try {
-      await api.put(`/productos/${id}/stock`, { stock: parseInt(editStock) })
-      setEditando(null)
+      // 1. Guardamos la información completa en el backend a través del endpoint de actualización de producto
+      await api.put(`/productos/${prod.id}`, {
+        nombre: prod.nombre,
+        descripcion: prod.descripcion || '',
+        precio: Number(valoresEdit.precio),
+        stock: Number(valoresEdit.stock),
+        categoriaId: prod.categoriaId,
+        costoProveedor: Number(valoresEdit.costoProveedor),
+        costoEmpaqueEnvio: Number(valoresEdit.costoEmpaqueEnvio),
+        comisionPasarelaFija: Number(valoresEdit.comisionPasarelaFija)
+      })
+
+      showToast(`¡Configuración de ${prod.nombre} guardada con éxito!`, 'success')
+      setEditandoId(null)
       fetchData()
     } catch (err) {
-      alert('Error al guardar stock')
+      console.error('Error actualizando costos manualmente:', err)
+      showToast('Error al guardar la configuración del producto', 'error')
     }
   }
 
-  const handleSaveUmbrales = async (id) => {
-    try {
-      await api.put(`/productos/${id}/umbrales`, editUmbrales)
-      setShowUmbrales(null)
-      fetchData()
-    } catch (err) {
-      alert('Error al guardar umbrales')
-    }
-  }
+  // Filtrado de Ventas
+  const ventasFiltradas = registroVentas.filter(v => 
+    v.producto.toLowerCase().includes(busqueda.toLowerCase()) || 
+    (v.cliente && v.cliente.toLowerCase().includes(busqueda.toLowerCase()))
+  )
 
-  const filtered = productos.filter(p => {
-    const coincideBusqueda = !busqueda || p.nombre.toLowerCase().includes(busqueda.toLowerCase())
-    if (filtro === 'todos') return coincideBusqueda
-    if (filtro === 'critico') return coincideBusqueda && p.stock <= (p.umbralCritico || 3)
-    if (filtro === 'bajo') return coincideBusqueda && p.stock > (p.umbralCritico || 3) && p.stock <= (p.umbralMinimo || 10)
-    if (filtro === 'normal') return coincideBusqueda && p.stock > (p.umbralMinimo || 10)
-    return coincideBusqueda
+  // Filtrado de Rentabilidad
+  const rentabilidadFiltrada = productosRentabilidad.filter(p => {
+    const coincideBusqueda = p.nombre.toLowerCase().includes(busqueda.toLowerCase())
+    if (filtroRentabilidad === 'todos') return coincideBusqueda
+    return coincideBusqueda && p.semaforoRendimiento.toLowerCase() === filtroRentabilidad
   })
 
-  const getStockStatus = (p) => {
-    if (p.stock <= (p.umbralCritico || 3)) return 'critico'
-    if (p.stock <= (p.umbralMinimo || 10)) return 'bajo'
-    return 'normal'
-  }
+  // Filtrado de Configuración
+  const configuracionFiltrada = productosFinancieros.filter(p => 
+    p.nombre.toLowerCase().includes(busqueda.toLowerCase())
+  )
 
-  const getStatusColor = (status) => {
-    if (status === 'critico') return { bg: '#E24B4A20', text: '#E24B4A', border: '#E24B4A40' }
-    if (status === 'bajo') return { bg: '#FFB84D20', text: '#FFB84D', border: '#FFB84D40' }
-    return { bg: '#1D9E7520', text: '#1D9E75', border: '#1D9E7540' }
+  const exportarCSV = () => {
+    let headers = []
+    let rows = []
+    let filename = ''
+
+    if (activeTab === 'caja') {
+      headers = ['ID Pedido', 'Fecha', 'Producto', 'Cantidad', 'Precio Unitario', 'Ingreso Total', 'Costo Unitario (COGS)', 'Costo Total', 'Utilidad Neta', 'Cliente']
+      rows = registroVentas.map(v => [
+        v.pedidoId,
+        new Date(v.fecha).toLocaleDateString(),
+        v.producto,
+        v.cantidad,
+        v.precioUnitario,
+        v.ingresoTotal,
+        v.costoUnitario,
+        v.costoTotal,
+        v.utilidadNeta,
+        v.cliente
+      ])
+      filename = `Libro_Diario_Ventas_${new Date().toISOString().split('T')[0]}.csv`
+    } else if (activeTab === 'rentabilidad') {
+      headers = ['Producto', 'Categoría', 'PVP Venta', 'Costo COGS Unitario', 'Margen Unitario (MCU)', 'Margen %', 'Unidades Vendidas', 'Utilidad Total Acumulada', 'Rendimiento']
+      rows = productosRentabilidad.map(p => [
+        p.nombre,
+        p.categoriaNombre,
+        p.precioVenta,
+        p.costoUnitarioTotal,
+        p.margenUnitario,
+        p.margenPorcentaje,
+        p.unidadesVendidas,
+        p.utilidadTotalGenerada,
+        p.semaforoRendimiento
+      ])
+      filename = `Rentabilidad_Productos_${new Date().toISOString().split('T')[0]}.csv`
+    } else {
+      headers = ['Producto', 'Categoría', 'PVP Venta', 'Stock', 'Costo Proveedor', 'Costo Envío', 'Comisión Fija']
+      rows = productosFinancieros.map(p => [
+        p.nombre,
+        p.categoriaNombre,
+        p.precio,
+        p.stock,
+        p.costoProveedor,
+        p.costoEmpaqueEnvio,
+        p.comisionPasarelaFija
+      ])
+      filename = `Catalogo_Costos_Configuracion_${new Date().toISOString().split('T')[0]}.csv`
+    }
+
+    const csvContent = "\uFEFF" + [
+      headers.join(','),
+      ...rows.map(e => e.map(val => `"${String(val).replace(/"/g, '""')}"`).join(','))
+    ].join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement("a")
+    const url = URL.createObjectURL(blob)
+    link.setAttribute("href", url)
+    link.setAttribute("download", filename)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    showToast('Archivo CSV exportado exitosamente')
   }
 
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'var(--color-background, #0a0a0a)',
-      paddingTop: '5rem',
-      paddingBottom: '2rem'
+      background: 'radial-gradient(circle at 10% -10%, #1a1a1c 0%, #0d0d0f 50%, #050505 100%)',
+      paddingTop: '6rem',
+      paddingBottom: '4rem',
+      color: '#fff',
+      fontFamily: 'Inter, sans-serif'
     }}>
-      <div style={{ maxWidth: 1000, margin: '0 auto', padding: '0 1rem' }}>
-        
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Package size={28} color="#ff5722" />
-            Inventario
-          </h1>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {toast.show && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.9 }}
             style={{
-              padding: '0.5rem 1rem',
-              background: '#2a2a2a',
+              position: 'fixed',
+              top: '20px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 9999,
+              background: toast.type === 'success' ? '#10B981' : '#EF4444',
               color: '#fff',
-              border: '1px solid #333',
-              borderRadius: 8,
+              padding: '0.75rem 1.5rem',
+              borderRadius: '12px',
+              boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
               fontWeight: 600,
+              fontSize: '0.9rem'
+            }}
+          >
+            {toast.type === 'success' ? <CheckCircle size={18} /> : <AlertTriangle size={18} />}
+            {toast.message}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.5rem' }}>
+        
+        {/* Cabecera Principal */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem', gap: '1rem', flexWrap: 'wrap' }}>
+          <div>
+            <p style={{ color: '#ff7a45', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 700 }}>
+              Panel Financiero & Margen de Contribución
+            </p>
+            <h1 style={{ fontSize: '2.2rem', fontWeight: 900, color: '#fff', margin: '0.4rem 0', display: 'flex', alignItems: 'center', gap: 12 }}>
+              <Scale size={32} color="#ff7a45" style={{ filter: 'drop-shadow(0 0 10px rgba(255, 122, 69, 0.4))' }} />
+              Finanzas & Inventario
+            </h1>
+            <p style={{ color: '#888990', margin: 0, fontSize: '0.95rem' }}>
+              Control contable, auditoría del Libro Diario y análisis de rendimiento por SKU en tiempo real.
+            </p>
+          </div>
+          
+          <motion.button
+            whileHover={{ scale: 1.03, boxShadow: '0 4px 15px rgba(255,255,255,0.05)' }}
+            whileTap={{ scale: 0.98 }}
+            onClick={exportarCSV}
+            style={{
+              padding: '0.7rem 1.2rem',
+              background: 'rgba(255, 255, 255, 0.03)',
+              color: '#fff',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              borderRadius: 12,
+              fontWeight: 700,
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: 6
+              gap: 10,
+              fontSize: '0.88rem',
+              backdropFilter: 'blur(10px)'
             }}
           >
-            <Download size={16} />
-            Exportar CSV
+            <Download size={16} color="#ff7a45" />
+            Exportar datos (CSV)
           </motion.button>
         </div>
 
-        <div style={{ display: 'flex', gap: 12, marginBottom: '1.5rem' }}>
+        {/* NAVEGACIÓN POR PESTAÑAS (TABS) */}
+        <div style={{
+          display: 'flex',
+          gap: '8px',
+          background: 'rgba(255, 255, 255, 0.02)',
+          padding: '6px',
+          borderRadius: '16px',
+          border: '1px solid rgba(255, 255, 255, 0.04)',
+          marginBottom: '2.5rem',
+          backdropFilter: 'blur(20px)',
+          width: 'fit-content'
+        }}>
           {[
-            { id: 'todos', label: 'Todos', count: productos.length, color: '#fff' },
-            { id: 'critico', label: 'Crítico', count: stats.critico, color: '#E24B4A' },
-            { id: 'bajo', label: 'Stock bajo', count: stats.bajo, color: '#FFB84D' },
-            { id: 'normal', label: 'Normal', count: stats.normal, color: '#1D9E75' }
-          ].map(f => (
-            <motion.button
-              key={f.id}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setFiltro(f.id)}
-              style={{
-                padding: '0.75rem 1rem',
-                background: filtro === f.id ? `${f.color}20` : 'var(--color-background-primary, #1a1a1a)',
-                border: `1px solid ${filtro === f.id ? f.color : '#333'}`,
-                borderRadius: 10,
-                color: filtro === f.id ? f.color : '#888',
-                fontWeight: 600,
-                fontSize: '0.85rem',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8
-              }}
-            >
-              {f.id === 'critico' && <AlertTriangle size={14} />}
-              {f.id === 'normal' && <CheckCircle size={14} />}
-              {f.label}
-              <span style={{
-                padding: '2px 6px',
-                borderRadius: 4,
-                background: filtro === f.id ? f.color : '#333',
-                color: filtro === f.id ? '#000' : '#888',
-                fontSize: '0.75rem'
-              }}>
-                {f.count}
-              </span>
-            </motion.button>
-          ))}
+            { id: 'caja', label: 'Caja y Libro Diario', icon: Coins },
+            { id: 'rentabilidad', label: 'Rentabilidad de Productos', icon: TrendingUp },
+            { id: 'configuracion', label: 'Configuración Rápida', icon: Settings2 }
+          ].map(tab => {
+            const IconComponent = tab.icon
+            const active = activeTab === tab.id
+            return (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setActiveTab(tab.id)
+                  setBusqueda('')
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '0.8rem 1.4rem',
+                  border: 'none',
+                  borderRadius: '12px',
+                  background: active ? 'linear-gradient(135deg, #ff7a45 0%, #d4380d 100%)' : 'transparent',
+                  color: active ? '#fff' : '#888990',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  fontSize: '0.9rem',
+                  boxShadow: active ? '0 4px 15px rgba(255, 122, 69, 0.3)' : 'none'
+                }}
+              >
+                <IconComponent size={16} />
+                {tab.label}
+              </button>
+            )
+          })}
         </div>
 
-        <div style={{ position: 'relative', marginBottom: '1.5rem' }}>
-          <Search size={18} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#666' }} />
-          <input
-            type="text"
-            placeholder="Buscar producto..."
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '0.75rem 1rem 0.75rem 2.5rem',
-              background: 'var(--color-background-primary, #1a1a1a)',
-              border: '1px solid #333',
-              borderRadius: 10,
-              color: '#fff',
-              outline: 'none'
-            }}
-          />
-        </div>
-
+        {/* CARGANDO (SKELETON) */}
         {loading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {[1,2,3,4,5].map(i => <Skeleton key={i} h={60} r={12} />)}
+          <div style={{ display: 'grid', gap: '1.5rem' }}>
+            <Skeleton height="120px" borderRadius="16px" />
+            <Skeleton height="400px" borderRadius="16px" />
           </div>
         ) : (
-          <div style={{
-            background: 'var(--color-background-primary, #1a1a1a)',
-            borderRadius: 16,
-            overflow: 'hidden',
-            border: '0.5px solid #333'
-          }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid #333' }}>
-                  <th style={{ padding: '0.75rem 1rem', textAlign: 'left', color: '#666', fontSize: '0.8rem', fontWeight: 600 }}>Producto</th>
-                  <th style={{ padding: '0.75rem 1rem', textAlign: 'center', color: '#666', fontSize: '0.8rem', fontWeight: 600 }}>Stock</th>
-                  <th style={{ padding: '0.75rem 1rem', textAlign: 'center', color: '#666', fontSize: '0.8rem', fontWeight: 600 }}>Umbral Mín</th>
-                  <th style={{ padding: '0.75rem 1rem', textAlign: 'center', color: '#666', fontSize: '0.8rem', fontWeight: 600 }}>Umbral Crít</th>
-                  <th style={{ padding: '0.75rem 1rem', textAlign: 'center', color: '#666', fontSize: '0.8rem', fontWeight: 600 }}>Estado</th>
-                  <th style={{ padding: '0.75rem 1rem', textAlign: 'right', color: '#666', fontSize: '0.8rem', fontWeight: 600 }}>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((p, idx) => {
-                  const status = getStockStatus(p)
-                  const colors = getStatusColor(status)
-                  return (
-                    <motion.tr
-                      key={p.id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: idx * 0.02 }}
-                      style={{ 
-                        borderBottom: '0.5px solid #2a2a2a',
-                        background: status === 'critico' ? '#E24B4A10' : status === 'bajo' ? '#FFB84D10' : 'transparent'
+          <>
+            {/* PESTAÑA 1: CAJA Y LIBRO DIARIO */}
+            {activeTab === 'caja' && (
+              <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+                
+                {/* Cuadrícula de KPIs Financieros */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
+                  
+                  {/* KPI: Ingresos Totales */}
+                  <div className="card" style={{
+                    padding: '1.5rem',
+                    background: 'linear-gradient(135deg, rgba(34,197,94,0.03) 0%, rgba(34,197,94,0.01) 100%)',
+                    border: '1px solid rgba(34,197,94,0.15)',
+                    borderRadius: '20px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    minHeight: '120px'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div>
+                        <p style={{ color: '#888990', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600 }}>
+                          Ingresos Totales (Ventas)
+                        </p>
+                        <p style={{ fontSize: '1.8rem', fontWeight: 900, color: '#22c55e', marginTop: '0.4rem' }}>
+                          {formatCOP(resumenCaja.ingresosTotales)}
+                        </p>
+                      </div>
+                      <div style={{ padding: '8px', borderRadius: '12px', background: 'rgba(34,197,94,0.1)', color: '#22c55e' }}>
+                        <ArrowUpRight size={20} />
+                      </div>
+                    </div>
+                    <p style={{ fontSize: '0.75rem', color: '#686970', margin: 0, display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <Check size={12} /> {resumenCaja.totalVentas} transacciones liquidadas
+                    </p>
+                  </div>
+
+                  {/* KPI: Egresos Totales COGS */}
+                  <div className="card" style={{
+                    padding: '1.5rem',
+                    background: 'linear-gradient(135deg, rgba(239,68,68,0.03) 0%, rgba(239,68,68,0.01) 100%)',
+                    border: '1px solid rgba(239,68,68,0.15)',
+                    borderRadius: '20px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    minHeight: '120px'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div>
+                        <p style={{ color: '#888990', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600 }}>
+                          Egresos Totales (COGS)
+                        </p>
+                        <p style={{ fontSize: '1.8rem', fontWeight: 900, color: '#ef4444', marginTop: '0.4rem' }}>
+                          {formatCOP(resumenCaja.egresosTotalesCogs)}
+                        </p>
+                      </div>
+                      <div style={{ padding: '8px', borderRadius: '12px', background: 'rgba(239,68,68,0.1)', color: '#ef4444' }}>
+                        <ArrowDownRight size={20} />
+                      </div>
+                    </div>
+                    <p style={{ fontSize: '0.75rem', color: '#686970', margin: 0 }}>
+                      Costo total de mercancías vendidas
+                    </p>
+                  </div>
+
+                  {/* KPI: Utilidad Neta */}
+                  <div className="card" style={{
+                    padding: '1.5rem',
+                    background: 'linear-gradient(135deg, rgba(168,85,247,0.04) 0%, rgba(168,85,247,0.01) 100%)',
+                    border: '1px solid rgba(168,85,247,0.2)',
+                    borderRadius: '20px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    minHeight: '120px'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div>
+                        <p style={{ color: '#888990', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600 }}>
+                          Utilidad Neta Directa
+                        </p>
+                        <p style={{ fontSize: '1.8rem', fontWeight: 900, color: '#a855f7', marginTop: '0.4rem' }}>
+                          {formatCOP(resumenCaja.utilidadNeta)}
+                        </p>
+                      </div>
+                      <div style={{ padding: '8px', borderRadius: '12px', background: 'rgba(168,85,247,0.1)', color: '#a855f7' }}>
+                        <TrendingUp size={20} />
+                      </div>
+                    </div>
+                    <p style={{ fontSize: '0.75rem', color: '#686970', margin: 0 }}>
+                      Rendimiento real antes de impuestos
+                    </p>
+                  </div>
+
+                  {/* KPI: Efectivo en Caja (Dinero Realizado) */}
+                  <div className="card" style={{
+                    padding: '1.5rem',
+                    background: 'linear-gradient(135deg, rgba(59,130,246,0.03) 0%, rgba(59,130,246,0.01) 100%)',
+                    border: '1px solid rgba(59,130,246,0.15)',
+                    borderRadius: '20px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    minHeight: '120px'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div>
+                        <p style={{ color: '#888990', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600 }}>
+                          Efectivo Caja (Web)
+                        </p>
+                        <p style={{ fontSize: '1.8rem', fontWeight: 900, color: '#3b82f6', marginTop: '0.4rem' }}>
+                          {formatCOP(resumenCaja.efectivoCaja)}
+                        </p>
+                      </div>
+                      <div style={{ padding: '8px', borderRadius: '12px', background: 'rgba(59,130,246,0.1)', color: '#3b82f6' }}>
+                        <Coins size={20} />
+                      </div>
+                    </div>
+                    <p style={{ fontSize: '0.75rem', color: '#686970', margin: 0 }}>
+                      Dinero neto en pasarela / cuentas
+                    </p>
+                  </div>
+
+                  {/* KPI: Dinero Pendiente */}
+                  <div className="card" style={{
+                    padding: '1.5rem',
+                    background: 'linear-gradient(135deg, rgba(234,179,8,0.03) 0%, rgba(234,179,8,0.01) 100%)',
+                    border: '1px solid rgba(234,179,8,0.15)',
+                    borderRadius: '20px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    minHeight: '120px'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div>
+                        <p style={{ color: '#888990', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600 }}>
+                          Dinero Pendiente
+                        </p>
+                        <p style={{ fontSize: '1.8rem', fontWeight: 900, color: '#eab308', marginTop: '0.4rem' }}>
+                          {formatCOP(resumenCaja.dineroPendiente)}
+                        </p>
+                      </div>
+                      <div style={{ padding: '8px', borderRadius: '12px', background: 'rgba(234,179,8,0.1)', color: '#eab308' }}>
+                        <AlertCircle size={20} />
+                      </div>
+                    </div>
+                    <p style={{ fontSize: '0.75rem', color: '#686970', margin: 0 }}>
+                      Pedidos pendientes de aprobación/pago
+                    </p>
+                  </div>
+
+                </div>
+
+                {/* Libro Diario de Ventas */}
+                <div className="card" style={{
+                  background: 'rgba(255, 255, 255, 0.01)',
+                  border: '1px solid rgba(255, 255, 255, 0.04)',
+                  borderRadius: '24px',
+                  padding: '2rem',
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', gap: '1rem', flexWrap: 'wrap' }}>
+                    <div>
+                      <h3 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <FileText size={20} color="#ff7a45" />
+                        Registro de Ventas Automático (Libro Diario)
+                      </h3>
+                      <p style={{ color: '#888990', fontSize: '0.85rem', margin: '0.2rem 0 0 0' }}>
+                        Todas las ventas individuales detalladas con PVP, Costo COGS y Utilidad Neta generada.
+                      </p>
+                    </div>
+
+                    {/* Barra de Búsqueda */}
+                    <div style={{ position: 'relative', width: '280px' }}>
+                      <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#686970' }} />
+                      <input
+                        type="text"
+                        placeholder="Buscar por producto o cliente..."
+                        value={busqueda}
+                        onChange={(e) => setBusqueda(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '0.6rem 1rem 0.6rem 2.2rem',
+                          background: 'rgba(255, 255, 255, 0.02)',
+                          border: '1px solid rgba(255, 255, 255, 0.06)',
+                          borderRadius: '12px',
+                          color: '#fff',
+                          fontSize: '0.85rem',
+                          outline: 'none'
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Tabla del Libro Diario */}
+                  {ventasFiltradas.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#686970' }}>
+                      <Coins size={36} style={{ marginBottom: '10px', color: '#444' }} />
+                      <p style={{ margin: 0, fontWeight: 600 }}>No hay transacciones registradas</p>
+                      <p style={{ margin: 0, fontSize: '0.8rem', color: '#555' }}>
+                        Los datos se auto-completarán cuando se realicen compras de catálogo.
+                      </p>
+                    </div>
+                  ) : (
+                    <div style={{ overflowX: 'auto' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.88rem' }}>
+                        <thead>
+                          <tr style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)', color: '#888990' }}>
+                            <th style={{ padding: '12px', fontWeight: 600 }}>Fecha</th>
+                            <th style={{ padding: '12px', fontWeight: 600 }}>Ref Pedido</th>
+                            <th style={{ padding: '12px', fontWeight: 600 }}>Cliente</th>
+                            <th style={{ padding: '12px', fontWeight: 600 }}>Producto</th>
+                            <th style={{ padding: '12px', fontWeight: 600, textAlign: 'center' }}>Cant</th>
+                            <th style={{ padding: '12px', fontWeight: 600, textAlign: 'right' }}>PVP Unit</th>
+                            <th style={{ padding: '12px', fontWeight: 600, textAlign: 'right' }}>Ingreso Total</th>
+                            <th style={{ padding: '12px', fontWeight: 600, textAlign: 'right' }}>COGS Unit</th>
+                            <th style={{ padding: '12px', fontWeight: 600, textAlign: 'right' }}>Costo Total</th>
+                            <th style={{ padding: '12px', fontWeight: 600, textAlign: 'right' }}>Utilidad Neta</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {ventasFiltradas.map((v) => {
+                            const isPositive = Number(v.utilidadNeta) > 0
+                            return (
+                              <tr 
+                                key={v.id} 
+                                style={{ 
+                                  borderBottom: '1px solid rgba(255, 255, 255, 0.02)',
+                                  transition: 'background 0.2s',
+                                  cursor: 'default'
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.01)'}
+                                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                              >
+                                <td style={{ padding: '14px 12px', whiteSpace: 'nowrap', color: '#c8c9d0' }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                    <Calendar size={14} color="#ff7a45" />
+                                    {new Date(v.fecha).toLocaleDateString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                  </div>
+                                </td>
+                                <td style={{ padding: '14px 12px', fontWeight: 700, color: '#ff7a45' }}>
+                                  #{v.pedidoId}
+                                </td>
+                                <td style={{ padding: '14px 12px', color: '#c8c9d0' }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                    <User size={13} color="#888990" />
+                                    {v.cliente}
+                                  </div>
+                                </td>
+                                <td style={{ padding: '14px 12px', fontWeight: 600, maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                    {v.imagenUrl && (
+                                      <img 
+                                        src={v.imagenUrl} 
+                                        alt={v.producto} 
+                                        style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.05)' }} 
+                                      />
+                                    )}
+                                    {v.producto}
+                                  </div>
+                                </td>
+                                <td style={{ padding: '14px 12px', textAlign: 'center', fontWeight: 700, color: '#fff' }}>
+                                  {v.cantidad}
+                                </td>
+                                <td style={{ padding: '14px 12px', textAlign: 'right', color: '#c8c9d0' }}>
+                                  {formatCOP(v.precioUnitario)}
+                                </td>
+                                <td style={{ padding: '14px 12px', textAlign: 'right', fontWeight: 700, color: '#fff' }}>
+                                  {formatCOP(v.ingresoTotal)}
+                                </td>
+                                <td style={{ padding: '14px 12px', textAlign: 'right', color: '#888990' }}>
+                                  {formatCOP(v.costoUnitario)}
+                                </td>
+                                <td style={{ padding: '14px 12px', textAlign: 'right', color: '#888990' }}>
+                                  {formatCOP(v.costoTotal)}
+                                </td>
+                                <td style={{ 
+                                  padding: '14px 12px', 
+                                  textAlign: 'right', 
+                                  fontWeight: 800, 
+                                  color: isPositive ? '#22c55e' : '#ef4444' 
+                                }}>
+                                  {formatCOP(v.utilidadNeta)}
+                                </td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+
+              </motion.div>
+            )}
+
+            {/* PESTAÑA 2: RENTABILIDAD DE PRODUCTOS */}
+            {activeTab === 'rentabilidad' && (
+              <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+                
+                {/* Filtros de Rendimiento */}
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+                  {[
+                    { id: 'todos', label: 'Todos los productos', count: productosRentabilidad.length, color: '#fff' },
+                    { id: 'excelente', label: '🟢 Margen Excelente (>60%)', count: productosRentabilidad.filter(p => p.semaforoRendimiento === 'EXCELENTE').length, color: '#22c55e' },
+                    { id: 'moderado', label: '🟡 Margen Moderado (40%-60%)', count: productosRentabilidad.filter(p => p.semaforoRendimiento === 'MODERADO').length, color: '#eab308' },
+                    { id: 'critico', label: '🔴 Margen Crítico (<40%)', count: productosRentabilidad.filter(p => p.semaforoRendimiento === 'CRITICO').length, color: '#ef4444' }
+                  ].map(f => (
+                    <button
+                      key={f.id}
+                      onClick={() => setFiltroRentabilidad(f.id)}
+                      style={{
+                        padding: '0.6rem 1rem',
+                        background: filtroRentabilidad === f.id ? `${f.color}15` : 'rgba(255, 255, 255, 0.01)',
+                        border: `1px solid ${filtroRentabilidad === f.id ? f.color : 'rgba(255, 255, 255, 0.05)'}`,
+                        borderRadius: '12px',
+                        color: filtroRentabilidad === f.id ? f.color : '#888990',
+                        fontWeight: 700,
+                        fontSize: '0.82rem',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        transition: 'all 0.2s'
                       }}
                     >
-                      <td style={{ padding: '0.75rem 1rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                          {p.imagenUrl ? (
-                            <img src={p.imagenUrl} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover' }} />
-                          ) : (
-                            <div style={{ width: 40, height: 40, borderRadius: 8, background: '#2a2a2a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                              <Package size={20} color="#666" />
-                            </div>
-                          )}
-                          <span style={{ color: '#fff', fontWeight: 500, fontSize: '0.9rem' }}>{p.nombre}</span>
-                        </div>
-                      </td>
-                      <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>
-                        {editando === p.id ? (
-                          <input
-                            type="number"
-                            value={editStock}
-                            onChange={(e) => setEditStock(e.target.value)}
-                            autoFocus
-                            style={{
-                              width: 60,
-                              padding: '4px 8px',
-                              background: '#2a2a2a',
-                              border: '1px solid #ff5722',
-                              borderRadius: 4,
-                              color: '#fff',
-                              textAlign: 'center',
-                              outline: 'none'
-                            }}
-                          />
-                        ) : (
-                          <span style={{ color: colors.text, fontWeight: 700, fontSize: '1rem' }}>{p.stock}</span>
-                        )}
-                      </td>
-                      <td style={{ padding: '0.75rem 1rem', textAlign: 'center', color: '#888', fontSize: '0.85rem' }}>
-                        {p.umbralMinimo || 10}
-                      </td>
-                      <td style={{ padding: '0.75rem 1rem', textAlign: 'center', color: '#888', fontSize: '0.85rem' }}>
-                        {p.umbralCritico || 3}
-                      </td>
-                      <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>
-                        <span style={{
-                          padding: '4px 8px',
-                          borderRadius: 4,
-                          fontSize: '0.7rem',
-                          fontWeight: 600,
-                          textTransform: 'uppercase',
-                          background: colors.bg,
-                          color: colors.text,
-                          border: `1px solid ${colors.border}`
-                        }}>
-                          {status === 'critico' ? 'Crítico' : status === 'bajo' ? 'Bajo' : 'Normal'}
-                        </span>
-                      </td>
-                      <td style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>
-                        <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
-                          {editando === p.id ? (
-                            <>
-                              <button
-                                onClick={() => handleSaveStock(p.id)}
-                                style={{ padding: '4px 8px', background: '#1D9E75', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer' }}
-                              >
-                                <Save size={14} />
-                              </button>
-                              <button
-                                onClick={() => setEditando(null)}
-                                style={{ padding: '4px 8px', background: '#333', color: '#888', border: 'none', borderRadius: 4, cursor: 'pointer' }}
-                              >
-                                <X size={14} />
-                              </button>
-                            </>
-                          ) : (
-                            <>
-                              <button
-                                onClick={() => { setEditando(p.id); setEditStock(p.stock.toString()) }}
-                                style={{ padding: '4px 8px', background: '#2a2a2a', color: '#888', border: '1px solid #333', borderRadius: 4, cursor: 'pointer' }}
-                              >
-                                <Edit2 size={14} />
-                              </button>
-                              <button
-                                onClick={() => { setShowUmbrales(p); setEditUmbrales({ minimo: p.umbralMinimo || 10, critico: p.umbralCritico || 3 }) }}
-                                style={{ padding: '4px 8px', background: '#2a2a2a', color: '#888', border: '1px solid #333', borderRadius: 4, cursor: 'pointer' }}
-                              >
-                                <Filter size={14} />
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      </td>
-                    </motion.tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+                      {f.label}
+                      <span style={{
+                        padding: '2px 6px',
+                        borderRadius: '6px',
+                        background: filtroRentabilidad === f.id ? f.color : 'rgba(255, 255, 255, 0.04)',
+                        color: filtroRentabilidad === f.id ? '#000' : '#888990',
+                        fontSize: '0.7rem',
+                        fontWeight: 800
+                      }}>
+                        {f.count}
+                      </span>
+                    </button>
+                  ))}
+                </div>
 
-        {showUmbrales && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            style={{
-              position: 'fixed',
-              inset: 0,
-              background: 'rgba(0,0,0,0.8)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 100
-            }}
-          >
-            <motion.div
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              style={{
-                background: '#1a1a1a',
-                borderRadius: 16,
-                padding: '1.5rem',
-                width: '90%',
-                maxWidth: 400
-              }}
-            >
-              <h3 style={{ color: '#fff', marginBottom: '1rem' }}>{showUmbrales.nombre}</h3>
-              <p style={{ color: '#888', fontSize: '0.9rem', marginBottom: '1rem' }}>Stock actual: {showUmbrales.stock} unidades</p>
-              
-              <div style={{ marginBottom: '1rem' }}>
-                <label style={{ color: '#888', fontSize: '0.85rem', display: 'block', marginBottom: 6 }}>Umbral mínimo</label>
-                <input
-                  type="number"
-                  value={editUmbrales.minimo}
-                  onChange={(e) => setEditUmbrales({ ...editUmbrales, minimo: parseInt(e.target.value) })}
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem',
-                    background: '#2a2a2a',
-                    border: '1px solid #333',
-                    borderRadius: 8,
-                    color: '#fff',
-                    outline: 'none'
-                  }}
-                />
-              </div>
+                {/* Tabla de Rentabilidad */}
+                <div className="card" style={{
+                  background: 'rgba(255, 255, 255, 0.01)',
+                  border: '1px solid rgba(255, 255, 255, 0.04)',
+                  borderRadius: '24px',
+                  padding: '2rem',
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', gap: '1rem', flexWrap: 'wrap' }}>
+                    <div>
+                      <h3 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <TrendingUp size={20} color="#ff7a45" />
+                        Análisis Unitario y Rendimiento Acumulado (COGS vs PVP)
+                      </h3>
+                      <p style={{ color: '#888990', fontSize: '0.85rem', margin: '0.2rem 0 0 0' }}>
+                        Estudio detallado de la rentabilidad porcentual de cada producto y sus ingresos/utilidades acumulados en ventas.
+                      </p>
+                    </div>
 
-              <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{ color: '#888', fontSize: '0.85rem', display: 'block', marginBottom: 6 }}>Umbral crítico</label>
-                <input
-                  type="number"
-                  value={editUmbrales.critico}
-                  onChange={(e) => setEditUmbrales({ ...editUmbrales, critico: parseInt(e.target.value) })}
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem',
-                    background: '#2a2a2a',
-                    border: '1px solid #333',
-                    borderRadius: 8,
-                    color: '#fff',
-                    outline: 'none'
-                  }}
-                />
-              </div>
+                    <div style={{ position: 'relative', width: '280px' }}>
+                      <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#686970' }} />
+                      <input
+                        type="text"
+                        placeholder="Filtrar por nombre de producto..."
+                        value={busqueda}
+                        onChange={(e) => setBusqueda(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '0.6rem 1rem 0.6rem 2.2rem',
+                          background: 'rgba(255, 255, 255, 0.02)',
+                          border: '1px solid rgba(255, 255, 255, 0.06)',
+                          borderRadius: '12px',
+                          color: '#fff',
+                          fontSize: '0.85rem',
+                          outline: 'none'
+                        }}
+                      />
+                    </div>
+                  </div>
 
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button
-                  onClick={() => setShowUmbrales(null)}
-                  style={{ flex: 1, padding: '0.75rem', background: '#333', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }}
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={() => handleSaveUmbrales(showUmbrales.id)}
-                  style={{ flex: 1, padding: '0.75rem', background: '#ff5722', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }}
-                >
-                  Guardar
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
+                  {rentabilidadFiltrada.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#686970' }}>
+                      <Package size={36} style={{ marginBottom: '10px', color: '#444' }} />
+                      <p style={{ margin: 0, fontWeight: 600 }}>Ningún producto coincide con el filtro</p>
+                    </div>
+                  ) : (
+                    <div style={{ overflowX: 'auto' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.88rem' }}>
+                        <thead>
+                          <tr style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)', color: '#888990' }}>
+                            <th style={{ padding: '12px', fontWeight: 600 }}>Producto</th>
+                            <th style={{ padding: '12px', fontWeight: 600 }}>Categoría</th>
+                            <th style={{ padding: '12px', fontWeight: 600, textAlign: 'center' }}>Stock</th>
+                            <th style={{ padding: '12px', fontWeight: 600, textAlign: 'right' }}>PVP Venta</th>
+                            <th style={{ padding: '12px', fontWeight: 600, textAlign: 'right' }}>Costo COGS</th>
+                            <th style={{ padding: '12px', fontWeight: 600, textAlign: 'right' }}>Margen Unit (MCU)</th>
+                            <th style={{ padding: '12px', fontWeight: 600, textAlign: 'center' }}>Margen %</th>
+                            <th style={{ padding: '12px', fontWeight: 600, textAlign: 'center' }}>Vendidos</th>
+                            <th style={{ padding: '12px', fontWeight: 600, textAlign: 'right' }}>Utilidad Acum.</th>
+                            <th style={{ padding: '12px', fontWeight: 600, textAlign: 'center' }}>Estado</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {rentabilidadFiltrada.map((p) => {
+                            const isExcellent = p.semaforoRendimiento === 'EXCELENTE'
+                            const isModerate = p.semaforoRendimiento === 'MODERADO'
+                            const color = isExcellent ? '#22c55e' : isModerate ? '#eab308' : '#ef4444'
+                            const bg = isExcellent ? 'rgba(34,197,94,0.06)' : isModerate ? 'rgba(234,179,8,0.06)' : 'rgba(239,68,68,0.06)'
+                            
+                            return (
+                              <tr 
+                                key={p.id} 
+                                style={{ 
+                                  borderBottom: '1px solid rgba(255, 255, 255, 0.02)',
+                                  transition: 'background 0.2s'
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.01)'}
+                                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                              >
+                                <td style={{ padding: '14px 12px', fontWeight: 600 }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                    {p.imagenUrl && (
+                                      <img 
+                                        src={p.imagenUrl} 
+                                        alt={p.nombre} 
+                                        style={{ width: '32px', height: '32px', borderRadius: '8px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.05)' }} 
+                                      />
+                                    )}
+                                    {p.nombre}
+                                  </div>
+                                </td>
+                                <td style={{ padding: '14px 12px', color: '#c8c9d0' }}>
+                                  {p.categoriaNombre}
+                                </td>
+                                <td style={{ padding: '14px 12px', textAlign: 'center', fontWeight: 700, color: p.stock === 0 ? '#ef4444' : '#fff' }}>
+                                  {p.stock === 0 ? 'Agotado' : p.stock}
+                                </td>
+                                <td style={{ padding: '14px 12px', textAlign: 'right', fontWeight: 600, color: '#fff' }}>
+                                  {formatCOP(p.precioVenta)}
+                                </td>
+                                <td style={{ padding: '14px 12px', textAlign: 'right', color: '#888990' }}>
+                                  {formatCOP(p.costoUnitarioTotal)}
+                                </td>
+                                <td style={{ padding: '14px 12px', textAlign: 'right', fontWeight: 700, color: color }}>
+                                  {formatCOP(p.margenUnitario)}
+                                </td>
+                                <td style={{ padding: '14px 12px', textAlign: 'center' }}>
+                                  <span style={{ 
+                                    padding: '4px 8px', 
+                                    borderRadius: '8px', 
+                                    background: bg, 
+                                    color: color, 
+                                    fontWeight: 800,
+                                    fontSize: '0.8rem'
+                                  }}>
+                                    {p.margenPorcentaje}%
+                                  </span>
+                                </td>
+                                <td style={{ padding: '14px 12px', textAlign: 'center', fontWeight: 800, color: '#fff' }}>
+                                  {p.unidadesVendidas}
+                                </td>
+                                <td style={{ padding: '14px 12px', textAlign: 'right', fontWeight: 800, color: '#fff' }}>
+                                  {formatCOP(p.utilidadTotalGenerada)}
+                                </td>
+                                <td style={{ padding: '14px 12px', textAlign: 'center' }}>
+                                  <span style={{ 
+                                    padding: '3px 7px', 
+                                    borderRadius: '6px', 
+                                    background: 'rgba(255,255,255,0.03)', 
+                                    color: color, 
+                                    fontWeight: 700,
+                                    fontSize: '0.72rem',
+                                    border: `1px solid ${color}20`
+                                  }}>
+                                    {p.semaforoRendimiento}
+                                  </span>
+                                </td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+
+              </motion.div>
+            )}
+
+            {/* PESTAÑA 3: CONFIGURACIÓN RÁPIDA (EDICIÓN MANUAL DE COSTOS) */}
+            {activeTab === 'configuracion' && (
+              <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+                
+                <div className="card" style={{
+                  background: 'rgba(255, 255, 255, 0.01)',
+                  border: '1px solid rgba(255, 255, 255, 0.04)',
+                  borderRadius: '24px',
+                  padding: '2rem',
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', gap: '1rem', flexWrap: 'wrap' }}>
+                    <div>
+                      <h3 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Settings2 size={20} color="#ff7a45" />
+                        Gestión Manual de Catálogo Financiero
+                      </h3>
+                      <p style={{ color: '#888990', fontSize: '0.85rem', margin: '0.2rem 0 0 0' }}>
+                        Modifica en un solo clic los precios de venta, stock disponible y desglose de costos (Proveedor, Envío y Comisión Pasarela).
+                      </p>
+                    </div>
+
+                    <div style={{ position: 'relative', width: '280px' }}>
+                      <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#686970' }} />
+                      <input
+                        type="text"
+                        placeholder="Buscar producto por nombre..."
+                        value={busqueda}
+                        onChange={(e) => setBusqueda(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '0.6rem 1rem 0.6rem 2.2rem',
+                          background: 'rgba(255, 255, 255, 0.02)',
+                          border: '1px solid rgba(255, 255, 255, 0.06)',
+                          borderRadius: '12px',
+                          color: '#fff',
+                          fontSize: '0.85rem',
+                          outline: 'none'
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {configuracionFiltrada.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#686970' }}>
+                      <Package size={36} style={{ marginBottom: '10px', color: '#444' }} />
+                      <p style={{ margin: 0, fontWeight: 600 }}>Ningún producto disponible para configurar</p>
+                    </div>
+                  ) : (
+                    <div style={{ overflowX: 'auto' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.88rem' }}>
+                        <thead>
+                          <tr style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)', color: '#888990' }}>
+                            <th style={{ padding: '12px', fontWeight: 600 }}>Producto</th>
+                            <th style={{ padding: '12px', fontWeight: 600, width: '140px', textAlign: 'right' }}>PVP (Venta)</th>
+                            <th style={{ padding: '12px', fontWeight: 600, width: '100px', textAlign: 'center' }}>Stock</th>
+                            <th style={{ padding: '12px', fontWeight: 600, width: '130px', textAlign: 'right' }}>Costo Compra</th>
+                            <th style={{ padding: '12px', fontWeight: 600, width: '130px', textAlign: 'right' }}>Costo Envío</th>
+                            <th style={{ padding: '12px', fontWeight: 600, width: '130px', textAlign: 'right' }}>Comisión Pasarela</th>
+                            <th style={{ padding: '12px', fontWeight: 600, width: '140px', textAlign: 'center' }}>Acciones</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {configuracionFiltrada.map((p) => {
+                            const estaEditando = editandoId === p.id
+                            
+                            return (
+                              <tr 
+                                key={p.id} 
+                                style={{ 
+                                  borderBottom: '1px solid rgba(255, 255, 255, 0.02)',
+                                  background: estaEditando ? 'rgba(255, 122, 69, 0.02)' : 'transparent',
+                                  transition: 'background 0.2s'
+                                }}
+                              >
+                                <td style={{ padding: '14px 12px', fontWeight: 600 }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                    {p.imagenUrl && (
+                                      <img 
+                                        src={p.imagenUrl} 
+                                        alt={p.nombre} 
+                                        style={{ width: '32px', height: '32px', borderRadius: '8px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.05)' }} 
+                                      />
+                                    )}
+                                    <div>
+                                      <span style={{ display: 'block' }}>{p.nombre}</span>
+                                      <span style={{ fontSize: '0.72rem', color: '#686970', fontWeight: 500 }}>{p.categoriaNombre}</span>
+                                    </div>
+                                  </div>
+                                </td>
+                                
+                                {/* Campo PVP */}
+                                <td style={{ padding: '14px 12px', textAlign: 'right' }}>
+                                  {estaEditando ? (
+                                    <input 
+                                      type="number"
+                                      value={valoresEdit.precio}
+                                      onChange={(e) => setValoresEdit({ ...valoresEdit, precio: parseFloat(e.target.value) || 0 })}
+                                      style={{
+                                        width: '100px',
+                                        padding: '0.4rem',
+                                        background: '#0d0d0f',
+                                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                                        borderRadius: '8px',
+                                        color: '#fff',
+                                        textAlign: 'right',
+                                        fontWeight: 700
+                                      }}
+                                    />
+                                  ) : (
+                                    <span style={{ fontWeight: 700, color: '#fff' }}>{formatCOP(p.precio)}</span>
+                                  )}
+                                </td>
+
+                                {/* Campo Stock */}
+                                <td style={{ padding: '14px 12px', textAlign: 'center' }}>
+                                  {estaEditando ? (
+                                    <input 
+                                      type="number"
+                                      value={valoresEdit.stock}
+                                      onChange={(e) => setValoresEdit({ ...valoresEdit, stock: parseInt(e.target.value) || 0 })}
+                                      style={{
+                                        width: '70px',
+                                        padding: '0.4rem',
+                                        background: '#0d0d0f',
+                                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                                        borderRadius: '8px',
+                                        color: '#fff',
+                                        textAlign: 'center',
+                                        fontWeight: 700
+                                      }}
+                                    />
+                                  ) : (
+                                    <span style={{ fontWeight: 700, color: p.stock === 0 ? '#ef4444' : '#fff' }}>{p.stock}</span>
+                                  )}
+                                </td>
+
+                                {/* Campo Costo Proveedor */}
+                                <td style={{ padding: '14px 12px', textAlign: 'right' }}>
+                                  {estaEditando ? (
+                                    <input 
+                                      type="number"
+                                      value={valoresEdit.costoProveedor}
+                                      onChange={(e) => setValoresEdit({ ...valoresEdit, costoProveedor: parseFloat(e.target.value) || 0 })}
+                                      style={{
+                                        width: '100px',
+                                        padding: '0.4rem',
+                                        background: '#0d0d0f',
+                                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                                        borderRadius: '8px',
+                                        color: '#fff',
+                                        textAlign: 'right'
+                                      }}
+                                    />
+                                  ) : (
+                                    <span style={{ color: '#c8c9d0' }}>{formatCOP(p.costoProveedor)}</span>
+                                  )}
+                                </td>
+
+                                {/* Campo Costo Envío */}
+                                <td style={{ padding: '14px 12px', textAlign: 'right' }}>
+                                  {estaEditando ? (
+                                    <input 
+                                      type="number"
+                                      value={valoresEdit.costoEmpaqueEnvio}
+                                      onChange={(e) => setValoresEdit({ ...valoresEdit, costoEmpaqueEnvio: parseFloat(e.target.value) || 0 })}
+                                      style={{
+                                        width: '100px',
+                                        padding: '0.4rem',
+                                        background: '#0d0d0f',
+                                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                                        borderRadius: '8px',
+                                        color: '#fff',
+                                        textAlign: 'right'
+                                      }}
+                                    />
+                                  ) : (
+                                    <span style={{ color: '#c8c9d0' }}>{formatCOP(p.costoEmpaqueEnvio)}</span>
+                                  )}
+                                </td>
+
+                                {/* Campo Comisión Pasarela */}
+                                <td style={{ padding: '14px 12px', textAlign: 'right' }}>
+                                  {estaEditando ? (
+                                    <input 
+                                      type="number"
+                                      value={valoresEdit.comisionPasarelaFija}
+                                      onChange={(e) => setValoresEdit({ ...valoresEdit, comisionPasarelaFija: parseFloat(e.target.value) || 0 })}
+                                      style={{
+                                        width: '100px',
+                                        padding: '0.4rem',
+                                        background: '#0d0d0f',
+                                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                                        borderRadius: '8px',
+                                        color: '#fff',
+                                        textAlign: 'right'
+                                      }}
+                                    />
+                                  ) : (
+                                    <span style={{ color: '#c8c9d0' }}>{formatCOP(p.comisionPasarelaFija)}</span>
+                                  )}
+                                </td>
+
+                                {/* Acciones */}
+                                <td style={{ padding: '14px 12px', textAlign: 'center' }}>
+                                  {estaEditando ? (
+                                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                                      <motion.button
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => guardarConfiguracionManual(p)}
+                                        style={{
+                                          padding: '0.4rem 0.8rem',
+                                          background: '#22c55e',
+                                          color: '#fff',
+                                          border: 'none',
+                                          borderRadius: '8px',
+                                          cursor: 'pointer',
+                                          fontWeight: 700,
+                                          fontSize: '0.78rem',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: '4px'
+                                        }}
+                                      >
+                                        <Save size={13} />
+                                        Guardar
+                                      </motion.button>
+                                      
+                                      <motion.button
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => setEditandoId(null)}
+                                        style={{
+                                          padding: '0.4rem 0.8rem',
+                                          background: '#ef4444',
+                                          color: '#fff',
+                                          border: 'none',
+                                          borderRadius: '8px',
+                                          cursor: 'pointer',
+                                          fontWeight: 700,
+                                          fontSize: '0.78rem',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: '4px'
+                                        }}
+                                      >
+                                        <X size={13} />
+                                        Cancelar
+                                      </motion.button>
+                                    </div>
+                                  ) : (
+                                    <motion.button
+                                      whileHover={{ scale: 1.05 }}
+                                      whileTap={{ scale: 0.95 }}
+                                      onClick={() => iniciarEdicion(p)}
+                                      style={{
+                                        padding: '0.4rem 0.8rem',
+                                        background: 'rgba(255, 255, 255, 0.03)',
+                                        color: '#ff7a45',
+                                        border: '1px solid rgba(255, 122, 69, 0.2)',
+                                        borderRadius: '8px',
+                                        cursor: 'pointer',
+                                        fontWeight: 700,
+                                        fontSize: '0.78rem',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        margin: '0 auto'
+                                      }}
+                                    >
+                                      <Edit2 size={13} />
+                                      Modificar Costos
+                                    </motion.button>
+                                  )}
+                                </td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+
+              </motion.div>
+            )}
+          </>
         )}
       </div>
     </div>

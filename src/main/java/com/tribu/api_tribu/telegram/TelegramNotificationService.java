@@ -37,6 +37,15 @@ public class TelegramNotificationService {
         bot.notificarAdmins("🔴 *ERROR en " + servicio + "*\n" + error);
     }
 
+    public void alertaSoporteEscalado(Long conversacionId, String nombreUsuario, String email, String motivo, String ultimoMensaje) {
+        bot.notificarAdmins("🚨 *SOPORTE ESCALADO A HUMANO*\n\n" +
+                "• *Conversación:* #" + conversacionId + "\n" +
+                "• *Usuario:* " + nombreUsuario + " (" + email + ")\n" +
+                "• *Motivo:* " + motivo + "\n" +
+                "• *Último mensaje:* _\"" + ultimoMensaje + "\"_\n\n" +
+                "⚠️ _Por favor, responda desde el Panel de Administración._");
+    }
+
     public void notificarLiberacionCashback(String nombreUsuario, Double monto) {
         bot.notificarAdmins("💸 *Cashback Liberado*\n" +
                 "Usuario: " + nombreUsuario + "\n" +

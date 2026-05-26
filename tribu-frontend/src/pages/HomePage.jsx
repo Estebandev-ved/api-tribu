@@ -106,25 +106,37 @@ export default function HomePage({ viralMode = false }) {
                                 value={busqueda} onChange={e => setBusqueda(e.target.value)}
                                 style={{ paddingLeft: '2.5rem' }} />
                         </div>
-
-                        {loading ? (
-                            <div className="spinner" />
-                        ) : filtrados.length === 0 ? (
-                            <div className="empty-state">
-                                <Search size={48} />
-                                <p>No se encontraron productos</p>
-                                {filtro !== 'todos' && (
-                                    <button onClick={() => setFiltro('todos')} className="btn btn-primary" style={{ marginTop: '1rem' }}>
-                                        Ver todos los productos
-                                    </button>
-                                )}
-                            </div>
-                        ) : (
-                            <div className="productos-grid">
-                                {(filtrados || []).map((p, i) => <ProductoCard key={p.id} producto={p} index={i} />)}
-                            </div>
-                        )}
                     </div>
+
+                    {loading ? (
+                        <div className="productos-grid" style={{ width: '100%' }}>
+                            {[1, 2, 3, 4, 5, 6].map((n) => (
+                                <div key={n} style={{ background: 'var(--color-surface)', borderRadius: 'var(--radius-lg)', padding: '1.25rem', border: '1px solid var(--color-border)' }}>
+                                    <div className="skeleton-box" style={{ height: 180, width: '100%', borderRadius: 10, opacity: 0.15, marginBottom: '1rem' }} />
+                                    <div className="skeleton-box" style={{ height: 20, width: '70%', opacity: 0.15, marginBottom: '0.5rem' }} />
+                                    <div className="skeleton-box" style={{ height: 14, width: '40%', opacity: 0.12, marginBottom: '1rem' }} />
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div className="skeleton-box" style={{ height: 24, width: '30%', opacity: 0.15 }} />
+                                        <div className="skeleton-box" style={{ height: 32, width: '35%', borderRadius: 9999, opacity: 0.15 }} />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : filtrados.length === 0 ? (
+                        <div className="empty-state" style={{ width: '100%' }}>
+                            <Search size={48} />
+                            <p>No se encontraron productos</p>
+                            {filtro !== 'todos' && (
+                                <button onClick={() => setFiltro('todos')} className="btn btn-primary" style={{ marginTop: '1rem' }}>
+                                    Ver todos los productos
+                                </button>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="productos-grid">
+                            {(filtrados || []).map((p, i) => <ProductoCard key={p.id} producto={p} index={i} />)}
+                        </div>
+                    )}
                 </div>
             </section>
         </div>

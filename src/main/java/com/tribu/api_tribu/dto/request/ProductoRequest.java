@@ -26,4 +26,8 @@ public class ProductoRequest {
 
     @NotNull(message = "La categoría es requerida")
     private Long categoriaId;
+
+    private BigDecimal costoProveedor = BigDecimal.ZERO;
+    private BigDecimal costoEmpaqueEnvio = BigDecimal.ZERO;
+    private BigDecimal comisionPasarelaFija = BigDecimal.ZERO;
 }

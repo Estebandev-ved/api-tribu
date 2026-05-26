@@ -3,10 +3,17 @@ import api from '../api'
 export const transferenciaService = {
   validarDestinatario: (destinatario) =>
     api.post('/transferencias/validar-destinatario', { destinatario }),
-  enviar: (destinatario, monto, mensaje) =>
-    api.post('/transferencias/enviar', { destinatario, monto, mensaje }),
+  enviar: (destinatario, monto, mensaje, pin) =>
+    api.post('/transferencias/enviar', { destinatario, monto, mensaje, pin }),
   historial: () => api.get('/transferencias/historial'),
   limiteDisponible: () => api.get('/transferencias/limite-disponible')
+}
+
+export const pinService = {
+  setPin: (pinNuevo, pinActual) =>
+    api.post('/usuarios/perfil/pin', { pinNuevo, pinActual }),
+  verificarPin: (pin) =>
+    api.post('/usuarios/perfil/verificar-pin', { pin })
 }
 
 export const grupoService = {

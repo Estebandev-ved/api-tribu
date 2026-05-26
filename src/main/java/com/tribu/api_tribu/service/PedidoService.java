@@ -10,6 +10,7 @@ import com.tribu.api_tribu.repository.ProductoRepository;
 import com.tribu.api_tribu.repository.UsuarioRepository;
 import com.tribu.api_tribu.websocket.SaldoWebSocketService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PedidoService {
 
     private final ApplicationEventPublisher eventPublisher;
@@ -47,6 +49,8 @@ public class PedidoService {
     private final com.tribu.api_tribu.telegram.TelegramNotificationService telegramService;
     private final TierService tierService;
     private final AchievementService achievementService;
+    private final FacturaService facturaService;
+    private final CuponService cuponService;
 
     @Transactional
     public PedidoResponse crearPedido(String emailUsuario, CrearPedidoRequest request) {
@@ -95,6 +99,20 @@ public class PedidoService {
             detalles.add(detalle);
         }
 
+        double descuento = 0.0;
+        if (request.getCuponCodigo() != null && !request.getCuponCodigo().trim().isEmpty()) {
+            com.tribu.api_tribu.dto.response.CuponValidacionDTO validacion = cuponService.validar(request.getCuponCodigo(), usuario.getId(), total.doubleValue());
+            if (validacion.getValido()) {
+                descuento = validacion.getDescuento();
+                total = total.subtract(BigDecimal.valueOf(descuento));
+                if (total.doubleValue() < 0) {
+                    total = BigDecimal.ZERO;
+                }
+            } else {
+                throw new IllegalArgumentException("El cupón no es válido: " + validacion.getError());
+            }
+        }
+
         pedido.setTotal(total);
         pedido.setDetalles(detalles);
         pedido.setMetodoPago(request.getMetodoPago() != null ? request.getMetodoPago() : "EFECTIVO");
@@ -107,6 +125,11 @@ public class PedidoService {
         }
 
         Pedido savedPedido = pedidoRepository.save(pedido);
+
+        // Si se aplicó un cupón, lo registramos como usado en la base de datos
+        if (descuento > 0.0 && request.getCuponCodigo() != null) {
+            cuponService.aplicarCupon(request.getCuponCodigo(), usuario.getId(), savedPedido.getId(), descuento);
+        }
 
         // Si es Tribu Card, procesamos el descuento real del ledger
         if ("PAGADO".equals(savedPedido.getEstado())) {
@@ -130,6 +153,12 @@ public class PedidoService {
 
             // 💎 NUEVO: Registrar cashback inmediatamente si ya está PAGADO (Tribu Card)
             procesarCashback(savedPedido);
+
+            try {
+                facturaService.generarFacturaAutomatica(savedPedido.getId(), null, null);
+            } catch (Exception e) {
+                log.warn("No se pudo generar factura automática para pedido {}: {}", savedPedido.getId(), e.getMessage());
+            }
         }
 
         // Evento de notificación (existente)
@@ -169,6 +198,14 @@ public class PedidoService {
         // Se crea en ON_HOLD — el Scheduler lo libera en 7 días.
         if (!"ENTREGADO".equals(estadoAnterior) && "ENTREGADO".equals(nuevoEstado)) {
             procesarCashback(saved);
+        }
+
+        if (!"PAGADO".equalsIgnoreCase(estadoAnterior) && "PAGADO".equalsIgnoreCase(nuevoEstado)) {
+            try {
+                facturaService.generarFacturaAutomatica(saved.getId(), null, null);
+            } catch (Exception e) {
+                log.warn("No se pudo generar factura automática para pedido {}: {}", saved.getId(), e.getMessage());
+            }
         }
 
         emailService.enviarCambioEstado(

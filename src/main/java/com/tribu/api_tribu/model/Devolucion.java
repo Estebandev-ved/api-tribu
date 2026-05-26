@@ -23,6 +23,15 @@ public class Devolucion {
     @Column(nullable = false)
     private String orderNumber;
 
+    @Column(name = "pedido_id")
+    private Long pedidoId;
+
+    @Column(name = "producto_id")
+    private Long productoId;
+
+    @Column(name = "producto_nombre", length = 200)
+    private String productoNombre;
+
     @Column(nullable = false)
     private String email;
 

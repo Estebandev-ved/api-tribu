@@ -6,10 +6,6 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "transferencias_p2p")
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class TransferenciaP2P {
 
     @Id
@@ -32,7 +28,6 @@ public class TransferenciaP2P {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    @Builder.Default
     private EstadoTransferencia estado = EstadoTransferencia.PENDIENTE;
 
     @Column(name = "referencia_unica", unique = true, nullable = false, length = 50)
@@ -62,5 +57,93 @@ public class TransferenciaP2P {
         COMPLETADA,
         CANCELADA,
         FALLIDA
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Usuario getEmisor() {
+        return emisor;
+    }
+
+    public void setEmisor(Usuario emisor) {
+        this.emisor = emisor;
+    }
+
+    public Usuario getReceptor() {
+        return receptor;
+    }
+
+    public void setReceptor(Usuario receptor) {
+        this.receptor = receptor;
+    }
+
+    public Double getMonto() {
+        return monto;
+    }
+
+    public void setMonto(Double monto) {
+        this.monto = monto;
+    }
+
+    public String getMensaje() {
+        return mensaje;
+    }
+
+    public void setMensaje(String mensaje) {
+        this.mensaje = mensaje;
+    }
+
+    public EstadoTransferencia getEstado() {
+        return estado;
+    }
+
+    public void setEstado(EstadoTransferencia estado) {
+        this.estado = estado;
+    }
+
+    public String getReferenciaUnica() {
+        return referenciaUnica;
+    }
+
+    public void setReferenciaUnica(String referenciaUnica) {
+        this.referenciaUnica = referenciaUnica;
+    }
+
+    public LocalDateTime getFechaCreacion() {
+        return fechaCreacion;
+    }
+
+    public void setFechaCreacion(LocalDateTime fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
+    }
+
+    public LocalDateTime getFechaCompletada() {
+        return fechaCompletada;
+    }
+
+    public void setFechaCompletada(LocalDateTime fechaCompletada) {
+        this.fechaCompletada = fechaCompletada;
+    }
+
+    public MovimientoSaldo getMovimientoEmisor() {
+        return movimientoEmisor;
+    }
+
+    public void setMovimientoEmisor(MovimientoSaldo movimientoEmisor) {
+        this.movimientoEmisor = movimientoEmisor;
+    }
+
+    public MovimientoSaldo getMovimientoReceptor() {
+        return movimientoReceptor;
+    }
+
+    public void setMovimientoReceptor(MovimientoSaldo movimientoReceptor) {
+        this.movimientoReceptor = movimientoReceptor;
     }
 }

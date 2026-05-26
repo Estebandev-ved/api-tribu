@@ -14,6 +14,12 @@ public class DevolucionRequest {
     @NotBlank(message = "El número de pedido es obligatorio")
     private String orderNumber;
 
+    private Long pedidoId;
+
+    private Long productoId;
+
+    private String productoNombre;
+
     @NotBlank(message = "El email es obligatorio")
     @Email(message = "El email debe ser válido")
     private String email;

@@ -15,7 +15,7 @@ export default function ProfileTribuCardSection({ perfil }) {
 
   const beneficiosActuales = [
     { label: `Cashback ${cashbackRate}% en todas tus compras`, disponible: true },
-    { label: 'Ruleta diaria hasta $10.000', disponible: true },
+    { label: 'Ruleta diaria hasta 10.000 pts', disponible: true },
     { label: 'Acceso a compras grupales', disponible: true },
     { label: 'Envío gratis (disponible en ORO)', disponible: false, tier: 'ORO' },
     { label: `Cashback 5% (disponible en ORO)`, disponible: false, tier: 'ORO' }
@@ -73,9 +73,9 @@ export default function ProfileTribuCardSection({ perfil }) {
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
           <div>
-            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', margin: '0 0 0.25rem' }}>Saldo disponible</p>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', margin: '0 0 0.25rem' }}>Puntos disponibles</p>
             <p style={{ color: 'var(--color-text)', fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>
-              ${saldo.toLocaleString('es-CO')}
+              {saldo.toLocaleString('es-CO')} pts
             </p>
           </div>
           <div>

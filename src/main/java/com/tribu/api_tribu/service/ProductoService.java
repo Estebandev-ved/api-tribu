@@ -2,6 +2,8 @@ package com.tribu.api_tribu.service;
 
 import com.tribu.api_tribu.dto.request.ProductoRequest;
 import com.tribu.api_tribu.dto.response.ProductoResponse;
+import com.tribu.api_tribu.dto.response.ProductoFinancieroDTO;
+import com.tribu.api_tribu.dto.response.DashboardKpisDTO;
 import com.tribu.api_tribu.exception.ResourceNotFoundException;
 import com.tribu.api_tribu.model.Categoria;
 import com.tribu.api_tribu.model.Producto;
@@ -12,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.context.ApplicationEventPublisher;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -98,6 +102,52 @@ public class ProductoService {
         p.setEsViral(req.getEsViral() != null ? req.getEsViral() : false);
         p.setActivo(req.getActivo() != null ? req.getActivo() : true);
         p.setCategoria(cat);
+
+        // Map financial costing fields
+        p.setCostoProveedor(req.getCostoProveedor() != null ? req.getCostoProveedor() : BigDecimal.ZERO);
+        p.setCostoEmpaqueEnvio(req.getCostoEmpaqueEnvio() != null ? req.getCostoEmpaqueEnvio() : BigDecimal.ZERO);
+        p.setComisionPasarelaFija(req.getComisionPasarelaFija() != null ? req.getComisionPasarelaFija() : BigDecimal.ZERO);
+    }
+
+    public List<ProductoFinancieroDTO> getProductosFinancieros() {
+        return productoRepository.findByActivoTrue().stream()
+                .map(ProductoFinancieroDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    public DashboardKpisDTO getDashboardKpis() {
+        BigDecimal totalActivoBodega = BigDecimal.ZERO;
+        BigDecimal totalMargenPorcentaje = BigDecimal.ZERO;
+        BigDecimal totalMcu = BigDecimal.ZERO;
+        int totalProductos = 0;
+
+        List<Producto> productos = productoRepository.findByActivoTrue();
+        for (Producto p : productos) {
+            BigDecimal stock = BigDecimal.valueOf(p.getStock() != null ? p.getStock() : 0);
+            BigDecimal cost = p.getCostoProveedor() != null ? p.getCostoProveedor() : BigDecimal.ZERO;
+            totalActivoBodega = totalActivoBodega.add(stock.multiply(cost));
+
+            ProductoFinancieroDTO financial = new ProductoFinancieroDTO(p);
+            totalMargenPorcentaje = totalMargenPorcentaje.add(financial.getMcPorcentaje());
+            totalMcu = totalMcu.add(financial.getMcu());
+            totalProductos++;
+        }
+
+        BigDecimal margenPromedioGlobal = BigDecimal.ZERO;
+        BigDecimal breakEvenUnits = BigDecimal.ZERO;
+        if (totalProductos > 0) {
+            margenPromedioGlobal = totalMargenPorcentaje.divide(BigDecimal.valueOf(totalProductos), 2, RoundingMode.HALF_UP);
+            BigDecimal mcuPromedio = totalMcu.divide(BigDecimal.valueOf(totalProductos), 2, RoundingMode.HALF_UP);
+            if (mcuPromedio.compareTo(BigDecimal.ZERO) > 0) {
+                breakEvenUnits = totalActivoBodega.divide(mcuPromedio, 2, RoundingMode.HALF_UP);
+            }
+        }
+
+        return DashboardKpisDTO.builder()
+                .activoBodega(totalActivoBodega)
+                .margenPromedioGlobal(margenPromedioGlobal)
+                .breakEvenUnits(breakEvenUnits)
+                .build();
     }
 
     public ProductoResponse toResponse(Producto p) {

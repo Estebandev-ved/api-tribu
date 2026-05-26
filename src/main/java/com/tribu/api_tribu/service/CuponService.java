@@ -26,10 +26,50 @@ public class CuponService {
     private final CuponUsoRepository cuponUsoRepo;
     private final TierRepository tierRepo;
     private final TribuPassService tribuPassService;
+    private final CanjeRecompensaRepository canjeRepo;
 
     public CuponValidacionDTO validar(String codigo, Long usuarioId, Double totalCarrito) {
         Cupon cupon = cuponRepo.findByCodigoIgnoreCase(codigo.toUpperCase())
                 .orElse(null);
+
+        if (cupon == null && codigo.toUpperCase().startsWith("RC-")) {
+            // Buscamos si existe un canje con este código de forma retroactiva
+            CanjeRecompensa canje = canjeRepo.findByCodigoCanje(codigo.toUpperCase())
+                    .orElse(null);
+            
+            if (canje != null) {
+                Recompensa recompensa = canje.getRecompensa();
+                if (recompensa.getTitulo().toLowerCase().contains("descuento")) {
+                    double valorDescuento = 10.0;
+                    if (recompensa.getTitulo().contains("25")) {
+                        valorDescuento = 25.0;
+                    } else if (recompensa.getTitulo().contains("50")) {
+                        valorDescuento = 50.0;
+                    } else if (recompensa.getTitulo().contains("15")) {
+                        valorDescuento = 15.0;
+                    } else if (recompensa.getTitulo().contains("10")) {
+                        valorDescuento = 10.0;
+                    }
+
+                    cupon = Cupon.builder()
+                            .codigo(codigo.toUpperCase())
+                            .tipo(Cupon.TipoCupon.PORCENTAJE)
+                            .valor(valorDescuento)
+                            .montoMinimo(0.0)
+                            .montoMaximoDescuento(null)
+                            .usosPorUsuario(1)
+                            .usosMaximos(1)
+                            .usosActuales(0)
+                            .fechaInicio(LocalDateTime.now())
+                            .fechaExpiracion(LocalDateTime.now().plusMonths(3))
+                            .activo(true)
+                            .creadoPor("SYSTEM_RECOMPENSA_RETROACTIVE")
+                            .build();
+
+                    cupon = cuponRepo.save(cupon);
+                }
+            }
+        }
 
         if (cupon == null) {
             return CuponValidacionDTO.builder()

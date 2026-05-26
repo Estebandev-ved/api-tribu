@@ -114,11 +114,11 @@ export default function ProfileSeguridadSection() {
   useEffect(() => {
     Promise.all([
       profileService.getSesiones().catch(() => ({ data: [] })),
-      profileService.getMiTribuCardInfo().catch(() => ({}))
+      profileService.getPerfil().catch(() => ({ data: {} }))
     ])
-      .then(([resSesiones, resCard]) => {
+      .then(([resSesiones, resPerfil]) => {
         setSesiones(resSesiones.data || [])
-        setPinConfigurado(!!resCard.data?.pinConfigurado)
+        setPinConfigurado(!!resPerfil.data?.tienePin)
       })
       .finally(() => setLoading(false))
   }, [])

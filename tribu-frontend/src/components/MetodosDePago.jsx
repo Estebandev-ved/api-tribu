@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../api';
 
-const MetodosDePago = ({ total, totalNumber, direccionEnvio, disabled }) => {
+const MetodosDePago = ({ total, totalNumber, direccionEnvio, cuponCodigo, disabled }) => {
     const { items, clearCart } = useCart();
     const { user } = useAuth();
     const { agregarNuevaNotificacion, saldoRealtime } = useNotification();
@@ -35,7 +35,7 @@ const MetodosDePago = ({ total, totalNumber, direccionEnvio, disabled }) => {
         }
 
         if (method === 'TRIBU_CARD' && !puedePagarConTribu) {
-            toast.error('Saldo insuficiente en tu Tribu Card');
+            toast.error('Puntos insuficientes en tu Billetera Tribu');
             return;
         }
 
@@ -45,7 +45,8 @@ const MetodosDePago = ({ total, totalNumber, direccionEnvio, disabled }) => {
             const pedidoPayload = {
                 direccionEnvio: direccionEnvio,
                 metodoPago: method,
-                items: items.map(i => ({ productoId: i.id, cantidad: i.cantidad }))
+                items: items.map(i => ({ productoId: i.id, cantidad: i.cantidad })),
+                cuponCodigo: cuponCodigo
             };
 
             const { data: pedido } = await crearPedido(pedidoPayload);
@@ -198,15 +199,15 @@ const MetodosDePago = ({ total, totalNumber, direccionEnvio, disabled }) => {
                             fontWeight: 900
                         }}>TRIBU</div>
                         <div style={{ textAlign: 'left' }}>
-                            <div style={{ fontWeight: 800 }}>Pagar con Tribu Card</div>
+                            <div style={{ fontWeight: 800 }}>Pagar con Puntos Tribu</div>
                             <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>
-                                Saldo disponible: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(saldoDisponible)}
+                                Puntos disponibles: {new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 }).format(saldoDisponible)} pts
                             </div>
                         </div>
                     </div>
                     {!puedePagarConTribu && (
                         <span style={{ fontSize: '0.7rem', background: 'rgba(0,0,0,0.3)', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
-                            SALDO INSUFICIENTE
+                            PUNTOS INSUFICIENTES
                         </span>
                     )}
                 </motion.button>

@@ -30,6 +30,15 @@ public class Producto {
     @Column(nullable = false)
     private BigDecimal precio;
 
+    @Column(name = "costo_proveedor", precision = 10, scale = 2, nullable = false)
+    private BigDecimal costoProveedor = BigDecimal.ZERO;
+
+    @Column(name = "costo_empaque_envio", precision = 10, scale = 2, nullable = false)
+    private BigDecimal costoEmpaqueEnvio = BigDecimal.ZERO;
+
+    @Column(name = "comision_pasarela_fija", precision = 10, scale = 2, nullable = false)
+    private BigDecimal comisionPasarelaFija = BigDecimal.ZERO;
+
     @Column(nullable = false)
     private Integer stock;
 

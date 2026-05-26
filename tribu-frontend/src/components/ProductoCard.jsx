@@ -32,6 +32,16 @@ export default function ProductoCard({ producto, index = 0 }) {
     const { addItem } = useCart()
     const viewers = useViewers(producto.id)
     const [pct] = useState(() => stockPercent(producto.stock))
+    const [adding, setAdding] = useState(false)
+
+    const handleAdd = () => {
+        if (adding) return
+        setAdding(true)
+        addItem(producto)
+        setTimeout(() => {
+            setAdding(false)
+        }, 1200)
+    }
 
     return (
         <motion.div
@@ -140,11 +150,16 @@ export default function ProductoCard({ producto, index = 0 }) {
                             style={{ background: pct >= 85 ? 'var(--color-primary)' : pct >= 65 ? '#FEE715' : 'var(--color-success)' }}
                         />
                     </div>
-                    {producto.stock <= 10 && (
+                    {producto.stock <= 5 ? (
+                        <p style={{ fontSize: '0.68rem', color: 'var(--color-error)', fontWeight: 700, marginTop: 4, display: 'flex', alignItems: 'center' }}>
+                            <span className="pulse-dot"></span>
+                            ⚡ ¡Solo quedan {producto.stock} unidades!
+                        </p>
+                    ) : producto.stock <= 10 ? (
                         <p style={{ fontSize: '0.68rem', color: '#FF5722', fontWeight: 700, marginTop: 4 }}>
                             ⚡ ¡Solo quedan {producto.stock} unidades!
                         </p>
-                    )}
+                    ) : null}
                 </div>
 
                 {/* Precio + CTA */}
@@ -156,13 +171,35 @@ export default function ProductoCard({ producto, index = 0 }) {
                     </div>
                     {/* Botón CTA Naranja — Efecto Restorff */}
                     <motion.button
-                        whileHover={{ scale: 1.08, boxShadow: '0 6px 20px rgba(255,87,34,0.5)' }}
-                        whileTap={{ scale: 0.93 }}
-                        onClick={() => addItem(producto)}
+                        whileHover={adding ? {} : { scale: 1.08, boxShadow: '0 6px 20px rgba(255,87,34,0.5)' }}
+                        whileTap={adding ? {} : { scale: 0.93 }}
+                        onClick={handleAdd}
+                        disabled={adding}
                         className="btn btn-primary"
-                        style={{ padding: '0.45rem 1rem', fontSize: '0.82rem', fontWeight: 800 }}
+                        style={{
+                            padding: '0.45rem 1rem',
+                            fontSize: '0.82rem',
+                            fontWeight: 800,
+                            pointerEvents: adding ? 'none' : 'auto',
+                            background: adding ? 'var(--color-success)' : 'var(--color-primary)',
+                            boxShadow: adding ? '0 6px 20px rgba(0, 200, 150, 0.4)' : 'var(--shadow-orange)',
+                            transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                        }}
                     >
-                        <ShoppingCart size={14} /> Añadir
+                        {adding ? (
+                            <motion.span
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+                                style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+                            >
+                                ✓ ¡Añadido!
+                            </motion.span>
+                        ) : (
+                            <>
+                                <ShoppingCart size={14} /> Añadir
+                            </>
+                        )}
                     </motion.button>
                 </div>
 

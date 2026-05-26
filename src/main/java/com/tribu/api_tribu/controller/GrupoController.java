@@ -1,6 +1,5 @@
 package com.tribu.api_tribu.controller;
 
-import com.tribu.api_tribu.model.GrupoCompra;
 import com.tribu.api_tribu.service.GrupoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -41,6 +40,21 @@ public class GrupoController {
 
     @GetMapping("/mis-grupos")
     public ResponseEntity<?> misGrupos(@AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok(grupoService.listarMisGrupos(userDetails.getUsername()));
+        return ResponseEntity.ok(grupoService.listarMisGruposMapeados(userDetails.getUsername()));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> detalle(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long id) {
+        return ResponseEntity.ok(grupoService.obtenerDetalle(id));
+    }
+
+    @PostMapping("/{id}/pagar")
+    public ResponseEntity<?> pagar(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long id) {
+        grupoService.pagarParticipacion(userDetails.getUsername(), id);
+        return ResponseEntity.ok().build();
     }
 }

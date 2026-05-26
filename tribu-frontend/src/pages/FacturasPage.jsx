@@ -5,11 +5,11 @@ import {
     Search, AlertCircle, CheckCircle2, 
     X, FilePlus, ExternalLink, Info 
 } from 'lucide-react'
-import { 
-    getMisFacturas, 
-    solicitarFactura, 
-    descargarFacturaPdf, 
-    getMisPedidos 
+import {
+    getMisFacturas,
+    solicitarFactura,
+    descargarFacturaPdf,
+    getMisPedidos
 } from '../api'
 import { toast } from 'react-hot-toast'
 
@@ -26,6 +26,8 @@ export default function FacturasPage() {
         nit: '',
         razonSocial: ''
     });
+
+    const [autoInfo, setAutoInfo] = useState(true);
 
     useEffect(() => {
         cargarFacturas();
@@ -47,9 +49,9 @@ export default function FacturasPage() {
         try {
             // Filtrar pedidos que no tienen factura aún (esto debería idealmente filtrarse en el backend o aquí)
             const res = await getMisPedidos();
-            // Asumimos que los pedidos pueden filtrarse por un campo que indique si tiene factura
-            // Por ahora mostramos los completados
-            setPedidos(res.data.filter(p => p.estado === 'ENTREGADO' || p.estado === 'PAGADO'));
+            // Para emisión automática, solo mostramos los pagados si aún no tienen factura
+            const pagados = res.data.filter(p => p.estado === 'PAGADO');
+            setPedidos(pagados);
         } catch (error) {
             console.error('Error cargando pedidos:', error);
         }
@@ -79,7 +81,12 @@ export default function FacturasPage() {
 
         setSubmitting(true);
         try {
-            await solicitarFactura(formData);
+            await solicitarFactura({
+                pedidoId: formData.pedidoId,
+                nit: formData.nit,
+                razonSocial: formData.razonSocial,
+                guardarDatos: autoInfo
+            });
             toast.success('Solicitud enviada con éxito. Recibirás tu factura por email.');
             setIsModalOpen(false);
             setFormData({ pedidoId: '', nit: '', razonSocial: '' });
@@ -96,12 +103,12 @@ export default function FacturasPage() {
             <div className="container" style={{ maxWidth: 1100 }}>
                 
                 {/* Header */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem' }}>
-                    <div>
-                        <h1 style={{ fontSize: '2.5rem', fontWeight: 900, color: '#fff', margin: 0 }}>Facturación Electrónica</h1>
-                        <p style={{ color: 'var(--color-text-muted)', marginTop: '0.5rem' }}>Gestiona tus facturas de forma rápida y legal</p>
-                    </div>
-                    <motion.button
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem' }}>
+                        <div>
+                            <h1 style={{ fontSize: '2.5rem', fontWeight: 900, color: '#fff', margin: 0 }}>Facturación Electrónica</h1>
+                            <p style={{ color: 'var(--color-text-muted)', marginTop: '0.5rem' }}>Tus facturas se emiten automáticamente al pagar</p>
+                        </div>
+                        <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setIsModalOpen(true)}
@@ -121,7 +128,7 @@ export default function FacturasPage() {
                     >
                         <FileText size={64} color="#333" style={{ marginBottom: '1.5rem' }} />
                         <h3 style={{ fontSize: '1.5rem', color: '#fff', marginBottom: '0.5rem' }}>No tienes facturas aún</h3>
-                        <p style={{ color: '#666', marginBottom: '2rem' }}>Tus facturas electrónicas aparecerán aquí después de solicitarlas.</p>
+                                <p style={{ color: '#666', marginBottom: '2rem' }}>Tus facturas electrónicas aparecerán aquí después de pagar.</p>
                         <button onClick={() => setIsModalOpen(true)} className="btn btn-secondary" style={{ borderRadius: '12px' }}>Empieza ahora</button>
                     </motion.div>
                 ) : (
@@ -187,7 +194,7 @@ export default function FacturasPage() {
                     <div>
                         <h5 style={{ color: '#7c3aed', fontSize: '1.1rem', fontWeight: 700, margin: '0 0 0.5rem 0' }}>Información importante</h5>
                         <p style={{ color: '#8b5cf6', fontSize: '0.9rem', margin: 0, lineHeight: 1.6 }}>
-                            Las facturas se generan automáticamente en un plazo de 24 horas después de la solicitud. Recibirás una copia en tu correo electrónico registrado y también podrás descargarla desde esta sección. Si necesitas realizar algún cambio en los datos después de emitida, por favor contacta a soporte.
+                            Las facturas se generan automáticamente al confirmar el pago. Recibirás una copia en tu correo registrado y podrás descargarla desde esta sección.
                         </p>
                     </div>
                 </div>
@@ -231,6 +238,18 @@ export default function FacturasPage() {
                                     </select>
                                 </div>
 
+                                <div style={{ marginBottom: '1.5rem', background: 'rgba(124, 58, 237, 0.08)', border: '1px dashed rgba(124, 58, 237, 0.3)', padding: '0.9rem', borderRadius: '14px', display: 'flex', gap: '0.7rem', alignItems: 'center' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={autoInfo}
+                                        onChange={(e) => setAutoInfo(e.target.checked)}
+                                        style={{ width: 18, height: 18, accentColor: 'var(--color-primary)', cursor: 'pointer' }}
+                                    />
+                                    <span style={{ color: '#c4b5fd', fontSize: '0.85rem' }}>
+                                        Guardar mis datos fiscales para futuras compras
+                                    </span>
+                                </div>
+
                                 <div style={{ marginBottom: '1.5rem' }}>
                                     <label style={{ display: 'block', color: '#888', fontSize: '0.85rem', marginBottom: '0.6rem', fontWeight: 600 }}>NIT O DOCUMENTO</label>
                                     <input 
@@ -258,7 +277,7 @@ export default function FacturasPage() {
                                     disabled={submitting}
                                     style={{ width: '100%', padding: '1.2rem', borderRadius: '18px', background: 'var(--color-primary)', border: 'none', color: '#000', fontWeight: 800, fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.8rem' }}
                                 >
-                                    {submitting ? <div className="spinner" style={{ width: 22, height: 22, borderWidth: 3, borderTopColor: '#000' }} /> : 'Confirmar Solicitud'}
+                                    {submitting ? <div className="spinner" style={{ width: 22, height: 22, borderWidth: 3, borderTopColor: '#000' }} /> : 'Confirmar datos fiscales'}
                                 </button>
                             </form>
                         </motion.div>

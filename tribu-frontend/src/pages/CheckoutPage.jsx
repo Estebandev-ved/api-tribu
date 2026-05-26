@@ -107,7 +107,96 @@ export default function CheckoutPage() {
             <motion.h1 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
                 className="page-title" style={{ marginBottom: '2rem' }}>
                 Finalizar Compra
-            </motion.h1>
+            </motion.h1>            {/* Multi-step Progress Bar */}
+            <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.75rem',
+                marginBottom: '2.5rem',
+                background: 'var(--color-surface-2)',
+                padding: '1.25rem',
+                borderRadius: 'var(--radius-lg)',
+                border: '1px solid var(--color-border)',
+                overflow: 'hidden'
+            }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', alignItems: 'center' }}>
+                    {/* Line Background */}
+                    <div style={{
+                        position: 'absolute',
+                        left: '5%',
+                        right: '5%',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        height: '4px',
+                        background: 'var(--color-border)',
+                        zIndex: 1,
+                        borderRadius: '2px',
+                        overflow: 'hidden'
+                    }}>
+                        {/* Progress Fill */}
+                        <div 
+                            className="progress-fill"
+                            style={{
+                                height: '100%',
+                                width: '100%',
+                                transform: direccion ? 'scaleX(1)' : 'scaleX(0.5)',
+                                transformOrigin: 'left',
+                                background: 'linear-gradient(90deg, var(--color-primary), var(--color-accent))',
+                                transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                            }}
+                        />
+                    </div>
+
+                    {/* Step 1: Carrito */}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 2, gap: '4px' }}>
+                        <div style={{
+                            width: '32px', height: '32px', borderRadius: '50%',
+                            background: 'var(--color-primary)', color: '#fff',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontWeight: 800, fontSize: '0.85rem',
+                            boxShadow: 'var(--shadow-orange)',
+                            border: '2px solid var(--color-bg)'
+                        }}>
+                            ✓
+                        </div>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-text)' }}>Carrito</span>
+                    </div>
+
+                    {/* Step 2: Envío */}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 2, gap: '4px' }}>
+                        <div style={{
+                            width: '32px', height: '32px', borderRadius: '50%',
+                            background: direccion ? 'var(--color-primary)' : 'var(--color-surface-3)',
+                            color: '#fff',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontWeight: 800, fontSize: '0.85rem',
+                            border: direccion ? '2px solid var(--color-bg)' : '2px solid var(--color-border)',
+                            boxShadow: direccion ? 'var(--shadow-orange)' : 'none',
+                            transition: 'all 0.3s ease'
+                        }}>
+                            {direccion ? '✓' : '2'}
+                        </div>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 700, color: direccion ? 'var(--color-text)' : 'var(--color-text-muted)' }}>Envío</span>
+                    </div>
+
+                    {/* Step 3: Pago */}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 2, gap: '4px' }}>
+                        <div style={{
+                            width: '32px', height: '32px', borderRadius: '50%',
+                            background: direccion ? 'var(--color-accent)' : 'var(--color-surface-3)',
+                            color: direccion ? '#111' : '#555',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontWeight: 800, fontSize: '0.85rem',
+                            border: direccion ? '2px solid var(--color-bg)' : '2px solid var(--color-border)',
+                            boxShadow: direccion ? 'var(--shadow-yellow)' : 'none',
+                            transition: 'all 0.3s ease'
+                        }}>
+                            3
+                        </div>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 700, color: direccion ? 'var(--color-accent)' : 'var(--color-text-faint)' }}>Pago</span>
+                    </div>
+                </div>
+            </div>
 
             <div style={{ 
                 display: 'grid', 
@@ -153,7 +242,7 @@ export default function CheckoutPage() {
                             <textarea 
                                 className="tribu-input" 
                                 rows={3} 
-                                placeholder="Ej: Calle 15 #23-45, Barrio Centro, Mocoa, Putumayo"
+                                placeholder="Ej: Calle 15 #23-45, Barrio Centro, Medellín, Antioquia"
                                 value={direccion} 
                                 onChange={e => setDireccion(e.target.value)} 
                                 style={{ resize: 'none' }} 

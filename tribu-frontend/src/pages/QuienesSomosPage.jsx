@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Flame, Star, Shield, Users } from 'lucide-react'
+import { Star, Shield, Users } from 'lucide-react'
 
 export default function QuienesSomosPage() {
     return (
@@ -7,14 +7,12 @@ export default function QuienesSomosPage() {
             <div className="container" style={{ maxWidth: '800px', margin: '0 auto', padding: '0 1rem' }}>
 
                 <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-                    <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-surface)', padding: '1rem', borderRadius: '50%', marginBottom: '1.5rem', boxShadow: '0 0 20px rgba(255,87,34,0.2)' }}>
-                        <Flame size={48} color="var(--color-primary)" />
-                    </div>
+                    <img src="/logo-tribu.png" alt="Tribu" style={{ width: 250, height: 200, objectFit: 'contain', display: 'block', margin: '0 auto' }} />
                     <h1 style={{ fontSize: 'clamp(2.5rem, 5vw, 3.5rem)', fontWeight: 900, marginBottom: '1rem' }}>
                         Nuestra <span style={{ color: 'var(--color-primary)' }}>Tribu</span>
                     </h1>
                     <p style={{ fontSize: '1.2rem', color: 'var(--color-text-muted)', lineHeight: 1.6 }}>
-                        Descubriendo los productos más virales del mundo, desde Mocoa para toda Colombia.
+                        Descubriendo los productos más virales del mundo, desde Medellín para toda Colombia.
                     </p>
                 </div>
 
@@ -24,7 +22,7 @@ export default function QuienesSomosPage() {
                         En <strong>Tribu E-commerce</strong> no somos una tienda online tradicional. Somos un equipo apasionado por buscar, probar y seleccionar los productos más virales, innovadores y útiles que están rompiéndola en internet.
                     </p>
                     <p style={{ color: 'var(--color-text-muted)', lineHeight: 1.8 }}>
-                        Nacimos en Mocoa, Putumayo, con una visión clara: acortar la distancia entre las tendencias mundiales y el consumidor colombiano. Queremos que tengas acceso temprano a lo que todo el mundo de lo que estará hablando mañana.
+                        Nacimos en Medellín, Antioquia, con una visión clara: acortar la distancia entre las tendencias mundiales y el consumidor colombiano. Queremos que tengas acceso temprano a lo que todo el mundo de lo que estará hablando mañana.
                     </p>
                 </div>
 

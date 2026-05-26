@@ -1,19 +1,58 @@
 import { useRef, useEffect, useState } from 'react'
 import { motion, useMotionValue, useTransform, useSpring } from 'framer-motion'
 
-const TIER_GRADIENTS = {
-  BRONCE: 'linear-gradient(135deg, #cd7f32 0%, #a0522d 50%, #8b4513 100%)',
-  PLATA: 'linear-gradient(135deg, #c0c0c0 0%, #a8a8a8 50%, #808080 100%)',
-  ORO: 'linear-gradient(135deg, #ffd700 0%, #daa520 50%, #b8860b 100%)'
-}
-
 const TIER_LABELS = {
   1: 'BRONCE',
   2: 'PLATA',
   3: 'ORO'
 }
 
-export default function TribuCard({ saldo, animarSaldo, tierActual, onFlip }) {
+const TIER_THEMES = {
+  BRONCE: {
+    gradient: 'linear-gradient(135deg, #A85A32 0%, #D4926A 40%, #8A401B 100%)',
+    textBrand: '#421A00',
+    tierPillColor: '#3D1900',
+    chipCell: 'rgba(80,30,0,0.25)',
+    cardNumber: '#5C2807',
+    balanceLabel: '#6E320D',
+    balanceAmount: '#2E1000',
+    balanceUnit: '#5C2807',
+    progressText: '#6E320D',
+    progressBarFill: '#3D1900',
+    progressBarBg: 'rgba(255,255,255,0.3)',
+    shadow: '0 20px 50px rgba(138,64,27,0.3), inset 0 0 0 1px rgba(255,255,255,0.2)'
+  },
+  PLATA: {
+    gradient: 'linear-gradient(135deg, #A1A8BA 0%, #E1E5EE 40%, #7F889B 100%)',
+    textBrand: '#20273a',
+    tierPillColor: '#1C2030',
+    chipCell: 'rgba(40,50,70,0.25)',
+    cardNumber: '#3A4155',
+    balanceLabel: '#4A5168',
+    balanceAmount: '#101420',
+    balanceUnit: '#3A4155',
+    progressText: '#4A5168',
+    progressBarFill: '#1C2030',
+    progressBarBg: 'rgba(255,255,255,0.4)',
+    shadow: '0 20px 50px rgba(127,136,155,0.3), inset 0 0 0 1px rgba(255,255,255,0.3)'
+  },
+  ORO: {
+    gradient: 'linear-gradient(135deg, #E8A820 0%, #F5C842 40%, #D4920A 100%)',
+    textBrand: '#4a3000',
+    tierPillColor: '#3a2500',
+    chipCell: 'rgba(100,60,0,0.25)',
+    cardNumber: '#5a3c00',
+    balanceLabel: '#6b4500',
+    balanceAmount: '#2a1800',
+    balanceUnit: '#5a3c00',
+    progressText: '#6b4500',
+    progressBarFill: '#3a2500',
+    progressBarBg: 'rgba(255,255,255,0.3)',
+    shadow: '0 20px 50px rgba(232,168,32,0.4), inset 0 0 0 1px rgba(255,255,255,0.35)'
+  }
+}
+
+export default function TribuCard({ saldo, animarSaldo, tierActual, cardNumber, onFlip }) {
   const cardRef = useRef(null)
   const mouseX = useMotionValue(0.5)
   const mouseY = useMotionValue(0.5)
@@ -34,9 +73,7 @@ export default function TribuCard({ saldo, animarSaldo, tierActual, onFlip }) {
 
   const nivelVip = tierActual?.orden || 1
   const tierName = TIER_LABELS[nivelVip] || 'BRONCE'
-  const gradient = TIER_GRADIENTS[tierName]
-
-  const isDarkText = nivelVip >= 2
+  const theme = TIER_THEMES[tierName] || TIER_THEMES.BRONCE
 
   useEffect(() => {
     if (!animarSaldo || saldo === saldoAnimado) return
@@ -77,8 +114,27 @@ export default function TribuCard({ saldo, animarSaldo, tierActual, onFlip }) {
     mouseY.set(0.5)
   }
 
-  const formatCurrency = (monto) => 
-    new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(monto ?? 0)
+  const formatCurrencyWithoutUnit = (monto) => 
+    new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 }).format(monto ?? 0)
+
+  const getProgressInfo = () => {
+    if (tierName === 'BRONCE') {
+      const target = 50000
+      const pct = Math.min(Math.round((saldo / target) * 100), 100)
+      return { label: 'Progreso hacia Plata', pct }
+    } else if (tierName === 'PLATA') {
+      const target = 250000
+      const pct = Math.min(Math.round((saldo / target) * 100), 100)
+      return { label: 'Progreso hacia Oro', pct }
+    } else {
+      const target = 1000000
+      const pct = Math.min(Math.round((saldo / target) * 100), 100)
+      return { label: 'Progreso hacia Platino', pct }
+    }
+  }
+
+  const progress = getProgressInfo()
+  const displayCardNumber = cardNumber || '•••• •••• •••• 1234'
 
   return (
     <div 
@@ -86,23 +142,22 @@ export default function TribuCard({ saldo, animarSaldo, tierActual, onFlip }) {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       onClick={onFlip}
-      style={{ perspective: '1000px', cursor: onFlip ? 'pointer' : 'default' }}
+      style={{ perspective: '1000px', cursor: onFlip ? 'pointer' : 'default', width: '100%', display: 'flex', justifyContent: 'center' }}
     >
       <motion.div
         style={{
-          width: '380px',
-          height: '240px',
-          borderRadius: '16px',
-          background: gradient,
+          width: '100%',
+          maxWidth: '420px',
+          borderRadius: '20px',
+          background: theme.gradient,
           position: 'relative',
           overflow: 'hidden',
           transformStyle: 'preserve-3d',
           rotateX: springRotateX,
           rotateY: springRotateY,
           willChange: 'transform',
-          boxShadow: nivelVip === 3 
-            ? '0 20px 50px rgba(237,143,3,0.4), inset 0 0 0 1px rgba(255,255,255,0.3)'
-            : '0 20px 50px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.05)',
+          boxShadow: theme.shadow,
+          padding: '1.5rem',
         }}
         layoutId="tribu-card"
       >
@@ -120,53 +175,51 @@ export default function TribuCard({ saldo, animarSaldo, tierActual, onFlip }) {
         />
 
         <div style={{ position: 'absolute', top: '-50%', left: '-50%', width: '200%', height: '200%', background: 'radial-gradient(circle at top left, rgba(255, 255, 255, 0.25) 0%, transparent 40%)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: '-20%', right: '-20%', width: '150%', height: '150%', background: nivelVip === 3 ? 'radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.4) 0%, transparent 50%)' : 'radial-gradient(circle at bottom right, rgba(255, 87, 34, 0.2) 0%, transparent 50%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', bottom: '-20%', right: '-20%', width: '150%', height: '150%', background: tierName === 'ORO' ? 'radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.4) 0%, transparent 50%)' : 'radial-gradient(circle at bottom right, rgba(255, 87, 34, 0.2) 0%, transparent 50%)', pointerEvents: 'none' }} />
 
-        <div style={{ position: 'relative', zIndex: 1, padding: '1.5rem', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', color: isDarkText ? '#222' : '#fff' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div style={{ 
-              width: '45px', 
-              height: '35px', 
-              background: 'linear-gradient(135deg, #ffd700, #b8860b)', 
-              borderRadius: '6px', 
-              position: 'relative',
-              overflow: 'hidden',
-              boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
-            }}>
-              <div style={{ position: 'absolute', top: '50%', width: '100%', height: '1px', background: 'rgba(0,0,0,0.2)' }} />
-              <div style={{ position: 'absolute', left: '50%', width: '1px', height: '100%', background: 'rgba(0,0,0,0.2)' }} />
-              <div style={{ position: 'absolute', top: '25%', width: '100%', height: '1px', background: 'rgba(0,0,0,0.15)' }} />
-              <div style={{ position: 'absolute', top: '75%', width: '100%', height: '1px', background: 'rgba(0,0,0,0.15)' }} />
-            </div>
-
-            <div style={{ 
-              padding: '4px 10px', 
-              borderRadius: '20px', 
-              background: isDarkText ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.15)',
-              fontSize: '0.7rem',
-              fontWeight: 800,
-              letterSpacing: '1px',
-              textTransform: 'uppercase'
-            }}>
-              {tierName}
-            </div>
-          </div>
-
-          <div style={{ fontSize: '1.3rem', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', fontFamily: 'monospace', opacity: 0.9 }}>
-            TRIBU •••• •••• •••• 1234
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-            <div style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 600, opacity: 0.8 }}>
-              {tierActual?.nombre || 'USUARIO'}
-            </div>
+        <div style={{ position: 'relative', zIndex: 1, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', color: theme.balanceAmount }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
             <div>
-              <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '1px', opacity: 0.7, marginBottom: '2px' }}>
-                Balance Actual
+              <div style={{ width: '34px', height: '26px', borderRadius: '5px', background: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justify: 'center', marginBottom: '0.75rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px', width: '22px', height: '18px' }}>
+                  <div style={{ background: theme.chipCell, borderRadius: '1px' }} />
+                  <div style={{ background: theme.chipCell, borderRadius: '1px' }} />
+                  <div style={{ background: theme.chipCell, borderRadius: '1px' }} />
+                  <div style={{ background: theme.chipCell, borderRadius: '1px' }} />
+                </div>
               </div>
-              <div style={{ fontSize: '1.8rem', fontWeight: 900, textShadow: isDarkText ? 'none' : '0 2px 10px rgba(0,0,0,0.5)' }}>
-                {formatCurrency(saldoAnimado)}
+              <div style={{ fontSize: '18px', fontWeight: 700, letterSpacing: '0.12em', color: theme.textBrand }}>TRIBU</div>
+            </div>
+            
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ background: 'rgba(255,255,255,0.35)', fontSize: '11px', fontWeight: 700, padding: '4px 10px', borderRadius: '20px', color: theme.tierPillColor, letterSpacing: '0.06em', display: 'inline-block' }}>
+                ✦ {tierName}
               </div>
+              <div style={{ fontSize: '11px', color: theme.cardNumber, marginTop: '8px', opacity: 0.8, letterSpacing: '1px', fontFamily: 'monospace' }}>
+                {displayCardNumber}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginTop: '0.5rem', marginBottom: '1rem' }}>
+            <div style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: theme.balanceLabel, opacity: 0.8, marginBottom: '2px' }}>
+              Balance actual
+            </div>
+            <div style={{ display: 'flex', alignItems: 'baseline' }}>
+              <div style={{ fontSize: '30px', fontWeight: 700, color: theme.balanceAmount, lineHeight: 1.1, letterSpacing: '-0.5px' }}>
+                {formatCurrencyWithoutUnit(saldoAnimado)}
+              </div>
+              <span style={{ fontSize: '14px', fontWeight: 700, color: theme.balanceUnit, marginLeft: '4px' }}>pts</span>
+            </div>
+          </div>
+
+          <div style={{ marginTop: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+              <span style={{ fontSize: '11px', color: theme.progressText, fontWeight: 500 }}>{progress.label}</span>
+              <span style={{ fontSize: '11px', color: theme.progressText, fontWeight: 700 }}>{progress.pct}%</span>
+            </div>
+            <div style={{ background: theme.progressBarBg, borderRadius: '10px', height: '5px', overflow: 'hidden' }}>
+              <div style={{ background: theme.progressBarFill, borderRadius: '10px', height: '5px', width: `${progress.pct}%` }} />
             </div>
           </div>
         </div>
@@ -174,3 +227,4 @@ export default function TribuCard({ saldo, animarSaldo, tierActual, onFlip }) {
     </div>
   )
 }
+

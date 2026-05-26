@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { RotateCcw, Package, CheckCircle, Clock, XCircle, Plus, Upload } from 'lucide-react'
 import profileService from '../../services/profileService'
 import toast from 'react-hot-toast'
+import { useAuth } from '../../context/AuthContext'
 
 const MOTIVOS = [
   'Producto dañado o defectuoso',
@@ -21,8 +22,9 @@ const ESTADOS_COLORS = {
   REEMBOLSO_PROCESADO: { bg: '#d1fae5', color: '#059669' }
 }
 
-function SolicitarDevolucionForm({ pedidos, onSubmit, onCancel }) {
+function SolicitarDevolucionForm({ pedidos, user, onSubmit, onCancel }) {
   const [pedidoId, setPedidoId] = useState('')
+  const [productoId, setProductoId] = useState('')
   const [motivo, setMotivo] = useState('')
   const [descripcion, setDescripcion] = useState('')
   const [reembolsoTipo, setReembolsoTipo] = useState('saldo')
@@ -30,21 +32,38 @@ function SolicitarDevolucionForm({ pedidos, onSubmit, onCancel }) {
   const [enviando, setEnviando] = useState(false)
 
   const handleSubmit = async () => {
-    if (!pedidoId || !motivo) {
+    if (!pedidoId || !productoId || !motivo) {
       toast.error('Completa los campos obligatorios')
       return
     }
 
     setEnviando(true)
     try {
-      const formData = new FormData()
-      formData.append('pedidoId', pedidoId)
-      formData.append('motivo', motivo)
-      formData.append('descripcion', descripcion)
-      formData.append('reembolsoTipo', reembolsoTipo)
-      fotos.forEach(f => formData.append('fotos', f))
+      const pedidoSeleccionado = pedidos.find(p => String(p.id) === String(pedidoId))
+      const productoSeleccionado = pedidoSeleccionado?.detalles?.find(d => String(d.productoId) === String(productoId))
+      const payload = new FormData()
+      const emailValue = user?.email || ''
+      if (!emailValue) {
+        toast.error('No pudimos identificar tu email')
+        setEnviando(false)
+        return
+      }
 
-      await profileService.solicitarDevolucion(formData)
+      const data = {
+        orderNumber: String(pedidoId),
+        email: emailValue,
+        reason: motivo,
+        pedidoId: Number(pedidoId),
+        productoId: Number(productoId),
+        productoNombre: productoSeleccionado?.productoNombre || 'Producto'
+      }
+      const jsonPart = new Blob([JSON.stringify(data)], { type: 'application/json' })
+      payload.append('data', jsonPart)
+      if (fotos.length > 0) {
+        payload.append('evidencia', fotos[0])
+      }
+
+      await profileService.solicitarDevolucion(payload)
       toast.success('Solicitud de devolución enviada')
       onSubmit()
     } catch (error) {
@@ -62,7 +81,10 @@ function SolicitarDevolucionForm({ pedidos, onSubmit, onCancel }) {
         </label>
         <select
           value={pedidoId}
-          onChange={(e) => setPedidoId(e.target.value)}
+          onChange={(e) => {
+            setPedidoId(e.target.value)
+            setProductoId('')
+          }}
           style={{
             width: '100%',
             background: 'rgba(30,30,30,0.8)',
@@ -76,11 +98,41 @@ function SolicitarDevolucionForm({ pedidos, onSubmit, onCancel }) {
         >
           <option value="">Selecciona un pedido</option>
           {pedidos.map(p => (
-            <option key={p.id} value={p.id}>#{p.id} - {p.productos?.[0]?.nombre || 'Pedido'}</option>
+            <option key={p.id} value={p.id}>#{p.id} - {p.detalles?.[0]?.productoNombre || 'Pedido'}</option>
           ))}
         </select>
         <p style={{ color: 'var(--color-text-faint)', fontSize: '0.75rem', margin: '0.5rem 0 0' }}>
           Solo pedidos entregados en los últimos 30 días
+        </p>
+      </div>
+
+      <div>
+        <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem' }}>
+          ¿Qué producto recibiste y quieres devolver?
+        </label>
+        <select
+          value={productoId}
+          onChange={(e) => setProductoId(e.target.value)}
+          disabled={!pedidoId}
+          style={{
+            width: '100%',
+            background: 'rgba(30,30,30,0.8)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: '0.5rem',
+            padding: '0.875rem 1rem',
+            color: 'var(--color-text)',
+            fontSize: '0.95rem',
+            outline: 'none',
+            opacity: !pedidoId ? 0.6 : 1
+          }}
+        >
+          <option value="">Selecciona un producto</option>
+          {(pedidos.find(p => String(p.id) === String(pedidoId))?.detalles || []).map(d => (
+            <option key={d.id} value={d.productoId}>#{d.productoId} - {d.productoNombre} (x{d.cantidad})</option>
+          ))}
+        </select>
+        <p style={{ color: 'var(--color-text-faint)', fontSize: '0.75rem', margin: '0.5rem 0 0' }}>
+          Escoge el producto exacto que deseas devolver
         </p>
       </div>
 
@@ -177,6 +229,7 @@ function SolicitarDevolucionForm({ pedidos, onSubmit, onCancel }) {
 }
 
 export default function ProfileDevolucionesSection() {
+  const { user } = useAuth()
   const [devoluciones, setDevoluciones] = useState([])
   const [pedidosEntregados, setPedidosEntregados] = useState([])
   const [loading, setLoading] = useState(true)
@@ -252,6 +305,7 @@ export default function ProfileDevolucionesSection() {
         }}>
           <SolicitarDevolucionForm 
             pedidos={pedidosEntregados}
+            user={user}
             onSubmit={() => {
               setShowForm(false)
               profileService.getMisDevoluciones().then(res => setDevoluciones(res.data || []))
@@ -287,7 +341,7 @@ export default function ProfileDevolucionesSection() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
                     <span style={{ color: 'var(--color-primary)', fontWeight: 600, fontSize: '0.85rem' }}>#{dev.id}</span>
-                    <p style={{ color: 'var(--color-text)', margin: '0.25rem 0 0' }}>{dev.producto || 'Producto'}</p>
+                  <p style={{ color: 'var(--color-text)', margin: '0.25rem 0 0' }}>{dev.productoNombre || dev.producto || 'Producto'}</p>
                   </div>
                   <span style={{
                     background: estadoColor.bg,
@@ -351,7 +405,7 @@ export default function ProfileDevolucionesSection() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div>
                   <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', margin: '0 0 0.25rem' }}>Producto</p>
-                  <p style={{ color: 'var(--color-text)', margin: 0 }}>{detalleDevolucion.producto}</p>
+                  <p style={{ color: 'var(--color-text)', margin: 0 }}>{detalleDevolucion.productoNombre || detalleDevolucion.producto}</p>
                 </div>
                 <div>
                   <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', margin: '0 0 0.25rem' }}>Motivo</p>

@@ -15,7 +15,7 @@ import { Link } from 'react-router-dom'
 
 const features = [
     { icon: <Flame size={22} />, title: 'Productos Virales', desc: 'Curados directamente de TikTok y las tendencias globales.' },
-    { icon: <Truck size={22} />, title: 'Envío a Todo Colombia', desc: 'Desde Mocoa, Putumayo. Rastreo en tiempo real.' },
+    { icon: <Truck size={22} />, title: 'Envío a Todo Colombia', desc: 'Desde Medellín, Antioquia. Rastreo en tiempo real.' },
     { icon: <TrendingUp size={22} />, title: 'Precios Imbatibles', desc: 'Acceso directo a proveedores. Sin intermediarios.' },
     { icon: <ShieldCheck size={22} />, title: 'Compra 100% Segura', desc: 'Tu pedido protegido desde el pago hasta la entrega.' },
 ]
@@ -140,14 +140,15 @@ export default function Hero() {
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.5 }}
                         style={{
-                            display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+                            display: 'inline-flex', alignItems: 'center', gap: '0.6rem',
                             background: 'rgba(255,87,34,0.12)', border: '1px solid rgba(255,87,34,0.3)',
                             borderRadius: '9999px', padding: '0.35rem 1.1rem',
                             fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-primary)',
                             marginBottom: '1.5rem', letterSpacing: '0.02em',
                         }}
                     >
-                        <Flame size={13} /> Únete a los +10,000 que ya lo tienen
+                        <img src="/logo-tribu.png" alt="Tribu" style={{ width: 40, height: 40, objectFit: 'contain' }} />
+                        Únete a los +10,000 que ya lo tienen
                     </motion.div>
 
                     {/* Título */}

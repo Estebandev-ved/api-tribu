@@ -4,11 +4,11 @@ import com.tribu.api_tribu.dto.request.TransferenciaRequest;
 import com.tribu.api_tribu.dto.response.LimiteDiarioResponse;
 import com.tribu.api_tribu.dto.response.TransferenciaResponse;
 import com.tribu.api_tribu.dto.response.ValidarDestinatarioResponse;
+import com.tribu.api_tribu.model.TransferenciaP2P;
 import com.tribu.api_tribu.model.Usuario;
 import com.tribu.api_tribu.repository.UsuarioRepository;
 import com.tribu.api_tribu.service.SaldoService;
 import com.tribu.api_tribu.service.TransferenciaService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -17,37 +17,45 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/transferencias")
-@RequiredArgsConstructor
 public class TransferenciaController {
 
     private final TransferenciaService transferenciaService;
     private final UsuarioRepository usuarioRepo;
     private final SaldoService saldoService;
 
+    public TransferenciaController(
+            TransferenciaService transferenciaService,
+            UsuarioRepository usuarioRepo,
+            SaldoService saldoService) {
+        this.transferenciaService = transferenciaService;
+        this.usuarioRepo = usuarioRepo;
+        this.saldoService = saldoService;
+    }
+
     @PostMapping("/enviar")
     public ResponseEntity<TransferenciaResponse> enviar(@RequestBody TransferenciaRequest request) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         
-        var transferencia = transferenciaService.transferir(
+        TransferenciaP2P transferencia = transferenciaService.transferir(
                 email,
                 request.getDestinatario(),
                 request.getMonto(),
-                request.getMensaje()
+                request.getMensaje(),
+                request.getPin()
         );
 
         Usuario emisor = usuarioRepo.findByEmail(email).orElseThrow();
         double nuevoSaldo = saldoService.consultarSaldoReal(emisor.getId());
 
-        TransferenciaResponse response = TransferenciaResponse.builder()
-                .referencia(transferencia.getReferenciaUnica())
-                .tipoParticipante("EMISOR")
-                .monto(transferencia.getMonto())
-                .contraparte(transferencia.getReceptor().getNombreCompleto())
-                .mensaje(transferencia.getMensaje())
-                .estado(transferencia.getEstado().name())
-                .fecha(transferencia.getFechaCompletada())
-                .nuevoSaldo(nuevoSaldo)
-                .build();
+        TransferenciaResponse response = new TransferenciaResponse();
+        response.setReferencia(transferencia.getReferenciaUnica());
+        response.setTipoParticipante("EMISOR");
+        response.setMonto(transferencia.getMonto());
+        response.setContraparte(transferencia.getReceptor().getNombreCompleto());
+        response.setMensaje(transferencia.getMensaje());
+        response.setEstado(transferencia.getEstado().name());
+        response.setFecha(transferencia.getFechaCompletada());
+        response.setNuevoSaldo(nuevoSaldo);
 
         return ResponseEntity.ok(response);
     }

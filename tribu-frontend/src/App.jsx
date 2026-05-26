@@ -32,6 +32,11 @@ import InventarioPage from './pages/admin/InventarioPage'
 import TelegramConfigPage from './pages/admin/TelegramConfigPage'
 import TribuPassPage from './pages/TribuPassPage'
 import FacturasPage from './pages/FacturasPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
+import HelpWidget from './components/HelpWidget'
+import AdminSecurityPage from './pages/admin/AdminSecurityPage'
+import RecompensasPage from './pages/RecompensasPage'
 
 function AdminRoute({ children }) {
   const { isAdmin, isAuthenticated } = useAuth()
@@ -63,18 +68,22 @@ function AppContent() {
         <Route path="/producto/:id" element={<Page><ProductoDetailPage /></Page>} />
         <Route path="/login" element={<Page><LoginPage /></Page>} />
         <Route path="/register" element={<Page><RegisterPage /></Page>} />
+        <Route path="/forgot-password" element={<Page><ForgotPasswordPage /></Page>} />
+        <Route path="/reset-password" element={<Page><ResetPasswordPage /></Page>} />
         <Route path="/checkout" element={<PrivateRoute><Page><CheckoutPage /></Page></PrivateRoute>} />
         <Route path="/perfil" element={<PrivateRoute><Page><ProfilePage /></Page></PrivateRoute>} />
         <Route path="/billetera" element={<PrivateRoute><Page><BilleteraPage /></Page></PrivateRoute>} />
         <Route path="/transferir" element={<PrivateRoute><Page><TransferirPage /></Page></PrivateRoute>} />
         <Route path="/leaderboard" element={<PrivateRoute><Page><LeaderboardPage /></Page></PrivateRoute>} />
         <Route path="/referidos" element={<PrivateRoute><Page><ReferidoArbolPage /></Page></PrivateRoute>} />
+        <Route path="/recompensas" element={<PrivateRoute><Page><RecompensasPage /></Page></PrivateRoute>} />
         <Route path="/grupos" element={<PrivateRoute><Page><GruposPage /></Page></PrivateRoute>} />
         <Route path="/racha" element={<PrivateRoute><Page><RachaPage /></Page></PrivateRoute>} />
         <Route path="/tribu-pass" element={<PrivateRoute><Page><TribuPassPage /></Page></PrivateRoute>} />
         <Route path="/facturas" element={<PrivateRoute><Page><FacturasPage /></Page></PrivateRoute>} />
         <Route path="/mis-pedidos" element={<PrivateRoute><Page><MisPedidosPage /></Page></PrivateRoute>} />
         <Route path="/admin" element={<AdminRoute><Page><AdminPage /></Page></AdminRoute>} />
+        <Route path="/admin/seguridad" element={<AdminRoute><Page><AdminSecurityPage /></Page></AdminRoute>} />
         <Route path="/admin/campanas" element={<AdminRoute><Page><CampanasPage /></Page></AdminRoute>} />
         <Route path="/admin/inventario" element={<AdminRoute><Page><InventarioPage /></Page></AdminRoute>} />
         <Route path="/admin/telegram" element={<AdminRoute><Page><TelegramConfigPage /></Page></AdminRoute>} />
@@ -97,6 +106,7 @@ function AppContent() {
       />
       <SocialProofToast />
       <StickyMobileCart />
+      <HelpWidget />
     </BrowserRouter>
   )
 }

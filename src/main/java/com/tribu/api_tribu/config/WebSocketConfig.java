@@ -1,5 +1,8 @@
 package com.tribu.api_tribu.config;
 
+import com.tribu.api_tribu.websocket.AdminTopicGuardInterceptor;
+import com.tribu.api_tribu.websocket.WebSocketJwtChannelInterceptor;
+import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.*;
@@ -23,6 +26,17 @@ import org.springframework.web.socket.config.annotation.*;
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
+    private final WebSocketJwtChannelInterceptor webSocketJwtChannelInterceptor;
+    private final AdminTopicGuardInterceptor adminTopicGuardInterceptor;
+
+    public WebSocketConfig(
+            WebSocketJwtChannelInterceptor webSocketJwtChannelInterceptor,
+            AdminTopicGuardInterceptor adminTopicGuardInterceptor
+    ) {
+        this.webSocketJwtChannelInterceptor = webSocketJwtChannelInterceptor;
+        this.adminTopicGuardInterceptor = adminTopicGuardInterceptor;
+    }
+
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // Al quitar .withSockJS(), forzamos el uso de native WebSockets (más rápido y sin warnings de 'unload')
@@ -41,5 +55,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
         // Prefijo para mensajes dirigidos a un usuario específico
         registry.setUserDestinationPrefix("/user");
+    }
+
+    @Override
+    public void configureClientInboundChannel(ChannelRegistration registration) {
+        registration.interceptors(webSocketJwtChannelInterceptor, adminTopicGuardInterceptor);
     }
 }

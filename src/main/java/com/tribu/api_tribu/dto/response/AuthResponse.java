@@ -18,6 +18,10 @@ public class AuthResponse {
     private String email;
     private String rol;
 
+    /** true cuando el usuario tiene 2FA activo y el cliente debe solicitar el código TOTP. */
+    @Builder.Default
+    private boolean requires2fa = false;
+
     /** Información del tier VIP actual del usuario (Fase 2) */
     private TierInfoDto tierActual;
 

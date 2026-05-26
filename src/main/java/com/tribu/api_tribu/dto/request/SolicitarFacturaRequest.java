@@ -7,4 +7,5 @@ public class SolicitarFacturaRequest {
     private Long pedidoId;
     private String nit;
     private String razonSocial;
+    private Boolean guardarDatos;
 }

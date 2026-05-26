@@ -8,6 +8,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -55,4 +58,49 @@ public interface MovimientoSaldoRepository extends JpaRepository<MovimientoSaldo
     Long countPendientesDeLiberar();
 
     boolean existsByPedidoIdAndTipo(Long pedidoId, MovimientoSaldo.TipoMovimiento tipo);
+
+    // ── Admin: Buscador global de movimientos (ledger) ─────────────────────
+    @Query("""
+            SELECT new com.tribu.api_tribu.dto.response.MovimientoSaldoAdminDTO(
+                m.id,
+                m.fecha,
+                m.monto,
+                m.estado,
+                m.tipo,
+                m.descripcion,
+                m.unlockDate,
+                m.pedidoId,
+                u.id,
+                u.nombreCompleto,
+                u.email,
+                u.telefono,
+                u.ciudad
+            )
+            FROM MovimientoSaldo m
+            JOIN m.usuario u
+            WHERE (
+                :q IS NULL OR
+                LOWER(u.email) LIKE LOWER(CONCAT('%', :q, '%')) OR
+                LOWER(u.nombreCompleto) LIKE LOWER(CONCAT('%', :q, '%')) OR
+                LOWER(COALESCE(m.descripcion, '')) LIKE LOWER(CONCAT('%', :q, '%')) OR
+                LOWER(COALESCE(CONCAT('', m.pedidoId), '')) LIKE LOWER(CONCAT('%', :q, '%')) OR
+                LOWER(CONCAT('', m.id)) LIKE LOWER(CONCAT('%', :q, '%'))
+            )
+            AND (:estado IS NULL OR m.estado = :estado)
+            AND (:tipo IS NULL OR m.tipo = :tipo)
+            """)
+    Page<com.tribu.api_tribu.dto.response.MovimientoSaldoAdminDTO> buscarAdmin(
+            @Param("q") String q,
+            @Param("estado") EstadoMovimiento estado,
+            @Param("tipo") MovimientoSaldo.TipoMovimiento tipo,
+            Pageable pageable
+    );
+
+    @Query("SELECT COUNT(m) FROM MovimientoSaldo m WHERE m.fecha >= :desde")
+    Long countDesde(@Param("desde") LocalDateTime desde);
+
+    // ── Expiracion de puntos (Scheduler) ───────────────────────────────────
+    @Query("SELECT m FROM MovimientoSaldo m " +
+           "WHERE m.estado = 'CLEARED' AND m.monto > 0 AND m.fecha <= :limite")
+    List<MovimientoSaldo> findMovimientosParaExpirar(@Param("limite") LocalDateTime limite);
 }

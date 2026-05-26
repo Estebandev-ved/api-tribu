@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -33,12 +34,28 @@ public class TribuPassService {
     private final SaldoWebSocketService wsService;
     private final EmailService emailService;
 
+    /**
+     * Activa o reactiva la suscripción Tribu Pass para un usuario.
+     * 
+     * Propósito:
+     * Si el usuario ya posee un registro de Tribu Pass inactivo (por ejemplo, CANCELADA o EXPIRADA),
+     * el método reutiliza y actualiza este registro existente en lugar de intentar realizar una inserción (INSERT),
+     * evitando así violaciones de restricción de clave única (unique constraint) sobre 'usuario_id'.
+     *
+     * Medidas de seguridad implementadas:
+     * 1. Validación de Entradas: Verificación de existencia de la entidad de usuario.
+     * 2. Control de Estado Activo: Evita doble cobro y doble activación al verificar si ya posee un pase activo.
+     * 3. Prevención de Sobregiro: Comprobación estricta de saldo suficiente en Tribu Card previo al débito.
+     * 4. Atomicidad: Ejecución bajo una transacción global (@Transactional) para asegurar consistencia del saldo,
+     *    del historial de renovaciones y del estado general del usuario.
+     */
     @Transactional
     public TribuPass activar(Long usuarioId, String metodoPago) {
         Usuario usuario = usuarioRepo.findById(usuarioId)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
 
-        if (tienePassActiva(usuarioId)) {
+        Optional<TribuPass> existingPassOpt = passRepo.findByUsuarioId(usuarioId);
+        if (existingPassOpt.isPresent() && existingPassOpt.get().getEstado() == EstadoPass.ACTIVA) {
             throw new IllegalStateException("El usuario ya tiene un Tribu Pass activo");
         }
 
@@ -54,15 +71,26 @@ public class TribuPassService {
         LocalDateTime ahora = LocalDateTime.now();
         LocalDateTime fechaRenovacion = ahora.plusDays(DIAS_RENOVACION);
 
-        TribuPass pass = TribuPass.builder()
-                .usuario(usuario)
-                .estado(EstadoPass.ACTIVA)
-                .fechaInicio(ahora)
-                .fechaRenovacion(fechaRenovacion)
-                .precio(PRECIO_PASS)
-                .metodoPago(metodoPago != null ? metodoPago : "SALDO_TRIBU")
-                .renovacionAutomatica(true)
-                .build();
+        TribuPass pass;
+        if (existingPassOpt.isPresent()) {
+            pass = existingPassOpt.get();
+            pass.setEstado(EstadoPass.ACTIVA);
+            pass.setFechaInicio(ahora);
+            pass.setFechaRenovacion(fechaRenovacion);
+            pass.setPrecio(PRECIO_PASS);
+            pass.setMetodoPago(metodoPago != null ? metodoPago : "SALDO_TRIBU");
+            pass.setRenovacionAutomatica(true);
+        } else {
+            pass = TribuPass.builder()
+                    .usuario(usuario)
+                    .estado(EstadoPass.ACTIVA)
+                    .fechaInicio(ahora)
+                    .fechaRenovacion(fechaRenovacion)
+                    .precio(PRECIO_PASS)
+                    .metodoPago(metodoPago != null ? metodoPago : "SALDO_TRIBU")
+                    .renovacionAutomatica(true)
+                    .build();
+        }
 
         pass = passRepo.save(pass);
 
@@ -84,7 +112,7 @@ public class TribuPassService {
 
         enviarEmailBienvenida(usuario);
 
-        log.info("💎 Tribu Pass activado para usuario {} - renovación: {}", usuarioId, fechaRenovacion);
+        log.info("💎 Tribu Pass activado/reactivado para usuario {} - renovación: {}", usuarioId, fechaRenovacion);
         return pass;
     }
 

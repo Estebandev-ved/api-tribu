@@ -9,7 +9,7 @@ import java.util.Optional;
 
 @Repository
 public interface FacturaRepository extends JpaRepository<FacturaElectronica, Long> {
-    Optional<FacturaElectronica> findByPedidoId(Long pedidoId);
-    List<FacturaElectronica> findByUsuarioId(Long usuarioId);
-    boolean existsByPedidoId(Long pedidoId);
+    Optional<FacturaElectronica> findByPedido_Id(Long pedidoId);
+    List<FacturaElectronica> findByUsuario_Id(Long usuarioId);
+    boolean existsByPedido_Id(Long pedidoId);
 }

@@ -1,6 +1,7 @@
 package com.tribu.api_tribu.controller;
 
 import com.tribu.api_tribu.dto.request.SolicitarFacturaRequest;
+import com.tribu.api_tribu.dto.request.ActualizarDatosFacturaRequest;
 import com.tribu.api_tribu.model.FacturaElectronica;
 import com.tribu.api_tribu.model.Usuario;
 import com.tribu.api_tribu.repository.UsuarioRepository;
@@ -35,6 +36,24 @@ public class FacturaController {
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
 
         return ResponseEntity.ok(facturaService.generarFactura(request, usuario.getId()));
+    }
+
+    @PostMapping("/pedido/{pedidoId}/datos")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<FacturaElectronica> completarDatosFactura(
+            @PathVariable Long pedidoId,
+            @RequestBody ActualizarDatosFacturaRequest request) {
+        return ResponseEntity.ok(
+                facturaService.completarDatosYEmitir(pedidoId, request.getNit(), request.getRazonSocial()));
+    }
+
+    @PatchMapping("/admin/{id}")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<FacturaElectronica> actualizarDatosFactura(
+            @PathVariable Long id,
+            @RequestBody ActualizarDatosFacturaRequest request) {
+        return ResponseEntity.ok(
+                facturaService.actualizarDatosFactura(id, request.getNit(), request.getRazonSocial()));
     }
 
     @GetMapping("/mis-facturas")

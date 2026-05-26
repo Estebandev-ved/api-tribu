@@ -1,4 +1,4 @@
-﻿/* ===========================
+/* ===========================
    TRIBU — NEUROMARKETING DESIGN SYSTEM
    Paleta: Carbón + Naranja Vibrante + Amarillo Eléctrico
    =========================== */
@@ -45,8 +45,8 @@
   --color-text-faint: #555555;
 
   /* Fuentes */
-  --font-sans: 'Inter', system-ui, sans-serif;
-  --font-display: 'Outfit', system-ui, sans-serif;
+  --font-sans: 'Sora', system-ui, sans-serif;
+  --font-display: 'Sora', system-ui, sans-serif;
 
   /* Radios */
   --radius-sm: 6px;
@@ -459,6 +459,33 @@ tr:hover td {
   margin-bottom: 0.5rem;
 }
 
+/* ===========================
+   ADMIN OPS LAYOUT
+   =========================== */
+.admin-ops-grid {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 1.25rem;
+}
+
+.admin-ops-tabs-mobile {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .admin-ops-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-ops-sidenav {
+    display: none;
+  }
+
+  .admin-ops-tabs-mobile {
+    display: flex;
+  }
+}
+
 /* Spinner & Empty State */
 .spinner {
   width: 38px;
@@ -663,3 +690,91 @@ tr:hover td {
   .sticky-mobile-cart { display: none !important; }
   body { padding-bottom: 0 !important; }
 }
+
+/* ── Light Mode Theme ── */
+:root[data-theme='light'] {
+  --color-bg: #F5F7FB;
+  --color-surface: #FFFFFF;
+  --color-surface-2: #EEF1F6;
+  --color-surface-3: #E2E6EE;
+  --color-border: rgba(0, 0, 0, 0.08);
+  --color-border-warm: rgba(255, 87, 34, 0.15);
+  --color-text: #111111;
+  --color-text-muted: #555555;
+  --color-text-faint: #888888;
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.04);
+}
+
+/* Glassmorphism Panel */
+.glass-panel {
+  background: rgba(26, 26, 26, 0.65) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+:root[data-theme='light'] .glass-panel {
+  background: rgba(255, 255, 255, 0.65) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Skeleton Loading utility classes */
+.skeleton-box {
+  background: linear-gradient(90deg, var(--color-surface-2) 25%, var(--color-surface-3) 50%, var(--color-surface-2) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: var(--radius-md);
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+
+/* Live pulse indicator for critical stock */
+.pulse-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--color-error);
+  position: relative;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+.pulse-dot::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border-radius: 50%;
+  border: 2px solid var(--color-error);
+  animation: pulse-ring 1.5s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.5);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+/* Hide mobile sticky buy panel on desktop */
+@media (min-width: 1025px) {
+  .mobile-sticky-buy {
+    display: none !important;
+  }
+}
+

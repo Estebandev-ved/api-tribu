@@ -13,8 +13,8 @@ export const profileService = {
   verificarEmail: (email) => api.get(`/auth/verificar-email?email=${encodeURIComponent(email)}`),
   reenviarVerificacion: () => api.post('/auth/reenviar-verificacion'),
   cambiarContrasena: (data) => api.put('/auth/cambiar-contrasena', data),
-  configurarPin: (pin) => api.post('/auth/configurar-pin', { pin }),
-  desactivarPin: () => api.delete('/auth/configurar-pin'),
+  configurarPin: (pinNuevo, pinActual) => api.post('/usuarios/perfil/pin', { pinNuevo, pinActual }),
+  desactivarPin: () => api.delete('/usuarios/perfil/pin'),
   getSesiones: () => api.get('/auth/sesiones'),
   cerrarSesion: (id) => api.delete(`/auth/sesiones/${id}`),
   cerrarOtrasSesiones: () => api.delete('/auth/sesiones/otras'),
@@ -23,7 +23,7 @@ export const profileService = {
   getMiTribuCardInfo: () => api.get('/usuarios/mi-tribu-card-info'),
   getMisDevoluciones: () => api.get('/devoluciones/mis-devoluciones'),
   getDevolucion: (id) => api.get(`/devoluciones/${id}`),
-  solicitarDevolucion: (formData) => api.post('/devoluciones/solicitar', formData, {
+  solicitarDevolucion: (formData) => api.post('/devoluciones', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
   getReferidos: () => api.get('/referidos/mis-referidos'),

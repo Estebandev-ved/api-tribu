@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import {
-    Flame, MapPin, Instagram, Mail, Phone,
+    MapPin, Instagram, Mail, Phone,
     CheckCircle, Truck, Zap, RotateCcw, HeadphonesIcon, Heart,
 } from 'lucide-react'
 
@@ -26,14 +26,16 @@ export default function Footer() {
 
                     {/* Columna 1: Marca */}
                     <div>
-                        <motion.div whileHover={{ scale: 1.03 }} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-                            <div style={{ background: 'var(--color-primary)', borderRadius: '10px', padding: '7px', display: 'flex', boxShadow: '0 0 12px rgba(255,87,34,0.5)' }}>
-                                <Flame size={17} color="#fff" />
-                            </div>
+                        <motion.div whileHover={{ scale: 1.03 }} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+                            <img
+                                src="/logo-tribu.png"
+                                alt="Tribu"
+                                style={{ width: 120, height: 120, borderRadius: 10, objectFit: 'contain', display: 'block' }}
+                            />
                             <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 900, fontSize: '1.3rem' }}>Tribu</span>
                         </motion.div>
                         <p style={{ color: 'var(--color-text-muted)', fontSize: '0.88rem', lineHeight: 1.7, marginBottom: '1.25rem' }}>
-                            La comunidad que descubre los productos virales antes que nadie. Desde Mocoa para toda Colombia.
+                            La comunidad que descubre los productos virales antes que nadie. Desde Medellín para toda Colombia.
                         </p>
                         <div style={{ display: 'flex', gap: '0.75rem' }}>
                             {/* Instagram */}

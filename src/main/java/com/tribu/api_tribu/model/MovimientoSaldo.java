@@ -21,8 +21,6 @@ import java.time.LocalDateTime;
     @Index(name = "idx_mov_usuario_estado", columnList = "usuario_id, estado"),
     @Index(name = "idx_mov_unlock_date",   columnList = "unlock_date, estado")
 })
-@Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class MovimientoSaldo {
@@ -56,7 +54,6 @@ public class MovimientoSaldo {
      */
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 15)
-    @Builder.Default
     private EstadoMovimiento estado = EstadoMovimiento.CLEARED;
 
     /**
@@ -102,6 +99,9 @@ public class MovimientoSaldo {
         TRANSFERENCIA_RECIBIDA,
         PAGO_QR,
 
+        // --- Recompensas / canjes ---
+        RECOMPENSA_CANJE,
+
         // --- Gamificación ---
         STREAK_BONUS,
         LEADERBOARD_REWARD,
@@ -116,5 +116,77 @@ public class MovimientoSaldo {
         ON_HOLD,    // Bloqueado temporalmente
         CLEARED,    // Disponible en saldo
         CANCELLED   // Anulado
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+    }
+
+    public Double getMonto() {
+        return monto;
+    }
+
+    public void setMonto(Double monto) {
+        this.monto = monto;
+    }
+
+    public TipoMovimiento getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(TipoMovimiento tipo) {
+        this.tipo = tipo;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    public EstadoMovimiento getEstado() {
+        return estado;
+    }
+
+    public void setEstado(EstadoMovimiento estado) {
+        this.estado = estado;
+    }
+
+    public LocalDateTime getUnlockDate() {
+        return unlockDate;
+    }
+
+    public void setUnlockDate(LocalDateTime unlockDate) {
+        this.unlockDate = unlockDate;
+    }
+
+    public Long getPedidoId() {
+        return pedidoId;
+    }
+
+    public void setPedidoId(Long pedidoId) {
+        this.pedidoId = pedidoId;
+    }
+
+    public LocalDateTime getFecha() {
+        return fecha;
+    }
+
+    public void setFecha(LocalDateTime fecha) {
+        this.fecha = fecha;
     }
 }
