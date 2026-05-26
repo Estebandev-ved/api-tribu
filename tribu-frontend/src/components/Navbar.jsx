@@ -397,6 +397,22 @@ export default function Navbar() {
                                 <LogOut size={15} /> Cerrar sesión
                             </button>
                         )}
+
+                        {!isAuthenticated && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.15 }}
+                                style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1.25rem' }}
+                            >
+                                <Link to="/login" onClick={() => setMenuOpen(false)} className="btn btn-ghost" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', fontSize: '1rem', padding: '0.75rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                    Ingresar
+                                </Link>
+                                <Link to="/register" onClick={() => setMenuOpen(false)} className="btn btn-primary" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', fontSize: '1rem', padding: '0.75rem', borderRadius: '12px', background: 'var(--color-primary)', color: '#fff', fontWeight: 'bold' }}>
+                                    Únete a la Tribu
+                                </Link>
+                            </motion.div>
+                        )}
                     </motion.div>
                 )}
             </AnimatePresence>
