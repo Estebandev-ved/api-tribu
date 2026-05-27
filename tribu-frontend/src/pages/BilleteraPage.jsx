@@ -20,7 +20,7 @@ import {
     Coins
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
-import { getMiPerfil, getMisMovimientos } from '../api'
+import { getMiPerfil, getMisMovimientos, crearTarjeta } from '../api'
 import RuletaModal from '../components/RuletaModal'
 import { Link, useNavigate } from 'react-router-dom'
 import { useNotification } from '../context/NotificationContext'
@@ -66,11 +66,11 @@ const BilleteraPage = () => {
         getMiPerfil().then(res => {
             setPerfil(res.data);
             setSaldoLocal(res.data.saldoFavor || 0);
+            if (res.data.tarjetaCreada) {
+                setTarjetaCreada(true);
+            }
         }).catch(() => { });
         getMisMovimientos().then(res => setMovimientos(res.data)).catch(() => { });
-        if (localStorage.getItem(`tribu_card_created_${user.id}`) === 'true') {
-            setTarjetaCreada(true);
-        }
     }, [user]);
 
     useEffect(() => {
@@ -96,10 +96,14 @@ const BilleteraPage = () => {
 
     const handleCrearTarjeta = () => {
         setIsCreating(true)
-        setTimeout(() => {
+        setTimeout(async () => {
+            try {
+                await crearTarjeta()
+                setTarjetaCreada(true)
+            } catch {
+                toast.error('Error al crear la tarjeta, intenta de nuevo')
+            }
             setIsCreating(false)
-            setTarjetaCreada(true)
-            localStorage.setItem(`tribu_card_created_${user.id}`, 'true')
         }, 3000)
     }
 

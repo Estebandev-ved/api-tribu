@@ -38,6 +38,15 @@ public class Usuario {
 
     private String ciudad;
 
+    @Column(name = "tipo_documento", length = 20)
+    private String tipoDocumento;
+
+    @Column(length = 50)
+    private String documento;
+
+    @Column(name = "fecha_nacimiento")
+    private java.time.LocalDate fechaNacimiento;
+
     @Column(length = 500)
     private String direccion;
 
@@ -122,6 +131,10 @@ public class Usuario {
     @Column(name = "bloqueado", nullable = false)
     @Builder.Default
     private Boolean bloqueado = false;
+
+    @Column(name = "tarjeta_creada", nullable = false)
+    @Builder.Default
+    private Boolean tarjetaCreada = false;
 
     // Relación para el CRM: Notas escritas por este administrador
     // FetchType.LAZY es el default para @OneToMany, pero se especifica

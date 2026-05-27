@@ -5,7 +5,9 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -68,7 +70,7 @@ public class CampanaCashback {
         inverseJoinColumns = @JoinColumn(name = "tier_id")
     )
     @Builder.Default
-    private List<Tier> tiersAplicables = new ArrayList<>();
+    private Set<Tier> tiersAplicables = new HashSet<>();
 
     @com.fasterxml.jackson.annotation.JsonIgnore
     @OneToMany(mappedBy = "campana", cascade = CascadeType.ALL, orphanRemoval = true)

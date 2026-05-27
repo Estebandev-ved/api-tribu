@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 @Slf4j
@@ -62,7 +63,7 @@ public class CampanaService {
                 .limiteUsoPorUsuario(request.getLimiteUsoPorUsuario() != null ? request.getLimiteUsoPorUsuario() : 1)
                 .usosActuales(0)
                 .createdBy(adminEmail)
-                .tiersAplicables(new ArrayList<>())
+                .tiersAplicables(new HashSet<>())
                 .build();
 
         if (request.getTiersAplicablesIds() != null && !request.getTiersAplicablesIds().isEmpty()) {

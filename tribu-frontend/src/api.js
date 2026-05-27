@@ -86,6 +86,9 @@ export const getMiPerfil = () => api.get('/usuarios/perfil')
 export const updateMiPerfil = (data) => api.put('/usuarios/perfil', data)
 export const getMisMovimientos = () => api.get('/usuarios/perfil/movimientos')
 
+// ——— Tarjeta Virtual ———
+export const crearTarjeta = () => api.post('/usuarios/perfil/tarjeta')
+
 // ——— Tribu Pass ———
 export const getTribuPassEstado = () => api.get('/tribu-pass/mi-estado')
 export const activarTribuPass = (metodoPago) => api.post('/tribu-pass/activar', { metodoPago })

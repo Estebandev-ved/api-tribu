@@ -63,6 +63,10 @@ public class UsuarioPerfilController {
         m.put("email", u.getEmail());
         m.put("telefono", u.getTelefono() != null ? u.getTelefono() : "");
         m.put("direccion", u.getDireccion() != null ? u.getDireccion() : "");
+        m.put("ciudad", u.getCiudad() != null ? u.getCiudad() : "");
+        m.put("tipoDocumento", u.getTipoDocumento() != null ? u.getTipoDocumento() : "CC");
+        m.put("documento", u.getDocumento() != null ? u.getDocumento() : "");
+        m.put("fechaNacimiento", u.getFechaNacimiento() != null ? u.getFechaNacimiento().toString() : "");
         
         Double saldoReal = movimientoSaldoRepository.calcularSaldoReal(u.getId());
         m.put("saldoFavor", saldoReal != null ? saldoReal : 0.0);
@@ -75,6 +79,7 @@ public class UsuarioPerfilController {
         m.put("tier", tierName);
         m.put("codigoReferido", u.getCodigoReferido());
         m.put("tienePin", u.getPinSeguridadHash() != null && !u.getPinSeguridadHash().isBlank());
+        m.put("tarjetaCreada", Boolean.TRUE.equals(u.getTarjetaCreada()));
 
         return ResponseEntity.ok(m);
     }
@@ -92,6 +97,36 @@ public class UsuarioPerfilController {
         if (payload.containsKey("direccion")) {
             u.setDireccion(payload.get("direccion"));
         }
+        if (payload.containsKey("ciudad")) {
+            String ciudad = payload.get("ciudad");
+            if (ciudad != null && ciudad.length() <= 100) {
+                u.setCiudad(ciudad);
+            }
+        }
+        if (payload.containsKey("tipoDocumento")) {
+            String tipoDoc = payload.get("tipoDocumento");
+            if (tipoDoc != null && tipoDoc.length() <= 20) {
+                u.setTipoDocumento(tipoDoc);
+            }
+        }
+        if (payload.containsKey("documento")) {
+            String doc = payload.get("documento");
+            if (doc != null && doc.length() <= 50 && doc.matches("\\d*")) {
+                u.setDocumento(doc);
+            }
+        }
+        if (payload.containsKey("fechaNacimiento")) {
+            String fStr = payload.get("fechaNacimiento");
+            if (fStr != null && !fStr.isBlank()) {
+                try {
+                    u.setFechaNacimiento(java.time.LocalDate.parse(fStr));
+                } catch (Exception e) {
+                    // Ignore or log date parsing issue
+                }
+            } else {
+                u.setFechaNacimiento(null);
+            }
+        }
 
         usuarioRepository.save(u);
 
@@ -100,6 +135,10 @@ public class UsuarioPerfilController {
         m.put("nombreCompleto", u.getNombreCompleto());
         m.put("telefono", u.getTelefono() != null ? u.getTelefono() : "");
         m.put("direccion", u.getDireccion() != null ? u.getDireccion() : "");
+        m.put("ciudad", u.getCiudad() != null ? u.getCiudad() : "");
+        m.put("tipoDocumento", u.getTipoDocumento() != null ? u.getTipoDocumento() : "CC");
+        m.put("documento", u.getDocumento() != null ? u.getDocumento() : "");
+        m.put("fechaNacimiento", u.getFechaNacimiento() != null ? u.getFechaNacimiento().toString() : "");
 
         return ResponseEntity.ok(m);
     }
@@ -109,6 +148,18 @@ public class UsuarioPerfilController {
         Usuario u = obtenerUsuarioAutenticado();
         List<MovimientoSaldo> movimientos = movimientoSaldoRepository.findByUsuarioIdOrderByFechaDesc(u.getId());
         return ResponseEntity.ok(movimientos);
+    }
+
+    @PostMapping("/tarjeta")
+    public ResponseEntity<Map<String, Object>> crearTarjeta() {
+        Usuario u = obtenerUsuarioAutenticado();
+        u.setTarjetaCreada(true);
+        usuarioRepository.save(u);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("tarjetaCreada", true);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/pin")

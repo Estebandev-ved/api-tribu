@@ -29,19 +29,19 @@ export default function ProfileReferidosSection({ perfil }) {
   const compartirWhatsApp = () => {
     const texto = encodeURIComponent(
       `¡Únete a Tribu Card con mi código ${codigoReferido} y gana $5.000 de bienvenida! 🎁\n\n` +
-      `https://tribucard.com/registro?ref=${codigoReferido}`
+      `${window.location.origin}/registro?ref=${codigoReferido}`
     )
     window.open(`https://wa.me/?text=${texto}`, '_blank')
   }
 
   const compartirInstagram = () => {
-    const texto = `Usa mi código ${codigoReferido} en Tribu Card y gana $5.000 💰\n\ntribucard.com/registro?ref=${codigoReferido}`
+    const texto = `Usa mi código ${codigoReferido} en Tribu Card y gana $5.000 💰\n\n${window.location.origin}/registro?ref=${codigoReferido}`
     navigator.clipboard.writeText(texto)
     toast.success('Texto copiado para Instagram')
   }
 
   const compartirEnlace = () => {
-    navigator.clipboard.writeText(`https://tribucard.com/registro?ref=${codigoReferido}`)
+    navigator.clipboard.writeText(`${window.location.origin}/registro?ref=${codigoReferido}`)
     toast.success('Enlace copiado')
   }
 

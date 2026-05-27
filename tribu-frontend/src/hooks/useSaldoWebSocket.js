@@ -11,7 +11,6 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Client } from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
 
 /**
  * Hook para recibir eventos de saldo en tiempo real via WebSocket.
@@ -32,9 +31,20 @@ export function useSaldoWebSocket(usuarioId, token) {
   useEffect(() => {
     if (!usuarioId || !token) return;
 
+    const guessWsUrl = () => {
+      if (import.meta.env.VITE_WS_URL) {
+        return import.meta.env.VITE_WS_URL
+      }
+      const proto = window.location.protocol === 'https:' ? 'wss' : 'ws'
+      const port = String(window.location.port || '')
+      if (port === '3000' || port === '5173') {
+        return `${proto}://localhost:8080/ws`
+      }
+      return `${proto}://${window.location.host}/ws`
+    }
+
     const client = new Client({
-      // Usar native WebSocket (ws://) es lo estándar hoy y evita el warning de 'unload' de SockJS
-      brokerURL: import.meta.env.VITE_WS_URL || 'ws://localhost:8080/ws',
+      brokerURL: guessWsUrl(),
 
       // Autenticación: el JwtFilter del backend lo valida
       connectHeaders: {
