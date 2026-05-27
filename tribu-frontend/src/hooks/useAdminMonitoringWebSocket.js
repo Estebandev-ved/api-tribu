@@ -1,18 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { Client } from '@stomp/stompjs'
+import SockJS from 'sockjs-client'
 
-const guessWsUrl = () => {
+const getUrl = () => {
     if (import.meta.env.VITE_WS_URL) {
         return import.meta.env.VITE_WS_URL
     }
-    const proto = window.location.protocol === 'https:' ? 'wss' : 'ws'
-    const port = String(window.location.port || '')
-
-    // Dev servers (vite) usually run on 3000/5173
-    if (port === '3000' || port === '5173') {
-        return `${proto}://localhost:8080/ws`
+    if (window.location.port === '3000' || window.location.port === '5173') {
+        return 'http://localhost:8080/ws'
     }
-
+    const proto = window.location.protocol === 'https:' ? 'https' : 'http'
     return `${proto}://${window.location.host}/ws`
 }
 
@@ -29,7 +26,7 @@ export function useAdminMonitoringWebSocket({
         if (!enabled || !token) return
 
         const client = new Client({
-            brokerURL: guessWsUrl(),
+            webSocketFactory: () => new SockJS(getUrl()),
             connectHeaders: {
                 Authorization: `Bearer ${token}`,
             },

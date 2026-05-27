@@ -1,28 +1,7 @@
-// useSaldoWebSocket.js
-// Coloca este archivo en: src/hooks/useSaldoWebSocket.js
-//
-// Instalar dependencia: npm install @stomp/stompjs sockjs-client
-//
-// Uso en cualquier componente React:
-//   const { ultimoEvento, conectado } = useSaldoWebSocket(usuario.id, token);
-//   useEffect(() => {
-//     if (ultimoEvento?.tipo === 'CASHBACK') { /* disparar animación */ }
-//   }, [ultimoEvento]);
-
 import { useEffect, useRef, useState } from 'react';
 import { Client } from '@stomp/stompjs';
+import SockJS from 'sockjs-client';
 
-/**
- * Hook para recibir eventos de saldo en tiempo real via WebSocket.
- *
- * @param {number} usuarioId - ID del usuario autenticado
- * @param {string} token - JWT token para autenticación en el WS
- * @returns {{ ultimoEvento, conectado }}
- *
- * ultimoEvento tiene la forma:
- *   { tipo: 'CASHBACK' | 'RULETA' | 'REFERIDO' | 'REEMBOLSO',
- *     monto: number, descripcion: string, nuevoSaldo: number }
- */
 export function useSaldoWebSocket(usuarioId, token) {
   const [ultimoEvento, setUltimoEvento] = useState(null);
   const [conectado, setConectado] = useState(false);
@@ -31,38 +10,32 @@ export function useSaldoWebSocket(usuarioId, token) {
   useEffect(() => {
     if (!usuarioId || !token) return;
 
-    const guessWsUrl = () => {
+    const getUrl = () => {
       if (import.meta.env.VITE_WS_URL) {
         return import.meta.env.VITE_WS_URL
       }
-      const proto = window.location.protocol === 'https:' ? 'wss' : 'ws'
-      const port = String(window.location.port || '')
-      if (port === '3000' || port === '5173') {
-        return `${proto}://localhost:8080/ws`
+      if (window.location.port === '3000' || window.location.port === '5173') {
+        return 'http://localhost:8080/ws'
       }
+      const proto = window.location.protocol === 'https:' ? 'https' : 'http'
       return `${proto}://${window.location.host}/ws`
     }
 
     const client = new Client({
-      brokerURL: guessWsUrl(),
+      webSocketFactory: () => new SockJS(getUrl()),
 
-      // Autenticación: el JwtFilter del backend lo valida
       connectHeaders: {
         Authorization: `Bearer ${token}`,
       },
 
-      reconnectDelay: 5000, // Reconectar cada 5s si se cae
+      reconnectDelay: 5000,
 
       onConnect: () => {
         setConectado(true);
-        console.log('🔌 WebSocket Tribu conectado');
 
-        // Suscribirse al canal personal de saldo
-        // El backend emite a /user/{usuarioId}/queue/saldo
         client.subscribe('/user/queue/saldo', (message) => {
           try {
             const evento = JSON.parse(message.body);
-            console.log('💰 Evento saldo recibido:', evento);
             setUltimoEvento(evento);
           } catch (e) {
             console.error('Error parseando evento WS:', e);
@@ -72,7 +45,6 @@ export function useSaldoWebSocket(usuarioId, token) {
 
       onDisconnect: () => {
         setConectado(false);
-        console.log('🔌 WebSocket Tribu desconectado');
       },
 
       onStompError: (frame) => {
@@ -83,7 +55,6 @@ export function useSaldoWebSocket(usuarioId, token) {
     client.activate();
     clientRef.current = client;
 
-    // Cleanup al desmontar
     return () => {
       client.deactivate();
     };

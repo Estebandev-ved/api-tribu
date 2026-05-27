@@ -39,9 +39,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        // Al quitar .withSockJS(), forzamos el uso de native WebSockets (más rápido y sin warnings de 'unload')
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("*"); // En producción: tu dominio específico
+                .setAllowedOriginPatterns("*")
+                .withSockJS();
     }
 
     @Override
