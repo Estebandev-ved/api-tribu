@@ -19,4 +19,16 @@ public interface RegistroAccesoRepository extends JpaRepository<RegistroAcceso, 
 
     @Query("SELECT r FROM RegistroAcceso r WHERE r.exitoso = false ORDER BY r.fecha DESC LIMIT 100")
     java.util.List<RegistroAcceso> findRecentFailedAccesses();
+
+    java.util.List<RegistroAcceso> findByEmailAndExitosoTrueOrderByFechaDesc(String email);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @Query("DELETE FROM RegistroAcceso r WHERE r.id = :id AND r.email = :email")
+    void deleteByIdAndEmail(@Param("id") Long id, @Param("email") String email);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @Query("DELETE FROM RegistroAcceso r WHERE r.email = :email AND r.exitoso = true AND r.id <> :id")
+    void deleteByEmailAndExitosoTrueAndIdNot(@Param("email") String email, @Param("id") Long id);
 }

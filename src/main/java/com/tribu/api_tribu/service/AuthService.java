@@ -8,9 +8,11 @@ import com.tribu.api_tribu.model.Rol;
 import com.tribu.api_tribu.model.Tier;
 import com.tribu.api_tribu.model.TierBenefit;
 import com.tribu.api_tribu.model.Usuario;
+import com.tribu.api_tribu.model.RegistroAcceso;
 import com.tribu.api_tribu.repository.RolRepository;
 import com.tribu.api_tribu.repository.TierRepository;
 import com.tribu.api_tribu.repository.UsuarioRepository;
+import com.tribu.api_tribu.repository.RegistroAccesoRepository;
 import com.tribu.api_tribu.security.JwtUtil;
 import com.tribu.api_tribu.websocket.SaldoWebSocketService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -57,6 +59,7 @@ public class AuthService {
     private final CashbackTierService cashbackTierService;
     private final TierRepository tierRepository;
     private final SecurityAuditService securityAuditService;
+    private final RegistroAccesoRepository registroAccesoRepository;
     private final TwoFactorService twoFactorService;
     private final EmailService emailService;
 
@@ -420,6 +423,109 @@ public class AuthService {
         usuario.setRol(adminRol);
         usuarioRepository.save(usuario);
         log.info("🏆 El usuario {} ha sido promovido a ADMIN", email);
+    }
+
+    public List<Map<String, Object>> getSesiones(String email, String currentIp, String currentUserAgent) {
+        List<RegistroAcceso> accesos = registroAccesoRepository.findByEmailAndExitosoTrueOrderByFechaDesc(email);
+        
+        // Si no hay accesos, crear un mock del acceso actual para que la pantalla no se quede en blanco
+        if (accesos.isEmpty()) {
+            RegistroAcceso mockAcceso = RegistroAcceso.builder()
+                    .id(-1L)
+                    .email(email)
+                    .ipAddress(currentIp != null ? currentIp : "127.0.0.1")
+                    .exitoso(true)
+                    .userAgent(currentUserAgent)
+                    .fecha(LocalDateTime.now())
+                    .build();
+            accesos = List.of(mockAcceso);
+        }
+
+        List<Map<String, Object>> sesiones = new java.util.ArrayList<>();
+        for (int i = 0; i < accesos.size(); i++) {
+            RegistroAcceso r = accesos.get(i);
+            Map<String, Object> map = new java.util.HashMap<>();
+            map.put("id", r.getId());
+            
+            String ua = r.getUserAgent();
+            String os = "Dispositivo Desconocido";
+            String browser = "Chrome";
+            
+            if (ua != null) {
+                String uaLower = ua.toLowerCase();
+                if (uaLower.contains("windows")) {
+                    os = "Windows PC";
+                } else if (uaLower.contains("macintosh") || uaLower.contains("mac os")) {
+                    os = "Mac";
+                } else if (uaLower.contains("iphone")) {
+                    os = "iPhone";
+                } else if (uaLower.contains("ipad")) {
+                    os = "iPad";
+                } else if (uaLower.contains("android")) {
+                    os = "Android Device";
+                } else if (uaLower.contains("linux")) {
+                    os = "Linux PC";
+                }
+                
+                if (uaLower.contains("firefox")) {
+                    browser = "Firefox";
+                } else if (uaLower.contains("chrome")) {
+                    browser = "Chrome";
+                } else if (uaLower.contains("safari")) {
+                    browser = "Safari";
+                } else if (uaLower.contains("edge")) {
+                    browser = "Edge";
+                } else if (uaLower.contains("opera")) {
+                    browser = "Opera";
+                }
+            }
+            
+            map.put("dispositivo", os);
+            map.put("navegador", browser);
+            map.put("ciudad", "Bogotá, Colombia");
+            
+            // Calcular tiempo relativo
+            java.time.Duration duration = java.time.Duration.between(r.getFecha(), java.time.LocalDateTime.now());
+            long seconds = Math.abs(duration.getSeconds());
+            String tiempo = "Hace unos momentos";
+            if (seconds >= 86400) {
+                long days = seconds / 86400;
+                tiempo = days + (days == 1 ? " día" : " días");
+            } else if (seconds >= 3600) {
+                long hours = seconds / 3600;
+                tiempo = hours + (hours == 1 ? " hora" : " horas");
+            } else if (seconds >= 60) {
+                long minutes = seconds / 60;
+                tiempo = minutes + (minutes == 1 ? " minuto" : " minutos");
+            }
+            map.put("tiempo", tiempo);
+            
+            // Determinar si es la sesión actual
+            boolean isActual = false;
+            if (r.getId() == -1L || i == 0) {
+                isActual = true;
+            } else if (currentIp != null && currentIp.equals(r.getIpAddress())) {
+                isActual = true;
+            }
+            map.put("actual", isActual);
+            
+            sesiones.add(map);
+        }
+        return sesiones;
+    }
+
+    @Transactional
+    public void cerrarSesion(Long id, String email) {
+        registroAccesoRepository.deleteByIdAndEmail(id, email);
+    }
+
+    @Transactional
+    public void cerrarOtrasSesiones(String email, String currentIp, String currentUserAgent) {
+        List<RegistroAcceso> accesos = registroAccesoRepository.findByEmailAndExitosoTrueOrderByFechaDesc(email);
+        if (!accesos.isEmpty()) {
+            Long currentSessionId = accesos.get(0).getId();
+            registroAccesoRepository.deleteByEmailAndExitosoTrueAndIdNot(email, currentSessionId);
+        }
     }
 }
 

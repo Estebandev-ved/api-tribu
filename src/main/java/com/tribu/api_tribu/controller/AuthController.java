@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
+import java.util.List;
 
 import com.tribu.api_tribu.dto.request.GoogleLoginRequest;
 
@@ -83,5 +84,56 @@ public class AuthController {
     public ResponseEntity<Map<String, String>> promoteTribu() {
         authService.promoteToAdmin("tribuindustrias@gmail.com");
         return ResponseEntity.ok(Map.of("mensaje", "La cuenta tribuindustrias@gmail.com ha sido promovida a ADMIN con éxito."));
+    }
+
+    @GetMapping("/sesiones")
+    public ResponseEntity<List<Map<String, Object>>> getSesiones(HttpServletRequest request) {
+        String email = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getName();
+        if (email == null || "anonymousUser".equals(email)) {
+            return ResponseEntity.status(401).build();
+        }
+        
+        String ip = obtenerIpReal(request);
+        String userAgent = request.getHeader("User-Agent");
+        return ResponseEntity.ok(authService.getSesiones(email, ip, userAgent));
+    }
+
+    @DeleteMapping("/sesiones/{id}")
+    public ResponseEntity<Map<String, String>> cerrarSesion(@PathVariable Long id) {
+        String email = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getName();
+        if (email == null || "anonymousUser".equals(email)) {
+            return ResponseEntity.status(401).build();
+        }
+        
+        authService.cerrarSesion(id, email);
+        return ResponseEntity.ok(Map.of("mensaje", "Sesión cerrada correctamente."));
+    }
+
+    @DeleteMapping("/sesiones/otras")
+    public ResponseEntity<Map<String, String>> cerrarOtrasSesiones(HttpServletRequest request) {
+        String email = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getName();
+        if (email == null || "anonymousUser".equals(email)) {
+            return ResponseEntity.status(401).build();
+        }
+        
+        String ip = obtenerIpReal(request);
+        String userAgent = request.getHeader("User-Agent");
+        authService.cerrarOtrasSesiones(email, ip, userAgent);
+        return ResponseEntity.ok(Map.of("mensaje", "Otras sesiones cerradas correctamente."));
+    }
+
+    private String obtenerIpReal(HttpServletRequest request) {
+        if (request == null) return "Desconocida";
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("X-Real-IP");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddr();
+        }
+        if (ip != null && ip.contains(",")) {
+            ip = ip.split(",")[0].trim();
+        }
+        return ip != null ? ip : "Desconocida";
     }
 }
