@@ -31,3 +31,11 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Env & Secrets ###
+.env
+.env.local
+.env.*.local
+tribu-frontend/.env
+tribu-frontend/.env.local
+tribu-frontend/.env.*.local

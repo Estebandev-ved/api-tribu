@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Users, Copy, Share2, ArrowRight, Gift } from 'lucide-react'
+import profileService from '../../services/profileService'
 import toast from 'react-hot-toast'
+import { playExoticClick, playExoticChime } from '../../utils/soundEffects'
 
 export default function ProfileReferidosSection({ perfil }) {
   const [estadisticas, setEstadisticas] = useState({
@@ -14,34 +16,47 @@ export default function ProfileReferidosSection({ perfil }) {
   const codigoReferido = perfil?.codigoReferido || 'TRIBU-XXXX'
 
   useEffect(() => {
-    Promise.all([
-      fetch('/api/referidos/estadisticas').then(r => r.json()).catch(() => ({}))
-    ])
-      .then(([res]) => setEstadisticas(res))
+    profileService.getEstadisticasReferidos()
+      .then(res => {
+        const data = res.data || {}
+        setEstadisticas({
+          totalInvitados: data.totalReferidos || 0,
+          activosEsteMes: data.activosEsteMes || 0,
+          totalGanado: data.totalGanancias || 0
+        })
+      })
+      .catch(() => {})
       .finally(() => setLoading(false))
   }, [])
 
   const copiarCodigo = () => {
+    playExoticClick()
     navigator.clipboard.writeText(codigoReferido)
+    playExoticChime()
     toast.success('Código copiado al portapapeles')
   }
 
   const compartirWhatsApp = () => {
+    playExoticClick()
     const texto = encodeURIComponent(
-      `¡Únete a Tribu Card con mi código ${codigoReferido} y gana $5.000 de bienvenida! 🎁\n\n` +
+      `¡Únete a Tribu Card con mi código ${codigoReferido} y gana 5.000 pts de bienvenida! 🎁\n\n` +
       `${window.location.origin}/registro?ref=${codigoReferido}`
     )
     window.open(`https://wa.me/?text=${texto}`, '_blank')
   }
 
   const compartirInstagram = () => {
-    const texto = `Usa mi código ${codigoReferido} en Tribu Card y gana $5.000 💰\n\n${window.location.origin}/registro?ref=${codigoReferido}`
+    playExoticClick()
+    const texto = `Usa mi código ${codigoReferido} en Tribu Card y gana 5.000 pts 💰\n\n${window.location.origin}/registro?ref=${codigoReferido}`
     navigator.clipboard.writeText(texto)
+    playExoticChime()
     toast.success('Texto copiado para Instagram')
   }
 
   const compartirEnlace = () => {
+    playExoticClick()
     navigator.clipboard.writeText(`${window.location.origin}/registro?ref=${codigoReferido}`)
+    playExoticChime()
     toast.success('Enlace copiado')
   }
 
@@ -201,7 +216,7 @@ export default function ProfileReferidosSection({ perfil }) {
           </div>
           <div style={{ textAlign: 'center' }}>
             <p style={{ color: '#ffd700', fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>
-              ${(estadisticas.totalGanado || 0).toLocaleString('es-CO')}
+              {(estadisticas.totalGanado || 0).toLocaleString('es-CO')} pts
             </p>
             <p style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', margin: '0.25rem 0 0' }}>Total ganado</p>
           </div>
@@ -228,7 +243,7 @@ export default function ProfileReferidosSection({ perfil }) {
           {[
             'Comparte tu código con amigos y familiares',
             'Tu amigo se registra usando tu código',
-            '¡Tú ganas $10.000 y él gana $5.000!'
+            '¡Tú ganas 10.000 pts y él gana 5.000 pts!'
           ].map((step, idx) => (
             <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
               <span style={{

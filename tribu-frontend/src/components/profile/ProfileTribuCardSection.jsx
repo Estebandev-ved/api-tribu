@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { CreditCard, TrendingUp, Gift, CheckCircle, Lock } from 'lucide-react'
 import { TIER_COLORS } from '../../utils/tierColors'
+import { playExoticClick } from '../../utils/soundEffects'
 
 export default function ProfileTribuCardSection({ perfil }) {
   const tier = perfil?.tier || 'BRONCE'
@@ -36,15 +37,22 @@ export default function ProfileTribuCardSection({ perfil }) {
         💳 Mi Tribu Card
       </h3>
 
-      <div style={{
-        background: `linear-gradient(135deg, ${tierColor}30, ${tierColor}10)`,
-        border: `1px solid ${tierColor}40`,
-        borderRadius: '1rem',
-        padding: '1.5rem',
-        marginBottom: '1.5rem',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
+      <motion.div
+        whileHover={{ scale: 1.02, y: -2 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={playExoticClick}
+        style={{
+          background: `linear-gradient(135deg, ${tierColor}30, ${tierColor}10)`,
+          border: `1px solid ${tierColor}40`,
+          borderRadius: '1rem',
+          padding: '1.5rem',
+          marginBottom: '1.5rem',
+          position: 'relative',
+          overflow: 'hidden',
+          cursor: 'pointer',
+          boxShadow: `0 8px 32px 0 ${tierColor}10`
+        }}
+      >
         <div style={{
           position: 'absolute',
           top: -20,
@@ -85,7 +93,7 @@ export default function ProfileTribuCardSection({ perfil }) {
             </p>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       <div style={{ marginBottom: '1.5rem' }}>
         <h4 style={{ 
@@ -105,11 +113,11 @@ export default function ProfileTribuCardSection({ perfil }) {
           padding: '1rem' 
         }}>
           <p style={{ color: 'var(--color-text)', fontSize: '0.85rem', margin: '0 0 0.5rem' }}>
-            Llevas <strong>${gastadoMes.toLocaleString('es-CO')}</strong> este mes
+            Llevas acumulados <strong>{gastadoMes.toLocaleString('es-CO')} pts</strong> este mes
           </p>
           {proximoTier && (
             <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', margin: '0 0 0.75rem' }}>
-              Faltan <strong>${Math.max(0, metaSiguiente - gastadoMes).toLocaleString('es-CO')}</strong> para {proximoTier}
+              Faltan <strong>{Math.max(0, metaSiguiente - gastadoMes).toLocaleString('es-CO')} pts</strong> para {proximoTier}
             </p>
           )}
           
@@ -145,7 +153,7 @@ export default function ProfileTribuCardSection({ perfil }) {
               alignItems: 'center',
               gap: '0.25rem'
             }}>
-              <Gift size={14} /> ¡Con una compra de ${(metaSiguiente - gastadoMes).toLocaleString('es-CO')} llegas!
+              <Gift size={14} /> ¡Acumula {Math.max(0, metaSiguiente - gastadoMes).toLocaleString('es-CO')} pts más para subir de nivel!
             </p>
           )}
         </div>

@@ -50,7 +50,7 @@ export default function CountdownBanner() {
             {/* Fila principal */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap', justifyContent: 'center' }}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: 800, fontSize: '0.85rem', color: '#fff' }}>
-                    <Flame size={15} /> OFERTA DEL DÍA — Envío gratis en pedidos +$80.000
+                    <Flame size={15} /> OFERTA DEL DÍA — Envío gratis en pedidos +$150.000
                 </span>
                 <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.85)' }}>Termina en:</span>
 

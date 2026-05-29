@@ -136,6 +136,9 @@ public class Usuario {
     @Builder.Default
     private Boolean tarjetaCreada = false;
 
+    @Column(name = "preferencias_notificaciones", columnDefinition = "TEXT")
+    private String preferenciasNotificaciones;
+
     // Relación para el CRM: Notas escritas por este administrador
     // FetchType.LAZY es el default para @OneToMany, pero se especifica
     // explícitamente para claridad

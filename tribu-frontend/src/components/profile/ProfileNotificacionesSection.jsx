@@ -3,32 +3,15 @@ import { motion } from 'framer-motion'
 import { Bell, Mail, Smartphone, BellOff } from 'lucide-react'
 import profileService from '../../services/profileService'
 import toast from 'react-hot-toast'
+import { playExoticClick, playExoticChime } from '../../utils/soundEffects'
 
 const GRUPOS_NOTIFICACIONES = {
-  actividad: {
-    label: 'Actividad de mi cuenta',
+  preferencias: {
+    label: 'Configuración general de avisos',
     items: [
-      { key: 'cashback_liberado', label: 'Cashback liberado', canales: ['email', 'push', 'app'] },
-      { key: 'transferencias_recibidas', label: 'Transferencias recibidas', canales: ['email', 'push', 'app'] },
-      { key: 'estado_pedido', label: 'Estado de mi pedido', canales: ['email', 'push', 'app'] },
-      { key: 'subida_tier', label: 'Subida de tier', canales: ['email', 'push', 'app'] },
-      { key: 'logro_desbloqueado', label: 'Logro desbloqueado', canales: ['push', 'app'] }
-    ]
-  },
-  grupos: {
-    label: 'Grupos y social',
-    items: [
-      { key: 'pago_en_grupo', label: 'Alguien pagó en mi grupo', canales: ['push', 'app'] },
-      { key: 'dinero_recibido', label: 'Me enviaron dinero', canales: ['email', 'push', 'app'] },
-      { key: 'nuevo_referido', label: 'Nuevo referido mío', canales: ['email', 'app'] }
-    ]
-  },
-  marketing: {
-    label: 'Marketing',
-    items: [
-      { key: 'ofertas_promociones', label: 'Ofertas y promociones', canales: ['email'] },
-      { key: 'noticias_tribu', label: 'Noticias de Tribu', canales: ['push', 'app'] },
-      { key: 'recordatorio_racha', label: 'Recordatorio de racha', canales: ['app'] }
+      { key: 'transacciones', label: 'Pedidos y Finanzas (Estados, cashback, transferencias y Tribu Card)', canales: ['email', 'push', 'app'] },
+      { key: 'comunidad', label: 'Grupos y Comunidad (Compras grupales, invitaciones y referidos)', canales: ['push', 'app'] },
+      { key: 'marketing', label: 'Promociones y Novedades (Ofertas exclusivas, noticias y dinámicas)', canales: ['email', 'push'] }
     ]
   }
 }
@@ -92,6 +75,7 @@ export default function ProfileNotificacionesSection() {
   }, [])
 
   const handleToggle = useCallback((clave, canal) => {
+    playExoticClick()
     setPreferencias(prev => ({
       ...prev,
       [clave]: {
@@ -103,10 +87,12 @@ export default function ProfileNotificacionesSection() {
   }, [])
 
   const handleGuardar = useCallback(async () => {
+    playExoticClick()
     setGuardando(true)
     try {
       await profileService.updatePreferenciasNotificaciones(preferencias)
       setSaved(true)
+      playExoticChime()
       toast.success('Preferencias guardadas')
       setTimeout(() => setSaved(false), 2000)
     } catch (error) {

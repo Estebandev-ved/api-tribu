@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
 
+import com.tribu.api_tribu.dto.request.GoogleLoginRequest;
+
 /**
  * Controlador de autenticación.
  *
@@ -33,6 +35,11 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(request, httpRequest));
     }
 
+    @PostMapping("/google")
+    public ResponseEntity<AuthResponse> loginConGoogle(@Valid @RequestBody GoogleLoginRequest request, HttpServletRequest httpRequest) {
+        return ResponseEntity.ok(authService.loginConGoogle(request.getToken(), httpRequest));
+    }
+
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request, HttpServletRequest httpRequest) {
         return ResponseEntity.ok(authService.register(request, httpRequest));
@@ -43,10 +50,10 @@ public class AuthController {
      * Recibe el email y el código TOTP de 6 dígitos y devuelve el JWT final.
      */
     @PostMapping("/verify-2fa")
-    public ResponseEntity<AuthResponse> verify2fa(@RequestBody Map<String, String> body) {
+    public ResponseEntity<AuthResponse> verify2fa(@RequestBody Map<String, String> body, HttpServletRequest httpRequest) {
         String email = body.get("email");
         int codigo = Integer.parseInt(body.get("codigo"));
-        return ResponseEntity.ok(authService.verify2fa(email, codigo));
+        return ResponseEntity.ok(authService.verify2fa(email, codigo, httpRequest));
     }
 
     /**

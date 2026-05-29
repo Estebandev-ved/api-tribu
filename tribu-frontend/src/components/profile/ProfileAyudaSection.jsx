@@ -12,13 +12,14 @@ import {
   enviarMensajeSoporte 
 } from '../../api'
 import profileService from '../../services/profileService'
+import { playExoticClick, playExoticChime } from '../../utils/soundEffects'
 
 const FAQS = [
-  { pregunta: '¿Cómo funciona el cashback?', respuesta: 'El cashback es un porcentaje del valor de tu compra que se acredita a tu saldo de Tribu Card. Por ejemplo, si tienes 3% de cashback y compras por $100.000, recibirás $3.000 en tu saldo.' },
+  { pregunta: '¿Cómo funciona el cashback?', respuesta: 'El cashback es un porcentaje del valor de tu compra que se acredita en puntos a tu saldo de Tribu Card. Por ejemplo, si tienes 3% de cashback en una compra equivalente a 100.000 pts, recibirás 3.000 pts en tu saldo.' },
   { pregunta: '¿Cuándo se libera mi cashback?', respuesta: 'El cashback se libera 30 días después de la entrega del pedido. Esto es para asegurar que no haya devoluciones o cancelaciones.' },
   { pregunta: '¿Cómo rastreo mi pedido?', respuesta: 'Puedes ver el estado de tus pedidos en la sección "Mis pedidos". Cuando tu pedido sea enviado, verás el número de guía y podrás rastrearlo en tiempo real.' },
   { pregunta: '¿Cómo solicito una devolución?', respuesta: 'Ve a la sección "Devoluciones" y selecciona el pedido que quieres devolver. Elige el motivo, describe el problema y selecciona cómo quieres el reembolso.' },
-  { pregunta: '¿Cómo transfiero dinero?', respuesta: 'En la sección "Billetera" puedes transferir dinero a otros usuarios de Tribu Card usando su número de teléfono o email registrado.' },
+  { pregunta: '¿Cómo transfiero puntos?', respuesta: 'En la sección "Billetera" puedes transferir puntos a otros usuarios de Tribu Card usando su número de teléfono o email registrado.' },
   { pregunta: '¿Cada cuánto puedo girar la ruleta?', respuesta: 'Puedes girar la ruleta una vez al día. El sistema verifica la fecha del último giro y te permite jugar si es un día diferente.' }
 ]
 
@@ -28,7 +29,7 @@ function FaqItem({ pregunta, respuesta }) {
   return (
     <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
       <button
-        onClick={() => setAbierto(!abierto)}
+        onClick={() => { playExoticClick(); setAbierto(!abierto) }}
         style={{
           width: '100%',
           background: 'transparent',
@@ -64,7 +65,7 @@ function FaqItem({ pregunta, respuesta }) {
   )
 }
 
-function ReportarProblemaModal({ onClose }) {
+function ReportarProblemaModal({ onClose, onReportCreated }) {
   const [tipo, setTipo] = useState('bug')
   const [descripcion, setDescripcion] = useState('')
   const [enviando, setEnviando] = useState(false)
@@ -77,15 +78,23 @@ function ReportarProblemaModal({ onClose }) {
 
     setEnviando(true)
     try {
-      await fetch('/api/soporte/reportar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tipo, descripcion })
-      })
-      toast.success('Reporte enviado. Te responderemos en 24h.')
+      // Iniciar conversación de soporte
+      const resConv = await iniciarConversacionSoporte()
+      const conv = resConv.data
+
+      // Enviar reporte como mensaje inicial
+      const textoMensaje = `[REPORTE - ${tipo.toUpperCase()}]\n\n${descripcion}`
+      await enviarMensajeSoporte(conv.id, textoMensaje)
+
+      playExoticChime()
+      toast.success('Reporte enviado. Se inició un chat de soporte.')
+      if (typeof onReportCreated === 'function') {
+        onReportCreated(conv)
+      }
       onClose()
     } catch (error) {
       toast.error('Error al enviar el reporte')
+      console.error(error)
     } finally {
       setEnviando(false)
     }
@@ -141,7 +150,7 @@ function ReportarProblemaModal({ onClose }) {
               ].map(item => (
                 <button
                   key={item.value}
-                  onClick={() => setTipo(item.value)}
+                  onClick={() => { playExoticClick(); setTipo(item.value) }}
                   style={{
                     background: tipo === item.value ? 'var(--color-primary)' : 'rgba(255,255,255,0.1)',
                     border: 'none',
@@ -185,13 +194,13 @@ function ReportarProblemaModal({ onClose }) {
           </div>
 
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-            <button onClick={onClose} className="btn btn-ghost" style={{ fontSize: '0.85rem' }}>
+            <button onClick={() => { playExoticClick(); onClose() }} className="btn btn-ghost" style={{ fontSize: '0.85rem' }}>
               Cancelar
             </button>
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={handleSubmit}
+              onClick={() => { playExoticClick(); handleSubmit() }}
               disabled={enviando}
               style={{
                 background: 'var(--color-primary)',
@@ -879,7 +888,14 @@ export default function ProfileAyudaSection() {
 
       <AnimatePresence>
         {showReportModal && (
-          <ReportarProblemaModal onClose={() => setShowReportModal(false)} />
+          <ReportarProblemaModal 
+            onClose={() => setShowReportModal(false)} 
+            onReportCreated={(conv) => {
+              setConversacionActiva(conv)
+              getMensajesConversacionSoporte(conv.id)
+                .then(res => setMensajes(res.data || []))
+            }}
+          />
         )}
       </AnimatePresence>
     </motion.div>

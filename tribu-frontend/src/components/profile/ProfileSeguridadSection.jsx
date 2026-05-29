@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Lock, Key, Smartphone, Shield, Eye, EyeOff, Check, X } from 'lucide-react'
+import { Lock, Key, Smartphone, Shield, Eye, EyeOff, Check, X, QrCode, AlertTriangle, CheckCircle, XCircle } from 'lucide-react'
 import profileService from '../../services/profileService'
 import toast from 'react-hot-toast'
+import { playExoticClick, playExoticChime } from '../../utils/soundEffects'
 
 const calculateStrength = (pass) => {
   let score = 0
@@ -41,7 +42,7 @@ function PasswordInput({ value, onChange, placeholder, showToggle = true }) {
       {showToggle && (
         <button
           type="button"
-          onClick={() => setShow(!show)}
+          onClick={() => { playExoticClick(); setShow(!show) }}
           style={{
             position: 'absolute',
             right: '0.75rem',
@@ -105,6 +106,12 @@ export default function ProfileSeguridadSection() {
   const [savingPin, setSavingPin] = useState(false)
   const [saving2FA, setSaving2FA] = useState(false)
 
+  // 2FA custom states
+  const [qrSetup, setQrSetup] = useState(null)
+  const [codigoActivar, setCodigoActivar] = useState('')
+  const [showDesactivar, setShowDesactivar] = useState(false)
+  const [passwordDesactivar, setPasswordDesactivar] = useState('')
+
   const [passwordData, setPasswordData] = useState({
     actual: '',
     nueva: '',
@@ -114,14 +121,61 @@ export default function ProfileSeguridadSection() {
   useEffect(() => {
     Promise.all([
       profileService.getSesiones().catch(() => ({ data: [] })),
-      profileService.getPerfil().catch(() => ({ data: {} }))
+      profileService.getPerfil().catch(() => ({ data: {} })),
+      profileService.get2faStatus().catch(() => ({ data: { is2faHabilitado: false } }))
     ])
-      .then(([resSesiones, resPerfil]) => {
+      .then(([resSesiones, resPerfil, res2fa]) => {
         setSesiones(resSesiones.data || [])
         setPinConfigurado(!!resPerfil.data?.tienePin)
+        setTwoFactorEnabled(!!res2fa.data?.is2faHabilitado)
       })
       .finally(() => setLoading(false))
   }, [])
+
+  const handleSetup2fa = async () => {
+    setSaving2FA(true)
+    try {
+      const res = await profileService.setup2fa()
+      setQrSetup(res.data)
+    } catch (err) {
+      toast.error('Error al generar la configuración de 2FA. Intenta de nuevo.')
+    } finally {
+      setSaving2FA(false)
+    }
+  }
+
+  const handleActivar2fa = async (e) => {
+    e.preventDefault()
+    setSaving2FA(true)
+    try {
+      await profileService.enable2fa(codigoActivar)
+      setTwoFactorEnabled(true)
+      setQrSetup(null)
+      setCodigoActivar('')
+      toast.success('✅ Doble factor activado. Tu cuenta es ahora más segura.')
+    } catch (err) {
+      toast.error(err.response?.data?.mensaje || err.response?.data?.message || 'Código incorrecto. Intenta de nuevo.')
+      setCodigoActivar('')
+    } finally {
+      setSaving2FA(false)
+    }
+  }
+
+  const handleDesactivar2fa = async (e) => {
+    e.preventDefault()
+    setSaving2FA(true)
+    try {
+      await profileService.disable2fa(passwordDesactivar)
+      setTwoFactorEnabled(false)
+      setShowDesactivar(false)
+      setPasswordDesactivar('')
+      toast.success('⚠️ 2FA desactivado correctamente.')
+    } catch (err) {
+      toast.error(err.response?.data?.mensaje || err.response?.data?.message || 'Contraseña incorrecta.')
+    } finally {
+      setSaving2FA(false)
+    }
+  }
 
   const handleCambiarPassword = async () => {
     if (passwordData.nueva !== passwordData.confirmacion) {
@@ -198,7 +252,7 @@ export default function ProfileSeguridadSection() {
         ].map(item => (
           <button
             key={item.key}
-            onClick={() => setActiveSubsection(item.key)}
+            onClick={() => { playExoticClick(); setActiveSubsection(item.key) }}
             style={{
               background: activeSubsection === item.key ? 'rgba(255,87,34,0.15)' : 'transparent',
               border: `1px solid ${activeSubsection === item.key ? 'var(--color-primary)' : 'rgba(255,255,255,0.1)'}`,
@@ -516,55 +570,152 @@ export default function ProfileSeguridadSection() {
           >
             <div style={{ 
               background: 'rgba(30,30,30,0.8)',
-              border: '1px solid rgba(255,255,255,0.08)',
+              border: `1px solid ${twoFactorEnabled ? 'rgba(0,200,150,0.3)' : 'rgba(255,255,255,0.08)'}`,
               borderRadius: '0.75rem',
               padding: '1.5rem'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-                <Shield size={24} color={twoFactorEnabled ? '#00C896' : 'var(--color-text-muted)'} />
-                <div>
-                  <h4 style={{ color: 'var(--color-text)', margin: 0 }}>Verificación en dos pasos</h4>
-                  <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', margin: '0.25rem 0 0' }}>
-                    Estado: {twoFactorEnabled ? 'Activado' : 'Desactivado'}
-                  </p>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <Shield size={24} color={twoFactorEnabled ? '#00C896' : 'var(--color-text-muted)'} />
+                  <div>
+                    <h4 style={{ color: 'var(--color-text)', margin: 0 }}>Verificación en dos pasos (2FA)</h4>
+                    <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', margin: '0.25rem 0 0' }}>
+                      Estado: {twoFactorEnabled ? 'Activado' : 'Desactivado'}
+                    </p>
+                  </div>
                 </div>
+                <span style={{
+                  padding: '4px 12px', borderRadius: '20px', fontSize: '0.78rem', fontWeight: 700,
+                  background: twoFactorEnabled ? 'rgba(0,200,150,0.15)' : 'rgba(239,68,68,0.15)',
+                  color: twoFactorEnabled ? '#00C896' : '#ef4444',
+                  border: `1px solid ${twoFactorEnabled ? '#00C896' : '#ef4444'}40`
+                }}>
+                  {twoFactorEnabled ? '✅ Activo' : '⚠️ Inactivo'}
+                </span>
               </div>
-              <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', marginBottom: '1rem' }}>
-                Añade una capa extra de seguridad. Al iniciar sesión, recibirás un código por email o SMS.
+              
+              <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', marginBottom: '1.25rem', lineHeight: 1.6 }}>
+                {twoFactorEnabled
+                  ? 'Tu cuenta está protegida. Cada vez que inicies sesión, necesitarás un código de tu app autenticadora.'
+                  : 'Añade una capa extra de seguridad usando Google Authenticator o Authy. Incluso si alguien obtiene tu contraseña, no podrá acceder sin tu teléfono.'}
               </p>
-              {!twoFactorEnabled ? (
+
+              {/* Activar 2FA — Paso 1: mostrar botón */}
+              {!twoFactorEnabled && !qrSetup && (
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   disabled={saving2FA}
-                  onClick={async () => {
-                    setSaving2FA(true)
-                    try {
-                      setTwoFactorEnabled(true)
-                      toast.success('Verificación en dos pasos activada. Recibirás un código al iniciar sesión.')
-                    } catch (err) {
-                      toast.error('Error al activar la verificación')
-                    } finally {
-                      setSaving2FA(false)
-                    }
-                  }}
+                  onClick={handleSetup2fa}
                   className="btn btn-primary"
-                  style={{ fontSize: '0.85rem' }}
+                  style={{ fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
                 >
-                  {saving2FA ? <div className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} /> : 'Activar verificación en dos pasos →'}
+                  <QrCode size={18} /> {saving2FA ? 'Generando...' : 'Activar 2FA con App Autenticadora'}
                 </motion.button>
-              ) : (
-                <div style={{ 
-                  background: 'rgba(0,200,150,0.1)',
-                  borderRadius: '0.5rem',
-                  padding: '0.75rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem'
-                }}>
-                  <Check size={16} color="#00C896" />
-                  <span style={{ color: '#00C896', fontSize: '0.85rem', fontWeight: 600 }}>Verificación activada correctamente</span>
-                </div>
+              )}
+
+              {/* Activar 2FA — Paso 2: escanear QR y verificar */}
+              {!twoFactorEnabled && qrSetup && (
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                  <div style={{ background: '#1a1a28', borderRadius: '12px', padding: '1.5rem', marginBottom: '1.25rem', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <p style={{ color: '#aaa', fontSize: '0.85rem', marginBottom: '1rem', lineHeight: 1.6 }}>
+                      <strong style={{ color: '#f1f5f9' }}>Paso 1:</strong> Abre Google Authenticator o Authy y escanea este QR:
+                    </p>
+                    <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+                      <img src={qrSetup.qrCode} alt="Código QR para 2FA" style={{ width: 180, height: 180, borderRadius: '12px', background: '#fff', padding: '8px' }} />
+                    </div>
+                    <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '0.75rem', marginBottom: '0.5rem' }}>
+                      <p style={{ color: '#888', fontSize: '0.75rem', margin: 0 }}>¿No puedes escanear? Ingresa este código manualmente en tu app:</p>
+                      <p style={{ color: 'var(--color-primary)', fontFamily: 'monospace', fontSize: '0.9rem', fontWeight: 700, margin: '0.25rem 0 0 0', wordBreak: 'break-all' }}>{qrSetup.secreto}</p>
+                    </div>
+                  </div>
+                  <form onSubmit={handleActivar2fa} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+                    <div style={{ flex: 1, minWidth: 160 }}>
+                      <label style={{ display: 'block', fontSize: '0.82rem', color: '#aaa', marginBottom: '0.4rem' }}>
+                        <strong style={{ color: '#f1f5f9' }}>Paso 2:</strong> Ingresa el código de 6 dígitos:
+                      </label>
+                      <input
+                        id="codigo-activar-2fa"
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={6}
+                        placeholder="000000"
+                        value={codigoActivar}
+                        onChange={e => setCodigoActivar(e.target.value.replace(/\D/g, ''))}
+                        style={{
+                          width: '100%',
+                          background: 'rgba(30,30,30,0.8)',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          borderRadius: '0.5rem',
+                          padding: '0.75rem',
+                          color: 'var(--color-text)',
+                          fontSize: '1.5rem',
+                          textAlign: 'center',
+                          letterSpacing: '0.4rem',
+                          fontWeight: 700,
+                          outline: 'none'
+                        }}
+                      />
+                    </div>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                      type="submit"
+                      disabled={saving2FA || codigoActivar.length !== 6}
+                      style={{ background: 'linear-gradient(135deg, #00C896, #059669)', border: 'none', color: '#fff', padding: '0.75rem 1.5rem', borderRadius: '10px', fontWeight: 700, cursor: 'pointer', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.5rem', height: '46px' }}
+                    >
+                      <CheckCircle size={18} /> {saving2FA ? 'Verificando...' : 'Activar'}
+                    </motion.button>
+                    <button type="button" onClick={() => { setQrSetup(null); setCodigoActivar('') }}
+                      style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: '#888', padding: '0.75rem 1rem', borderRadius: '10px', cursor: 'pointer', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.5rem', height: '46px' }}>
+                      <XCircle size={16} /> Cancelar
+                    </button>
+                  </form>
+                </motion.div>
+              )}
+
+              {/* Desactivar 2FA */}
+              {twoFactorEnabled && !showDesactivar && (
+                <button onClick={() => setShowDesactivar(true)}
+                  style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444', padding: '0.75rem 1.5rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
+                  <AlertTriangle size={16} /> Desactivar 2FA
+                </button>
+              )}
+
+              {twoFactorEnabled && showDesactivar && (
+                <motion.form initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} onSubmit={handleDesactivar2fa}
+                  style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '10px', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <p style={{ color: '#ef4444', fontSize: '0.88rem', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <AlertTriangle size={16} /> Confirma tu contraseña para desactivar el 2FA:
+                  </p>
+                  <input
+                    id="password-desactivar-2fa"
+                    type="password"
+                    placeholder="Tu contraseña actual"
+                    value={passwordDesactivar}
+                    onChange={e => setPasswordDesactivar(e.target.value)}
+                    required
+                    style={{
+                      width: '100%',
+                      background: 'rgba(30,30,30,0.8)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: '0.5rem',
+                      padding: '0.75rem 1rem',
+                      color: 'var(--color-text)',
+                      fontSize: '0.95rem',
+                      outline: 'none'
+                    }}
+                  />
+                  <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    <button type="submit" disabled={saving2FA || !passwordDesactivar}
+                      style={{ background: 'rgba(239,68,68,0.8)', border: 'none', color: '#fff', padding: '0.65rem 1.25rem', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '0.88rem' }}>
+                      {saving2FA ? 'Procesando...' : 'Confirmar desactivación'}
+                    </button>
+                    <button type="button" onClick={() => { setShowDesactivar(false); setPasswordDesactivar('') }}
+                      style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: '#888', padding: '0.65rem 1rem', borderRadius: '8px', cursor: 'pointer', fontSize: '0.88rem' }}>
+                      Cancelar
+                    </button>
+                  </div>
+                </motion.form>
               )}
             </div>
           </motion.div>

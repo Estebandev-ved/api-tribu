@@ -25,6 +25,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.web.client.RestTemplate;
+import java.util.Map;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -61,6 +63,9 @@ public class AuthService {
     @Value("${app.frontend.url:http://localhost:3000}")
     private String frontendUrl;
 
+    @Value("${google.client.id:}")
+    private String googleClientId;
+
     /**
      * Login con soporte de doble factor (2FA).
      * Si el usuario tiene 2FA activo, devuelve requires2fa=true sin emitir JWT real.
@@ -94,6 +99,103 @@ public class AuthService {
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
         String token = jwtUtil.generateToken(userDetails);
 
+        // Alerta de seguridad asíncrona de inicio de sesión exitoso sin 2FA
+        try {
+            String ipAddress = obtenerIpReal(httpRequest);
+            String userAgent = httpRequest != null ? httpRequest.getHeader("User-Agent") : "";
+            emailService.enviarAlertaInicioSesion(usuario.getEmail(), usuario.getNombreCompleto(), ipAddress, userAgent);
+        } catch (Exception ex) {
+            log.error("❌ No se pudo enviar la alerta de inicio de sesión para {}: {}", usuario.getEmail(), ex.getMessage());
+        }
+
+        return AuthResponse.builder()
+                .token(token)
+                .id(usuario.getId())
+                .nombreCompleto(usuario.getNombreCompleto())
+                .email(usuario.getEmail())
+                .rol(usuario.getRol() != null ? usuario.getRol().getNombre() : "CLIENTE")
+                .tierActual(buildTierInfo(usuario))
+                .build();
+    }
+
+    /**
+     * Autenticación o registro automático con Google Sign-In.
+     */
+    @Transactional
+    public AuthResponse loginConGoogle(String googleToken, HttpServletRequest httpRequest) {
+        String url = "https://oauth2.googleapis.com/tokeninfo?id_token=" + googleToken;
+        RestTemplate restTemplate = new RestTemplate();
+        Map<String, Object> payload;
+        try {
+            payload = restTemplate.getForObject(url, Map.class);
+        } catch (Exception e) {
+            log.error("❌ Token de Google inválido: {}", e.getMessage());
+            throw new IllegalArgumentException("Token de Google inválido o expirado");
+        }
+
+        if (payload == null || !payload.containsKey("email")) {
+            throw new IllegalArgumentException("El token de Google no contiene información de email");
+        }
+
+        // Validación de Seguridad (OWASP Top 10 - Token Substitution):
+        // Verificar que el token fue emitido específicamente para nuestro Client ID
+        String aud = (String) payload.get("aud");
+        if (googleClientId != null && !googleClientId.isBlank() && !googleClientId.equals(aud)) {
+            log.error("❌ ERROR DE SEGURIDAD (Suplantación): aud del token ({}) no coincide con nuestro google.client.id ({})", aud, googleClientId);
+            throw new IllegalArgumentException("Token de Google no autorizado para esta aplicación");
+        }
+
+        String email = (String) payload.get("email");
+        String nombre = (String) payload.get("name");
+        if (nombre == null || nombre.isBlank()) {
+            nombre = email.split("@")[0];
+        }
+
+        // Buscar si el usuario ya existe
+        Optional<Usuario> optionalUsuario = usuarioRepository.findByEmail(email);
+        Usuario usuario;
+
+        if (optionalUsuario.isPresent()) {
+            usuario = optionalUsuario.get();
+            log.info("🔑 Inicio de sesión de Google exitoso para usuario existente: {}", email);
+        } else {
+            // Registrar usuario nuevo
+            log.info("🌿 Registrando nuevo usuario vía Google Sign-In: {}", email);
+            Rol rolCliente = rolRepository.findByNombre("CLIENTE")
+                    .orElseThrow(() -> new ResourceNotFoundException("Rol", "nombre", "CLIENTE"));
+
+            Usuario nuevoUsuario = new Usuario();
+            nuevoUsuario.setNombreCompleto(nombre);
+            nuevoUsuario.setEmail(email);
+            nuevoUsuario.setPassword(passwordEncoder.encode(UUID.randomUUID().toString())); // Contraseña aleatoria segura
+            nuevoUsuario.setRol(rolCliente);
+            nuevoUsuario.setCodigoReferido("TRIBU-" + UUID.randomUUID().toString().substring(0, 5).toUpperCase());
+
+            // Asignar tier BRONCE por defecto
+            tierRepository.findByNombre("BRONCE").ifPresent(tierBronce -> {
+                nuevoUsuario.setTierActual(tierBronce);
+                nuevoUsuario.setNivelVip(tierBronce.getOrden());
+            });
+
+            usuario = usuarioRepository.save(nuevoUsuario);
+            log.info("✅ Registro automático de Google completado para: {}", email);
+        }
+
+        // Registrar intento exitoso de auditoría
+        securityAuditService.registrarIntento(email, httpRequest, true, "OAuth Google");
+
+        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+        String token = jwtUtil.generateToken(userDetails);
+
+        // Alerta asíncrona de seguridad sobre el inicio de sesión
+        try {
+            String ipAddress = obtenerIpReal(httpRequest);
+            String userAgent = httpRequest != null ? httpRequest.getHeader("User-Agent") : "";
+            emailService.enviarAlertaInicioSesion(usuario.getEmail(), usuario.getNombreCompleto(), ipAddress, userAgent);
+        } catch (Exception ex) {
+            log.error("❌ No se pudo enviar la alerta de inicio de sesión para {}: {}", usuario.getEmail(), ex.getMessage());
+        }
+
         return AuthResponse.builder()
                 .token(token)
                 .id(usuario.getId())
@@ -109,7 +211,7 @@ public class AuthService {
      * Seguridad: sin el código correcto, no se entrega ningún token.
      */
     @Transactional
-    public AuthResponse verify2fa(String email, int codigo) {
+    public AuthResponse verify2fa(String email, int codigo, HttpServletRequest httpRequest) {
         Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", email));
 
@@ -121,8 +223,20 @@ public class AuthService {
             throw new IllegalArgumentException("Código 2FA incorrecto o expirado");
         }
 
+        // Registrar intento exitoso de segundo paso
+        securityAuditService.registrarIntento(email, httpRequest, true, "2FA Verificado");
+
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
         String token = jwtUtil.generateToken(userDetails);
+
+        // Alerta de seguridad asíncrona de inicio de sesión exitoso con 2FA
+        try {
+            String ipAddress = obtenerIpReal(httpRequest);
+            String userAgent = httpRequest != null ? httpRequest.getHeader("User-Agent") : "";
+            emailService.enviarAlertaInicioSesion(usuario.getEmail(), usuario.getNombreCompleto(), ipAddress, userAgent);
+        } catch (Exception ex) {
+            log.error("❌ No se pudo enviar la alerta de inicio de sesión para {}: {}", usuario.getEmail(), ex.getMessage());
+        }
 
         return AuthResponse.builder()
                 .token(token)
@@ -278,4 +392,20 @@ public class AuthService {
             return null;
         }
     }
+
+    private String obtenerIpReal(HttpServletRequest request) {
+        if (request == null) return "Desconocida";
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("X-Real-IP");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddr();
+        }
+        if (ip != null && ip.contains(",")) {
+            ip = ip.split(",")[0].trim();
+        }
+        return ip != null ? ip : "Desconocida";
+    }
 }
+

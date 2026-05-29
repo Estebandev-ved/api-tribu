@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -14,6 +14,48 @@ export default function LoginPage() {
     const [emailFor2fa, setEmailFor2fa] = useState('')
     const { loginUser } = useAuth()
     const navigate = useNavigate()
+
+    const handleGoogleLoginResponse = async (response) => {
+        setLoading(true)
+        try {
+            const { data } = await api.post('/auth/google', { token: response.credential })
+            loginUser(data)
+            toast.success(`¡Bienvenido, ${data.nombreCompleto.split(' ')[0]}!`)
+            navigate(data.rol === 'ADMIN' ? '/admin' : '/')
+        } catch (err) {
+            toast.error(err.response?.data?.message || err.response?.data?.error || 'Error de autenticación con Google')
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        if (step !== 'login') return
+
+        const initGoogleLogin = () => {
+            if (window.google) {
+                window.google.accounts.id.initialize({
+                    client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || "1005886675200-a2hgpj1aab85l0r4m8m8e4h8h8h8h8h8.apps.googleusercontent.com",
+                    callback: handleGoogleLoginResponse
+                });
+                window.google.accounts.id.renderButton(
+                    document.getElementById("googleBtn"),
+                    { theme: "dark", size: "large", width: "100%", type: "standard", shape: "rectangular", logo_alignment: "left" }
+                );
+            }
+        };
+
+        if (window.google) {
+            initGoogleLogin();
+        } else {
+            const script = document.createElement('script');
+            script.src = "https://accounts.google.com/gsi/client";
+            script.async = true;
+            script.defer = true;
+            script.onload = initGoogleLogin;
+            document.head.appendChild(script);
+        }
+    }, [step]);
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -114,6 +156,16 @@ export default function LoginPage() {
                                 >
                                     {loading ? '⏳ Ingresando...' : 'Ingresar'}
                                 </motion.button>
+
+                                <div style={{ display: 'flex', alignItems: 'center', margin: '1.5rem 0', gap: '0.75rem' }}>
+                                    <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.08)' }} />
+                                    <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>O continuar con</span>
+                                    <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.08)' }} />
+                                </div>
+
+                                <div style={{ minHeight: '44px', display: 'flex', justifyContent: 'center' }}>
+                                    <div id="googleBtn" style={{ width: '100%' }}></div>
+                                </div>
                             </motion.form>
                         ) : (
                             <motion.form key="2fa" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} onSubmit={handle2faSubmit}>

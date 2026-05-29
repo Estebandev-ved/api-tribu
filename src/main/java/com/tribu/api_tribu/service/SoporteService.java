@@ -62,9 +62,10 @@ public class SoporteService {
         SoporteMensaje saludo = SoporteMensaje.builder()
                 .conversacion(nueva)
                 .remitente(RemitenteSoporte.IA)
-                .contenido("¡Hola! Soy el Agente de Soporte Inteligente de Tribu. 💬\n\n" +
-                        "Puedo ayudarte con información sobre tus pedidos, guías de envío, devoluciones o políticas de la tienda.\n" +
-                        "¿En qué te puedo colaborar hoy?")
+                .contenido("¡Saludos, viajero! 🌿✨ Te doy la bienvenida al altar de la Tribu. " +
+                        "Soy tu Guía de la Tribu en este viaje. " +
+                        "Aquí cuidamos cada detalle de tu experiencia, desde tus ingredientes selectos hasta el ritual de entrega de tus pedidos.\n\n" +
+                        "Dime, hermano, ¿en qué te puedo colaborar hoy con tus pedidos, puntos o devoluciones?")
                 .confidence(1.0)
                 .sentiment("NEUTRAL")
                 .build();
@@ -324,6 +325,7 @@ public class SoporteService {
     private String generarRespuestaIA(SoporteConversacion conversacion, String mensajeUsuario) {
         String texto = mensajeUsuario.toLowerCase();
         Usuario usuario = conversacion.getUsuario();
+        String nombre = usuario.getNombreCompleto() != null ? usuario.getNombreCompleto() : "hermano";
 
         // --- CONTEXTO 1: PEDIDOS ---
         if (texto.contains("pedido") || texto.contains("compra") || texto.contains("orden") || 
@@ -332,9 +334,9 @@ public class SoporteService {
             
             List<Pedido> pedidos = pedidoRepository.findByUsuarioOrderByFechaPedidoDesc(usuario);
             if (pedidos.isEmpty()) {
-                return String.format("Hola %s. 🔍 He revisado nuestro sistema y veo que no tienes pedidos realizados con tu cuenta todavía. " +
-                        "Si realizaste una compra con otro correo, por favor facilítamelo, o si tienes alguna duda sobre cómo comprar, avísame.", 
-                        usuario.getNombreCompleto());
+                return String.format("Saludos, %s. 🌿 He consultado los anales de la Tribu y veo que aún no has iniciado tu primer ritual de compra. " +
+                        "No te preocupes, el viaje apenas comienza. Si necesitas ayuda para asegurar tus primeros ingredientes selectos, dímelo y prepararemos tu lugar en la mesa.", 
+                        nombre);
             }
 
             Pedido ultimoPedido = pedidos.get(0);
@@ -342,29 +344,29 @@ public class SoporteService {
             String guia = ultimoPedido.getGuiaRastreo();
 
             StringBuilder sb = new StringBuilder();
-            sb.append(String.format("Hola %s. 📦 He consultado el estado de tu pedido más reciente:\n\n", usuario.getNombreCompleto()));
-            sb.append(String.format("• **Pedido ID:** #%d\n", ultimoPedido.getId()));
-            sb.append(String.format("• **Fecha:** %s\n", ultimoPedido.getFechaPedido().toLocalDate()));
-            sb.append(String.format("• **Total:** $%s\n", ultimoPedido.getTotal().toPlainString()));
-            sb.append(String.format("• **Estado Actual:** %s\n", estado));
+            sb.append(String.format("Hermano %s, 📦 aquí tengo el estado de tu ritual de pedido más reciente en la comunidad:\n\n", nombre));
+            sb.append(String.format("• **ID del Pedido:** #%d\n", ultimoPedido.getId()));
+            sb.append(String.format("• **Fecha de inicio:** %s\n", ultimoPedido.getFechaPedido().toLocalDate()));
+            sb.append(String.format("• **Valor del ritual:** %s pts\n", ultimoPedido.getTotal().toPlainString()));
+            sb.append(String.format("• **Estado del Ritual:** %s\n", estado));
 
             if ("PAGADO".equalsIgnoreCase(estado)) {
-                sb.append("• **Detalle:** Tu pago fue verificado y estamos preparando tu combo. Despacharemos muy pronto desde Mocoa.");
+                sb.append("• **Detalle:** Tus puntos ya han sido validados. Nuestro equipo de artesanos está seleccionando minuciosamente tus delicias. Despacharemos tu paquete directamente desde nuestra central en Mocoa muy pronto.");
             } else if ("PENDIENTE".equalsIgnoreCase(estado)) {
-                sb.append("• **Detalle:** El pedido está registrado pero el pago está pendiente. Si pagaste por transferencia, recuerda subir tu comprobante.");
+                sb.append("• **Detalle:** Tu pedido está registrado en el altar, pero tus puntos aún no se han transferido. Recuerda subir tu comprobante de transferencia para asegurar tus productos antes de que expire la reserva de lote.");
             } else if ("ENVIADO".equalsIgnoreCase(estado)) {
-                sb.append("• **Detalle:** ¡Tu pedido ya fue despachado!\n");
+                sb.append("• **Detalle:** ¡Tu paquete ha sido liberado e inició su viaje a tu destino!\n");
                 if (guia != null && !guia.trim().isEmpty()) {
                     sb.append(String.format("• **Guía de Rastreo:** `%s` (Servientrega/Coordinadora)\n", guia));
                 } else {
-                    sb.append("• **Guía de Rastreo:** Generándose. Te llegará al correo en breve.\n");
+                    sb.append("• **Guía de Rastreo:** Tu guía está siendo sellada por el transportador. Te llegará una notificación en breve.\n");
                 }
             } else if ("ENTREGADO".equalsIgnoreCase(estado)) {
-                sb.append("• **Detalle:** El transportador reporta que el pedido ya fue entregado. ¡Esperamos que lo disfrutes!");
+                sb.append("• **Detalle:** El viaje ha finalizado con éxito y el paquete fue entregado. ¡Esperamos de corazón que disfrutes este ritual de sabor!");
             }
 
             if (pedidos.size() > 1) {
-                sb.append(String.format("\n\nTienes otros %d pedidos anteriores en tu historial. Puedes verlos todos en la sección 'Mis Pedidos' de tu perfil.", pedidos.size() - 1));
+                sb.append(String.format("\n\nTienes otros %d rituales anteriores registrados en tu historial. Puedes contemplarlos todos en la sección 'Mis Pedidos' de tu perfil.", pedidos.size() - 1));
             }
 
             return sb.toString();
@@ -377,26 +379,25 @@ public class SoporteService {
             
             List<Devolucion> devoluciones = devolucionRepository.findByEmailOrderByFechaSolicitudDesc(usuario.getEmail());
             if (devoluciones.isEmpty()) {
-                return String.format("Hola %s. ♻️ No encontré ninguna solicitud de devolución activa asociada a tu correo.\n\n" +
-                        "Si necesitas realizar una devolución:\n" +
-                        "1. Ve a la pestaña **Devoluciones** en tu perfil.\n" +
-                        "2. Selecciona el pedido que deseas devolver.\n" +
-                        "3. Sube una foto o video de evidencia física del estado del producto.\n" +
-                        "4. Nuestro equipo la revisará y emitirá una respuesta en menos de 24 horas.\n\n" +
-                        "Si deseas que te colabore con una devolución en este momento, escríbeme: 'Quiero hablar con soporte'.", 
-                        usuario.getNombreCompleto());
+                return String.format("Querido %s. ♻️ No encuentro ningún proceso de devolución activo para tu cuenta.\n\n" +
+                        "Si alguno de tus selectos productos no llegó en el estado perfecto que mereces:\n" +
+                        "1. Ve a la sección de **Devoluciones** en tu perfil.\n" +
+                        "2. Selecciona el pedido correspondiente.\n" +
+                        "3. Sube la evidencia física (foto o video).\n" +
+                        "4. Nuestro consejo de la Tribu responderá en menos de 24 horas.\n\n" +
+                        "Si el problema persiste, dímelo escribiendo 'Quiero hablar con soporte' para transferirte de inmediato.", 
+                        nombre);
             }
 
             Devolucion ultima = devoluciones.get(0);
-            return String.format("Hola %s. ♻️ Veo que tienes una solicitud de devolución en curso:\n\n" +
-                    "• **Devolución ID:** #%d\n" +
-                    "• **Pedido original:** #%s\n" +
+            return String.format("Querido %s. ♻️ He ubicado tu solicitud de devolución en curso:\n\n" +
+                    "• **ID de Devolución:** #%d\n" +
+                    "• **Ritual Original:** #%s\n" +
                     "• **Fecha de solicitud:** %s\n" +
-                    "• **Estado:** **%s**\n" +
-                    "• **Motivo:** %s\n\n" +
-                    "**Próximos pasos:** Nuestro equipo de control de calidad revisa todas las evidencias cargadas. Recibirás una respuesta oficial a tu correo. " +
-                    "Si tu devolución es aprobada, acreditaremos el reembolso automáticamente a tu billetera Tribu Card.", 
-                    usuario.getNombreCompleto(), 
+                    "• **Estado actual:** **%s**\n" +
+                    "• **Causa reportada:** %s\n\n" +
+                    "**Siguientes pasos:** Nuestro equipo de artesanos está evaluando las pruebas de tu producto. Cuando sea aprobada, reintegraremos tus puntos automáticamente a tu billetera Tribu Card para que no pierdas ningún beneficio en tu experiencia.", 
+                    nombre, 
                     ultima.getId(), 
                     ultima.getOrderNumber(), 
                     ultima.getFechaSolicitud().toLocalDate(), 
@@ -404,22 +405,22 @@ public class SoporteService {
                     ultima.getReason());
         }
 
-        // --- CONTEXTO 3: CASHBACK / TRIBU CARD / SALDO ---
+        // --- CONTEXTO 3: CASHBACK / TRIBU CARD / SALDO / PUNTOS ---
         if (texto.contains("cashback") || texto.contains("saldo") || texto.contains("billetera") || 
                 texto.contains("tribu card") || texto.contains("tarjeta") || texto.contains("dinero") || 
-                texto.contains("tier") || texto.contains("vip") || texto.contains("racha")) {
+                texto.contains("plata") || texto.contains("tier") || texto.contains("vip") || texto.contains("racha")) {
             
             String tierNombre = usuario.getTierActual() != null ? usuario.getTierActual().getNombre() : "Bronce";
             
-            return String.format("Hola %s. 💳 Aquí tienes los detalles sobre tus beneficios de fidelización en Tribu:\n\n" +
-                    "• **Tu Saldo Tribu Card:** $%,.0f pesos COP\n" +
-                    "• **Nivel VIP actual:** **%s**\n" +
-                    "• **Racha activa:** %d días seguidos de actividad\n\n" +
-                    "**Preguntas comunes sobre Cashback:**\n" +
-                    "• **¿Cuándo se libera?** Cuando compras, tu cashback se registra inicialmente como diferido (*ON_HOLD*). Se libera automáticamente a tu saldo **7 días después** de que tu pedido pasa al estado 'ENTREGADO'.\n" +
-                    "• **¿Cómo lo uso?** Puedes pagar cualquier compra en el Checkout eligiendo el método de pago 'Tribu Card' (se debitará al instante de tu saldo).\n" +
-                    "• **¿Cómo aumento de nivel?** Realiza compras frecuentes en la tienda. A mayor nivel VIP, recibirás un mayor porcentaje de cashback en cada compra.", 
-                    usuario.getNombreCompleto(), 
+            return String.format("Hermano %s. 💳 Permíteme mostrarte tu estatus actual y los puntos que posees en la comunidad:\n\n" +
+                    "• **Tu Saldo de Puntos:** %,.0f pts\n" +
+                    "• **Nivel de Estatus VIP:** **%s**\n" +
+                    "• **Racha Activa:** %d días seguidos en comunidad\n\n" +
+                    "**Tus dudas sobre los Puntos y Cashback:**\n" +
+                    "• **¿Cómo los adquieres?** Al comprar ingredientes selectos, un porcentaje del total se acumula en puntos diferidos. Se liberan a tu cuenta **7 días después** de la entrega exitosa del paquete.\n" +
+                    "• **¿Cómo los utilizas?** Son tuyos. En el checkout, selecciona 'Tribu Card' como método de pago para canjearlos al instante.\n" +
+                    "• **¿Cómo escalas tu Estatus?** Mantén tu racha activa y participa de la comunidad. A mayor estatus, mayor será tu cashback de puntos en cada ritual.", 
+                    nombre, 
                     usuario.getSaldoFavor(), 
                     tierNombre, 
                     usuario.getRachaActual());
@@ -430,20 +431,20 @@ public class SoporteService {
                 texto.contains("metodo de pago") || texto.contains("tiempo") || texto.contains("mocoa") || 
                 texto.contains("putumayo") || texto.contains("cobertura")) {
             
-            return "📌 **Políticas Generales de Tribu:**\n\n" +
-                    "• **Origen de envíos:** Todos nuestros combos se arman con amor y se despachan directamente desde nuestra central en Mocoa, Putumayo.\n" +
-                    "• **Tiempos de entrega:** Envíos locales en Mocoa se entregan el mismo día. Envíos nacionales tardan de 2 a 4 días hábiles dependiendo de la transportadora (Servientrega/Coordinadora).\n" +
-                    "• **Métodos de pago:** Aceptamos transferencias directas (Nequi, Bancolombia, Daviplata), efectivo contra entrega (según ciudad) y saldo de billetera Tribu Card.\n" +
-                    "• **Garantía y Devolución:** Tienes hasta 5 días hábiles desde que recibes el pedido para solicitar una devolución por mal estado o insatisfacción. Debes subir tu evidencia fotográfica en el módulo de devoluciones.";
+            return "🌿 **Leyes y Leyendas de la Tribu:**\n\n" +
+                    "• **Origen sagrado:** Todos nuestros combos e ingredientes selectos se preparan de forma artesanal y se despachan directamente desde Mocoa, Putumayo.\n" +
+                    "• **Tiempos del viaje:** Las entregas locales en Mocoa se realizan el mismo día. Los envíos nacionales a otros rincones tardan de 2 a 4 días hábiles vía Servientrega o Coordinadora.\n" +
+                    "• **Ritual de pago:** Aceptamos transferencias (Nequi, Bancolombia, Daviplata), contra entrega o tus puntos acumulados en la billetera Tribu Card.\n" +
+                    "• **Devoluciones:** Si el ritual no cumplió tus expectativas, tienes hasta 5 días hábiles desde la entrega para reportarlo con tu evidencia fotográfica en tu perfil de usuario.";
         }
 
         // --- RESPUESTA DE CONFIANZA MEDIA/BAJA (Mantiene conversación viva o da pistas) ---
-        return String.format("Hola %s. Entiendo tu consulta. 📝\n\n" +
-                "Para darte la información exacta, ¿podrías indicarme si tu duda está relacionada con:\n" +
-                "1. El estado de un **pedido** en particular.\n" +
-                "2. Una solicitud de **devolución** o reembolso.\n" +
-                "3. Tu **saldo**, cashback o nivel VIP en Tribu Card.\n\n" +
-                "Escribe de forma detallada tu pregunta o si lo prefieres, escribe 'Quiero hablar con soporte' para comunicarte inmediatamente con un asesor de servicio humano.",
-                usuario.getNombreCompleto());
+        return String.format("Hermano %s. Escucho tus palabras, pero me gustaría guiarte con absoluta precisión. 🌿✨\n\n" +
+                "¿Tu consulta en este momento está vinculada con:\n" +
+                "1. El transcurso de un **pedido** o envío de lote.\n" +
+                "2. Una inconformidad o proceso de **devolución**.\n" +
+                "3. Tu saldo de **puntos** acumulados o estatus VIP en Tribu Card.\n\n" +
+                "Dime con libertad, o escribe 'Quiero hablar con soporte' para que un hermano humano de nuestro equipo guíe tu camino de inmediato.",
+                nombre);
     }
 }

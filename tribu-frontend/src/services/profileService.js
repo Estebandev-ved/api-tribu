@@ -35,6 +35,10 @@ export const profileService = {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
   eliminarCuenta: (data) => api.delete('/usuarios/mi-cuenta', { data }),
+  get2faStatus: () => api.get('/usuarios/perfil/2fa/status'),
+  setup2fa: () => api.post('/usuarios/perfil/2fa/setup'),
+  enable2fa: (codigo) => api.post('/usuarios/perfil/2fa/enable', { codigo }),
+  disable2fa: (password) => api.post('/usuarios/perfil/2fa/disable', { password }),
   getPedidos: () => api.get('/pedidos'),
   getPedido: (id) => api.get(`/pedidos/${id}`),
   getCiudades: () => api.get('/utils/ciudades'),

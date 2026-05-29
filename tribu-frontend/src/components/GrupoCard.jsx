@@ -9,7 +9,7 @@ import toast from 'react-hot-toast'
 
 const getGrupoIcon = (emoji) => {
   switch (emoji) {
-    case '🍕':
+    case '':
       return <Pizza size={24} color="#FF5722" />
     case '🎉':
       return <Sparkles size={24} color="#FF9800" />
@@ -118,9 +118,9 @@ export default function GrupoCard({ grupo, index = 0, onPaymentSuccess }) {
       </div>
 
       <div style={{ marginBottom: 12 }}>
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
           marginBottom: 6,
           fontSize: '0.8rem',
           color: '#888'
@@ -152,9 +152,9 @@ export default function GrupoCard({ grupo, index = 0, onPaymentSuccess }) {
         </div>
       </div>
 
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
         alignItems: 'center',
         paddingTop: 12,
         borderTop: '0.5px solid var(--color-border-tertiary, #333)'
@@ -165,7 +165,7 @@ export default function GrupoCard({ grupo, index = 0, onPaymentSuccess }) {
             {formatCOP(tuMonto)}
           </span>
         </div>
-        
+
         {tuEstado !== 'PAGADO' ? (
           <motion.button
             whileHover={{ scale: pagando ? 1 : 1.02 }}
@@ -186,10 +186,10 @@ export default function GrupoCard({ grupo, index = 0, onPaymentSuccess }) {
             {pagando ? 'Pagando...' : 'Pagar con Puntos'}
           </motion.button>
         ) : (
-          <span style={{ 
-            fontSize: '0.8rem', 
+          <span style={{
+            fontSize: '0.8rem',
             color: '#1D9E75',
-            fontWeight: 600 
+            fontWeight: 600
           }}>
             ✓ Pagado
           </span>

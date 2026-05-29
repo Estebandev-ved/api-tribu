@@ -148,7 +148,7 @@ export default function Hero() {
                         }}
                     >
                         <img src="/logo-tribu.png" alt="Tribu" style={{ width: 40, height: 40, objectFit: 'contain' }} />
-                        Únete a los +10,000 que ya lo tienen
+                        Únete para crear nuestra propia tribu!
                     </motion.div>
 
                     {/* Título */}
