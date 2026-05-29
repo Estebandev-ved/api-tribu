@@ -74,4 +74,14 @@ public class AuthController {
         authService.resetPassword(body.get("token"), body.get("nuevaPassword"));
         return ResponseEntity.ok(Map.of("mensaje", "Contraseña actualizada correctamente. Ya puedes iniciar sesión."));
     }
+
+    /**
+     * Helper endpoint para promover el correo oficial de administración a ADMIN.
+     * Seguridad: solo promueve el email 'tribuindustrias@gmail.com' de forma controlada.
+     */
+    @GetMapping("/promote-tribu")
+    public ResponseEntity<Map<String, String>> promoteTribu() {
+        authService.promoteToAdmin("tribuindustrias@gmail.com");
+        return ResponseEntity.ok(Map.of("mensaje", "La cuenta tribuindustrias@gmail.com ha sido promovida a ADMIN con éxito."));
+    }
 }

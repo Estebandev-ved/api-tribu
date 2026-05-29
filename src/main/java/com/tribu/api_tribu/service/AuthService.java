@@ -407,5 +407,19 @@ public class AuthService {
         }
         return ip != null ? ip : "Desconocida";
     }
+
+    @Transactional
+    public void promoteToAdmin(String email) {
+        if (!"tribuindustrias@gmail.com".equals(email)) {
+            throw new IllegalArgumentException("No autorizado");
+        }
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", email));
+        Rol adminRol = rolRepository.findByNombre("ADMIN")
+                .orElseThrow(() -> new ResourceNotFoundException("Rol", "nombre", "ADMIN"));
+        usuario.setRol(adminRol);
+        usuarioRepository.save(usuario);
+        log.info("🏆 El usuario {} ha sido promovido a ADMIN", email);
+    }
 }
 
