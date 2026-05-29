@@ -2,17 +2,17 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { getMisPedidos } from '../api'
 import { useAuth } from '../context/AuthContext'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Package } from 'lucide-react'
 import PedidoCard from '../components/PedidoCard'
-
-
+import toast from 'react-hot-toast'
 
 export default function MisPedidosPage() {
     const [pedidos, setPedidos] = useState([])
     const [loading, setLoading] = useState(true)
     const { isAuthenticated } = useAuth()
     const navigate = useNavigate()
+    const [searchParams] = useSearchParams()
 
     useEffect(() => {
         if (!isAuthenticated) { navigate('/login'); return }
@@ -20,6 +20,17 @@ export default function MisPedidosPage() {
             .then(r => setPedidos(r.data))
             .finally(() => setLoading(false))
     }, [isAuthenticated])
+
+    useEffect(() => {
+        const efipayStatus = searchParams.get('efipay')
+        if (efipayStatus === 'approved') {
+            toast.success('Pago aprobado. Tu pedido está en proceso.')
+        } else if (efipayStatus === 'rejected') {
+            toast.error('El pago fue rechazado. Intenta con otro método.')
+        } else if (efipayStatus === 'pending') {
+            toast('El pago está pendiente. Te notificaremos cuando se confirme.', { icon: '⏳' })
+        }
+    }, [searchParams])
 
     return (
         <div className="container" style={{ padding: '2rem 1.5rem' }}>

@@ -17,6 +17,7 @@ public class PedidoResponse {
     private BigDecimal total;
     private String direccionEnvio;
     private String guiaRastreo;
+    private String efipayCheckoutUrl;
     private List<DetallePedidoResponse> detalles;
 
     @Data

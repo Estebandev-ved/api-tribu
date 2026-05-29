@@ -8,6 +8,8 @@ import com.tribu.api_tribu.repository.GrupoParticipanteRepository;
 import com.tribu.api_tribu.repository.GrupoRepository;
 import com.tribu.api_tribu.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,12 +21,20 @@ import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class GrupoService {
 
     private final GrupoRepository grupoRepository;
     private final GrupoParticipanteRepository participanteRepository;
     private final UsuarioRepository usuarioRepository;
     private final SaldoService saldoService;
+    private final EfipayService efipayService;
+
+    @Value("${efipay.webhook.url}")
+    private String efipayWebhookUrl;
+
+    @Value("${efipay.app.base.url}")
+    private String efipayAppBaseUrl;
 
     @Transactional
     public GrupoCompra crearGrupo(String emailOrganizador, String nombre, String emoji, BigDecimal montoTotal) {
@@ -150,7 +160,17 @@ public class GrupoService {
     }
 
     @Transactional
-    public void pagarParticipacion(String emailUsuario, Long grupoId) {
+    public String pagarParticipacion(String emailUsuario, Long grupoId) {
+        return pagarParticipacionConMetodo(emailUsuario, grupoId, null);
+    }
+
+    @Transactional
+    public String pagarParticipacionEfipay(String emailUsuario, Long grupoId) {
+        return pagarParticipacionConMetodo(emailUsuario, grupoId, "EFIPAY");
+    }
+
+    @Transactional
+    public String pagarParticipacionConMetodo(String emailUsuario, Long grupoId, String metodoPago) {
         Usuario usuario = usuarioRepository.findByEmail(emailUsuario)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", emailUsuario));
 
@@ -177,6 +197,29 @@ public class GrupoService {
                 : BigDecimal.ZERO;
         }
 
+        if ("EFIPAY".equalsIgnoreCase(metodoPago)) {
+            String approvedUrl = efipayAppBaseUrl + "/grupos?efipay=approved";
+            String rejectedUrl = efipayAppBaseUrl + "/grupos?efipay=rejected";
+            String pendingUrl = efipayAppBaseUrl + "/grupos?efipay=pending";
+
+            String referenceId = "GRUPO-" + grupoId + "-" + usuario.getId();
+
+            EfipayService.EfipayPaymentResponse efipayResponse = efipayService.generatePayment(
+                    referenceId,
+                    tuMonto.doubleValue(),
+                    "Grupo #" + grupoId + " - " + usuario.getEmail(),
+                    efipayWebhookUrl,
+                    approvedUrl,
+                    rejectedUrl,
+                    pendingUrl
+            );
+
+            if (efipayResponse != null) {
+                return efipayResponse.checkoutUrl();
+            }
+            return null;
+        }
+
         // Descontar saldo usando SaldoService
         saldoService.registrarCompraConSaldo(usuario, tuMonto.doubleValue(), null);
 
@@ -192,6 +235,8 @@ public class GrupoService {
             grupo.setEstado(GrupoCompra.EstadoGrupo.COMPLETADO);
             grupoRepository.save(grupo);
         }
+
+        return null;
     }
 
     public List<GrupoCompra> listarMisGrupos(String emailUsuario) {

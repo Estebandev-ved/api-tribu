@@ -36,11 +36,18 @@ public class TribuPassController {
         try {
             String metodoPago = request != null ? request.getMetodoPago() : "SALDO_TRIBU";
             TribuPass pass = passService.activar(usuario.getId(), metodoPago);
-            return ResponseEntity.ok(Map.of(
-                "success", true,
-                "message", "Tribu Pass activado exitosamente",
-                "fechaRenovacion", pass.getFechaRenovacion()
-            ));
+
+            Map<String, Object> response = new java.util.HashMap<>();
+            response.put("success", true);
+            response.put("message", "Tribu Pass activado exitosamente");
+            response.put("fechaRenovacion", pass.getFechaRenovacion());
+
+            if (pass.getEfipayCheckoutUrl() != null) {
+                response.put("efipayCheckoutUrl", pass.getEfipayCheckoutUrl());
+                response.put("message", "Redirigiendo a Efipay para completar el pago...");
+            }
+
+            return ResponseEntity.ok(response);
         } catch (IllegalStateException | IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of(
                 "success", false,

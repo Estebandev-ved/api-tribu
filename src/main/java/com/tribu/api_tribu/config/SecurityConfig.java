@@ -47,6 +47,8 @@ public class SecurityConfig {
                         // Catálogo público (GET)
                         .requestMatchers(HttpMethod.GET, "/api/productos/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/categorias/**").permitAll()
+                        // Efipay webhook (público para recibir notificaciones de pago)
+                        .requestMatchers("/api/webhook/efipay/**").permitAll()
                         // Social Proof — público (solo nombres + ciudad + producto)
                         .requestMatchers(HttpMethod.GET, "/api/social-proof/**").permitAll()
                         // Imágenes estáticas

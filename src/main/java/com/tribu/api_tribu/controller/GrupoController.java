@@ -53,8 +53,27 @@ public class GrupoController {
     @PostMapping("/{id}/pagar")
     public ResponseEntity<?> pagar(
             @AuthenticationPrincipal UserDetails userDetails,
-            @PathVariable Long id) {
+            @PathVariable Long id,
+            @RequestBody(required = false) Map<String, String> body) {
+
+        String metodoPago = body != null ? body.get("metodoPago") : null;
+
+        if ("EFIPAY".equalsIgnoreCase(metodoPago)) {
+            String checkoutUrl = grupoService.pagarParticipacionEfipay(userDetails.getUsername(), id);
+            if (checkoutUrl != null) {
+                return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "efipayCheckoutUrl", checkoutUrl,
+                    "message", "Redirigiendo a Efipay para completar el pago..."
+                ));
+            }
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "error", "No se pudo generar el pago con Efipay"
+            ));
+        }
+
         grupoService.pagarParticipacion(userDetails.getUsername(), id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(Map.of("success", true, "message", "Pago realizado exitosamente"));
     }
 }

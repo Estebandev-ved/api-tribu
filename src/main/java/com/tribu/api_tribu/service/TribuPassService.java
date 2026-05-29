@@ -13,6 +13,7 @@ import com.tribu.api_tribu.repository.UsuarioRepository;
 import com.tribu.api_tribu.websocket.SaldoWebSocketService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +34,13 @@ public class TribuPassService {
     private final SaldoService saldoService;
     private final SaldoWebSocketService wsService;
     private final EmailService emailService;
+    private final EfipayService efipayService;
+
+    @Value("${efipay.webhook.url}")
+    private String efipayWebhookUrl;
+
+    @Value("${efipay.app.base.url}")
+    private String efipayAppBaseUrl;
 
     /**
      * Activa o reactiva la suscripción Tribu Pass para un usuario.
@@ -57,6 +65,10 @@ public class TribuPassService {
         Optional<TribuPass> existingPassOpt = passRepo.findByUsuarioId(usuarioId);
         if (existingPassOpt.isPresent() && existingPassOpt.get().getEstado() == EstadoPass.ACTIVA) {
             throw new IllegalStateException("El usuario ya tiene un Tribu Pass activo");
+        }
+
+        if ("EFIPAY".equalsIgnoreCase(metodoPago)) {
+            return activarConEfipay(usuario, existingPassOpt.orElse(null));
         }
 
         double saldoDisponible = saldoService.consultarSaldoReal(usuarioId);
@@ -113,6 +125,67 @@ public class TribuPassService {
         enviarEmailBienvenida(usuario);
 
         log.info("💎 Tribu Pass activado/reactivado para usuario {} - renovación: {}", usuarioId, fechaRenovacion);
+        return pass;
+    }
+
+    @Transactional
+    public TribuPass activarConEfipay(Usuario usuario, TribuPass existingPass) {
+        LocalDateTime ahora = LocalDateTime.now();
+        LocalDateTime fechaRenovacion = ahora.plusDays(DIAS_RENOVACION);
+
+        TribuPass pass;
+        if (existingPass != null) {
+            pass = existingPass;
+            pass.setEstado(EstadoPass.PENDIENTE);
+            pass.setFechaInicio(ahora);
+            pass.setFechaRenovacion(fechaRenovacion);
+            pass.setPrecio(PRECIO_PASS);
+            pass.setMetodoPago("EFIPAY");
+            pass.setRenovacionAutomatica(false);
+        } else {
+            pass = TribuPass.builder()
+                    .usuario(usuario)
+                    .estado(EstadoPass.PENDIENTE)
+                    .fechaInicio(ahora)
+                    .fechaRenovacion(fechaRenovacion)
+                    .precio(PRECIO_PASS)
+                    .metodoPago("EFIPAY")
+                    .renovacionAutomatica(false)
+                    .build();
+        }
+
+        pass = passRepo.save(pass);
+
+        String approvedUrl = efipayAppBaseUrl + "/tribu-pass?efipay=approved";
+        String rejectedUrl = efipayAppBaseUrl + "/tribu-pass?efipay=rejected";
+        String pendingUrl = efipayAppBaseUrl + "/tribu-pass?efipay=pending";
+
+        String description = "Tribu Pass - Usuario " + usuario.getEmail();
+        if (pass.getId() != null) {
+            description = "Tribu Pass #" + pass.getId() + " - " + usuario.getEmail();
+        }
+
+        EfipayService.EfipayPaymentResponse efipayResponse = efipayService.generatePayment(
+                "PASS-" + (pass.getId() != null ? pass.getId() : 0),
+                PRECIO_PASS,
+                description,
+                efipayWebhookUrl,
+                approvedUrl,
+                rejectedUrl,
+                pendingUrl
+        );
+
+        if (efipayResponse != null) {
+            pass.setEfipayPaymentId(efipayResponse.paymentId());
+            pass.setEfipayCheckoutUrl(efipayResponse.checkoutUrl());
+            pass.setEfipayStatus("PENDIENTE");
+            passRepo.save(pass);
+        } else {
+            log.error("Failed to generate efipay payment for Tribu Pass, usuario {}", usuario.getId());
+            throw new RuntimeException("Error al generar el pago con Efipay. Intenta de nuevo.");
+        }
+
+        log.info("⏳ Tribu Pass pendiente de pago Efipay para usuario {}", usuario.getId());
         return pass;
     }
 

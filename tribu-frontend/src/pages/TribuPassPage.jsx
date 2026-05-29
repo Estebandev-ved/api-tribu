@@ -106,11 +106,29 @@ export default function TribuPassPage() {
         }
     };
 
+    const [metodoPagoPass, setMetodoPagoPass] = useState('SALDO_TRIBU');
+
+    useEffect(() => {
+        const efipayStatus = new URLSearchParams(window.location.search).get('efipay');
+        if (efipayStatus === 'approved') {
+            toast.success('Pago de Tribu Pass aprobado. ¡Disfruta tus beneficios!');
+            cargarDatos();
+        } else if (efipayStatus === 'rejected') {
+            toast.error('El pago del Tribu Pass fue rechazado. Intenta con otro método.');
+        } else if (efipayStatus === 'pending') {
+            toast('El pago del Tribu Pass está pendiente. Te notificaremos cuando se confirme.', { icon: '⏳' });
+        }
+    }, []);
+
     const handleActivar = async () => {
         setActionLoading(true);
         try {
-            const res = await activarTribuPass('SALDO_TRIBU');
+            const res = await activarTribuPass(metodoPagoPass);
             if (res.data.success) {
+                if (res.data.efipayCheckoutUrl) {
+                    window.location.href = res.data.efipayCheckoutUrl;
+                    return;
+                }
                 toast.success('¡Tribu Pass activado! Disfruta tus beneficios.');
                 cargarDatos();
             }
@@ -482,13 +500,38 @@ export default function TribuPassPage() {
                             ) : (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', color: '#888', fontSize: '0.9rem' }}>
-                                        <CheckCircle2 size={18} color="#00C896" /> Pago descontado de tu Tribu Card
-                                    </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', color: '#888', fontSize: '0.9rem' }}>
                                         <CheckCircle2 size={18} color="#00C896" /> Sin contratos, cancela cuando quieras
                                     </div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', color: '#888', fontSize: '0.9rem' }}>
                                         <CheckCircle2 size={18} color="#00C896" /> Renovación automática opcional
+                                    </div>
+
+                                    <div style={{ marginBottom: '0.8rem' }}>
+                                        <label style={{ color: '#888', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '0.5rem' }}>Método de pago</label>
+                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                            <button
+                                                onClick={() => setMetodoPagoPass('SALDO_TRIBU')}
+                                                style={{
+                                                    flex: 1, padding: '0.7rem', borderRadius: '10px',
+                                                    border: metodoPagoPass === 'SALDO_TRIBU' ? '2px solid #fbbf24' : '1px solid #333',
+                                                    background: metodoPagoPass === 'SALDO_TRIBU' ? 'rgba(251,191,36,0.1)' : 'transparent',
+                                                    color: '#fff', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer'
+                                                }}
+                                            >
+                                                Tribu Card
+                                            </button>
+                                            <button
+                                                onClick={() => setMetodoPagoPass('EFIPAY')}
+                                                style={{
+                                                    flex: 1, padding: '0.7rem', borderRadius: '10px',
+                                                    border: metodoPagoPass === 'EFIPAY' ? '2px solid #fbbf24' : '1px solid #333',
+                                                    background: metodoPagoPass === 'EFIPAY' ? 'rgba(251,191,36,0.1)' : 'transparent',
+                                                    color: '#fff', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer'
+                                                }}
+                                            >
+                                                Efipay
+                                            </button>
+                                        </div>
                                     </div>
                                     
                                     <motion.button

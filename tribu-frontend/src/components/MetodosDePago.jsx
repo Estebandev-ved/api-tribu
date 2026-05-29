@@ -51,10 +51,22 @@ const MetodosDePago = ({ total, totalNumber, direccionEnvio, cuponCodigo, disabl
 
             const { data: pedido } = await crearPedido(pedidoPayload);
 
-            // 2. Clear cart IMMEDIATELY to prevent double-submitting during simulation
+            // 2. EFIPAY: Redirigir al checkout de la pasarela
+            if (method === 'EFIPAY') {
+                if (pedido.efipayCheckoutUrl) {
+                    clearCart();
+                    window.location.href = pedido.efipayCheckoutUrl;
+                    return;
+                }
+                toast.error('Error al generar el pago con Efipay. Intenta de nuevo.');
+                setLoading(false);
+                return;
+            }
+
+            // 3. Clear cart for non-EFIPAY methods
             clearCart();
 
-            // 3. Simulated payment process
+            // 4. Simulated payment process for other methods
             toast.loading(`Procesando pago con ${method}...`, { duration: 1500 });
 
             setTimeout(() => {
@@ -71,12 +83,12 @@ const MetodosDePago = ({ total, totalNumber, direccionEnvio, cuponCodigo, disabl
 
                 toast.success('¡Compra confirmada! 🎉');
                 navigate('/mis-pedidos');
-                setLoading(false); // Only stop loading after navigation
+                setLoading(false);
             }, 1600);
 
         } catch (error) {
             console.error('Error al procesar pedido/pago:', error);
-            const msg = error.response?.data?.mensaje || 'Error al procesar la transacción';
+            const msg = error.response?.data?.message || error.response?.data?.mensaje || 'Error al procesar la transacción';
             toast.error(msg);
             setLoading(false);
         }
@@ -159,6 +171,30 @@ const MetodosDePago = ({ total, totalNumber, direccionEnvio, cuponCodigo, disabl
                 >
                     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Mercado_Pago.svg/1280px-Mercado_Pago.svg.png" alt="Mercado Pago" style={{ width: '24px', height: '24px', borderRadius: '4px' }} />
                     <span>Mercado Pago</span>
+                </motion.button>
+
+                <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handlePayment('EFIPAY')}
+                    disabled={loading}
+                    style={{
+                        flex: 1,
+                        minWidth: '150px',
+                        padding: '1rem',
+                        borderRadius: '12px',
+                        border: '1px solid #27272a',
+                        background: 'linear-gradient(135deg, #1a1a2e, #16213e)',
+                        color: '#fff',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.5rem',
+                        opacity: loading ? 0.6 : 1
+                    }}
+                >
+                    <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>Efipay</span>
                 </motion.button>
             </div>
 

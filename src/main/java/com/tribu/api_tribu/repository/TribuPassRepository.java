@@ -20,4 +20,8 @@ public interface TribuPassRepository extends JpaRepository<TribuPass, Long> {
             EstadoPass estado, LocalDateTime fechaRenovacion);
 
     boolean existsByUsuarioIdAndEstado(Long usuarioId, EstadoPass estado);
+
+    TribuPass findByEfipayPaymentId(String efipayPaymentId);
+
+    TribuPass findByEfipayCheckoutUrl(String efipayCheckoutUrl);
 }

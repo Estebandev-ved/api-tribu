@@ -6,6 +6,7 @@ import GrupoCard from '../components/GrupoCard'
 import EmptyState from '../components/EmptyState'
 import { useAuth } from '../context/AuthContext'
 import { getTierColor, getTierFromOrden } from '../utils/tierColors'
+import toast from 'react-hot-toast'
 
 export default function GruposPage() {
   const { user } = useAuth()
@@ -16,6 +17,17 @@ export default function GruposPage() {
   const [uniendo, setUniendo] = useState(false)
   const [crearStep, setCrearStep] = useState(0)
   const [nuevoGrupo, setNuevoGrupo] = useState({ nombre: '', emoji: '🍕', productos: [], montoTotal: '' })
+
+  useEffect(() => {
+    const efipayStatus = new URLSearchParams(window.location.search).get('efipay')
+    if (efipayStatus === 'approved') {
+      toast.success('Pago en grupo aprobado.')
+    } else if (efipayStatus === 'rejected') {
+      toast.error('El pago en grupo fue rechazado.')
+    } else if (efipayStatus === 'pending') {
+      toast('El pago en grupo está pendiente.', { icon: '⏳' })
+    }
+  }, [])
 
   const tierColor = getTierColor(getTierFromOrden(user?.nivelVip || 1))
 

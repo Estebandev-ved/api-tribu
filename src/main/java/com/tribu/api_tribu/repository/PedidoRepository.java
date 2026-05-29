@@ -104,4 +104,6 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
 
     @Query("SELECT COALESCE(SUM(p.total), 0.0) FROM Pedido p WHERE p.usuario.id = :usuarioId AND p.estado IN ('PAGADO', 'EN_PROCESO', 'DESPACHADO', 'ENTREGADO')")
     Double calculateTotalGlobalValido(@Param("usuarioId") Long usuarioId);
+
+    Pedido findByEfipayPaymentId(String efipayPaymentId);
 }

@@ -11,6 +11,7 @@ import com.tribu.api_tribu.repository.UsuarioRepository;
 import com.tribu.api_tribu.websocket.SaldoWebSocketService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,6 +52,13 @@ public class PedidoService {
     private final AchievementService achievementService;
     private final FacturaService facturaService;
     private final CuponService cuponService;
+    private final EfipayService efipayService;
+
+    @Value("${efipay.webhook.url}")
+    private String efipayWebhookUrl;
+
+    @Value("${efipay.app.base.url}")
+    private String efipayAppBaseUrl;
 
     @Transactional
     public PedidoResponse crearPedido(String emailUsuario, CrearPedidoRequest request) {
@@ -117,9 +125,12 @@ public class PedidoService {
         pedido.setDetalles(detalles);
         pedido.setMetodoPago(request.getMetodoPago() != null ? request.getMetodoPago() : "EFECTIVO");
 
-        // ── PAGO CON TRIBU CARD (Simulación Pasarela) ─────────────────────
-        if ("TRIBU_CARD".equalsIgnoreCase(request.getMetodoPago())) {
+        // ── DETERMINAR ESTADO SEGÚN MÉTODO DE PAGO ────────────────────────
+        String metodoPago = request.getMetodoPago() != null ? request.getMetodoPago() : "EFECTIVO";
+        if ("TRIBU_CARD".equalsIgnoreCase(metodoPago)) {
             pedido.setEstado("PAGADO");
+        } else if ("EFIPAY".equalsIgnoreCase(metodoPago)) {
+            pedido.setEstado("PENDIENTE");
         } else {
             pedido.setEstado("PENDIENTE");
         }
@@ -129,6 +140,33 @@ public class PedidoService {
         // Si se aplicó un cupón, lo registramos como usado en la base de datos
         if (descuento > 0.0 && request.getCuponCodigo() != null) {
             cuponService.aplicarCupon(request.getCuponCodigo(), usuario.getId(), savedPedido.getId(), descuento);
+        }
+
+        // ── EFIPAY: Generar pago en la pasarela ──────────────────────────
+        if ("EFIPAY".equalsIgnoreCase(metodoPago)) {
+            String approvedUrl = efipayAppBaseUrl + "/mis-pedidos?efipay=approved";
+            String rejectedUrl = efipayAppBaseUrl + "/checkout?efipay=rejected";
+            String pendingUrl = efipayAppBaseUrl + "/mis-pedidos?efipay=pending";
+
+            EfipayService.EfipayPaymentResponse efipayResponse = efipayService.generatePayment(
+                    String.valueOf(savedPedido.getId()),
+                    savedPedido.getTotal().doubleValue(),
+                    "Pedido #" + savedPedido.getId() + " - Tribu",
+                    efipayWebhookUrl,
+                    approvedUrl,
+                    rejectedUrl,
+                    pendingUrl
+            );
+
+            if (efipayResponse != null) {
+                savedPedido.setEfipayPaymentId(efipayResponse.paymentId());
+                savedPedido.setEfipayCheckoutUrl(efipayResponse.checkoutUrl());
+                savedPedido.setEfipayStatus("PENDIENTE");
+                pedidoRepository.save(savedPedido);
+            } else {
+                log.error("Failed to generate efipay payment for order {}", savedPedido.getId());
+                throw new RuntimeException("Error al generar el pago con Efipay. Intenta de nuevo.");
+            }
         }
 
         // Si es Tribu Card, procesamos el descuento real del ledger
@@ -270,6 +308,7 @@ public class PedidoService {
                 .total(p.getTotal())
                 .direccionEnvio(p.getDireccionEnvio())
                 .guiaRastreo(p.getGuiaRastreo())
+                .efipayCheckoutUrl(p.getEfipayCheckoutUrl())
                 .detalles(detallesResponse)
                 .build();
     }

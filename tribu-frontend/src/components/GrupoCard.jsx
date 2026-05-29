@@ -167,24 +167,58 @@ export default function GrupoCard({ grupo, index = 0, onPaymentSuccess }) {
         </div>
 
         {tuEstado !== 'PAGADO' ? (
-          <motion.button
-            whileHover={{ scale: pagando ? 1 : 1.02 }}
-            whileTap={{ scale: pagando ? 1 : 0.98 }}
-            disabled={pagando}
-            onClick={handlePagar}
-            style={{
-              background: pagando ? '#666' : 'var(--color-primary, #ff5722)',
-              color: '#fff',
-              border: 'none',
-              padding: '0.5rem 1rem',
-              borderRadius: 8,
-              fontWeight: 600,
-              fontSize: '0.85rem',
-              cursor: pagando ? 'not-allowed' : 'pointer'
-            }}
-          >
-            {pagando ? 'Pagando...' : 'Pagar con Puntos'}
-          </motion.button>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <motion.button
+              whileHover={{ scale: pagando ? 1 : 1.02 }}
+              whileTap={{ scale: pagando ? 1 : 0.98 }}
+              disabled={pagando}
+              onClick={handlePagar}
+              style={{
+                background: pagando ? '#666' : 'var(--color-primary, #ff5722)',
+                color: '#fff',
+                border: 'none',
+                padding: '0.5rem 0.8rem',
+                borderRadius: 8,
+                fontWeight: 600,
+                fontSize: '0.75rem',
+                cursor: pagando ? 'not-allowed' : 'pointer',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              {pagando ? 'Pagando...' : 'Puntos'}
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              disabled={pagando}
+              onClick={async () => {
+                setPagando(true)
+                try {
+                  const res = await grupoService.pagarEfipay(id)
+                  if (res.data?.efipayCheckoutUrl) {
+                    window.location.href = res.data.efipayCheckoutUrl
+                  }
+                } catch (err) {
+                  toast.error(err.response?.data?.error || 'Error al generar pago Efipay')
+                } finally {
+                  setPagando(false)
+                }
+              }}
+              style={{
+                background: 'linear-gradient(135deg, #1a1a2e, #16213e)',
+                color: '#fff',
+                border: '1px solid #334',
+                padding: '0.5rem 0.8rem',
+                borderRadius: 8,
+                fontWeight: 600,
+                fontSize: '0.75rem',
+                cursor: pagando ? 'not-allowed' : 'pointer',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              Efipay
+            </motion.button>
+          </div>
         ) : (
           <span style={{
             fontSize: '0.8rem',

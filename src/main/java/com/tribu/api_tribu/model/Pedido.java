@@ -48,7 +48,16 @@ public class Pedido {
     private String guiaRastreo;
 
     @Column(name = "metodo_pago")
-    private String metodoPago; // TRIBU_CARD, TRANSFERENCIA, etc.
+    private String metodoPago; // TRIBU_CARD, EFIPAY, etc.
+
+    @Column(name = "efipay_payment_id")
+    private String efipayPaymentId;
+
+    @Column(name = "efipay_checkout_url")
+    private String efipayCheckoutUrl;
+
+    @Column(name = "efipay_status")
+    private String efipayStatus;
 
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<DetallePedido> detalles = new ArrayList<>();

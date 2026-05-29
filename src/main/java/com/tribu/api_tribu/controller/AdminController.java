@@ -25,13 +25,20 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin")
-@RequiredArgsConstructor
 public class AdminController {
 
     private final PedidoService pedidoService;
     private final CrmNotaService crmNotaService;
     private final ProductoService productoService;
     private final FinanzasService finanzasService;
+
+    public AdminController(PedidoService pedidoService, CrmNotaService crmNotaService,
+                           ProductoService productoService, FinanzasService finanzasService) {
+        this.pedidoService = pedidoService;
+        this.crmNotaService = crmNotaService;
+        this.productoService = productoService;
+        this.finanzasService = finanzasService;
+    }
 
     // ——— Gestión de Pedidos (Panel Admin) ———
 

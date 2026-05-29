@@ -21,6 +21,7 @@ export const grupoService = {
   unirse: (codigo) => api.post(`/grupos/unirse/${codigo}`),
   detalle: (id) => api.get(`/grupos/${id}`),
   pagar: (id) => api.post(`/grupos/${id}/pagar`),
+  pagarEfipay: (id) => api.post(`/grupos/${id}/pagar`, { metodoPago: 'EFIPAY' }),
   splitEquitativo: (id) => api.post(`/grupos/${id}/split/equitativo`),
   splitPersonalizado: (id, splits) =>
     api.post(`/grupos/${id}/split/personalizado`, splits),

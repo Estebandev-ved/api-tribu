@@ -47,6 +47,15 @@ public class TribuPass {
     @Builder.Default
     private Boolean renovacionAutomatica = true;
 
+    @Column(name = "efipay_payment_id")
+    private String efipayPaymentId;
+
+    @Column(name = "efipay_checkout_url", length = 500)
+    private String efipayCheckoutUrl;
+
+    @Column(name = "efipay_status", length = 20)
+    private String efipayStatus;
+
     @Column(name = "fecha_creacion", updatable = false)
     private LocalDateTime fechaCreacion;
 
@@ -72,6 +81,7 @@ public class TribuPass {
         ACTIVA,
         PAUSADA,
         CANCELADA,
-        EXPIRADA
+        EXPIRADA,
+        PENDIENTE
     }
 }
