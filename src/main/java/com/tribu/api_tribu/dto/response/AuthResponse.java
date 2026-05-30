@@ -18,6 +18,8 @@ public class AuthResponse {
     private String email;
     private String rol;
 
+    private Boolean tribuPassActiva;
+
     /** true cuando el usuario tiene 2FA activo y el cliente debe solicitar el código TOTP. */
     @Builder.Default
     private boolean requires2fa = false;

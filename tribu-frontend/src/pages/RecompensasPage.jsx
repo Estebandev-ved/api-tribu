@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Gift, Sparkles, Ticket, Lock, CheckCircle } from 'lucide-react'
+import OptimizedImage from '../components/OptimizedImage'
 import { getMiPerfil, getRecompensas, canjearRecompensa, getMisCanjes, getLogros } from '../api'
 import { toast } from 'react-hot-toast'
 
@@ -171,11 +172,7 @@ export default function RecompensasPage() {
                   return (
                     <div key={r.id} style={{ background: 'rgba(10,10,10,0.65)', borderRadius: 16, padding: '1rem', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                       <div style={{ height: 120, borderRadius: 12, background: 'linear-gradient(135deg, rgba(255,122,26,0.2), rgba(255,255,255,0.02))', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                        {r.imagenUrl ? (
-                          <img src={r.imagenUrl} alt={r.titulo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        ) : (
-                          <Ticket size={34} color="#FF7A1A" />
-                        )}
+                        <OptimizedImage src={r.imagenUrl} alt={r.titulo} fallback={<Ticket size={34} color="#FF7A1A" />} />
                       </div>
                       <div style={{ color: '#fff', fontWeight: 700, fontSize: '1rem' }}>{r.titulo}</div>
                       <div style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', minHeight: 40 }}>{r.descripcion || 'Recompensa exclusiva Tribu.'}</div>

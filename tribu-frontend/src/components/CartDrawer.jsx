@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useCart } from '../context/CartContext'
 import { X, Trash2, Plus, Minus, ShoppingCart, ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import OptimizedImage from './OptimizedImage'
 
 const formatCOP = (n) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n)
 
@@ -70,10 +71,7 @@ export default function CartDrawer({ open, onClose }) {
                                         >
                                             {/* Imagen */}
                                             <div style={{ width: 64, height: 64, borderRadius: 10, overflow: 'hidden', flexShrink: 0, background: 'var(--color-bg)' }}>
-                                                {item.imagenUrl
-                                                    ? <img src={item.imagenUrl} alt={item.nombre} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                    : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', fontSize: '1.5rem' }}>🛍️</div>
-                                                }
+                                                <OptimizedImage src={item.imagenUrl} alt={item.nombre} fallback="🛍️" />
                                             </div>
 
                                             {/* Info */}

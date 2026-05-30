@@ -4,7 +4,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { register } from '../api'
 import toast from 'react-hot-toast'
-import { Flame, MapPin } from 'lucide-react'
+import { Flame, MapPin, Shield, Mail } from 'lucide-react'
 
 // Ciudades principales de Colombia (ordenadas por tamaño/relevancia)
 const CIUDADES_COLOMBIA = [
@@ -22,6 +22,8 @@ export default function RegisterPage() {
         nombreCompleto: '', email: '', password: '',
         telefono: '', ciudad: '', pais: 'Colombia', codigoPromocional: ''
     })
+    const [acceptTerms, setAcceptTerms] = useState(false)
+    const [acceptMarketing, setAcceptMarketing] = useState(false)
     const [loading, setLoading] = useState(false)
     const { loginUser } = useAuth()
     const navigate = useNavigate()
@@ -31,14 +33,24 @@ export default function RegisterPage() {
     const handleSubmit = async (e) => {
         e.preventDefault()
         if (!form.ciudad) { toast.error('Por favor selecciona tu ciudad'); return }
+        if (!acceptTerms) { toast.error('Debes aceptar los Términos y Condiciones y la Política de Privacidad'); return }
         setLoading(true)
         try {
-            // Enviamos ciudad como "Ciudad, País" si es de otro país
             const ciudadFinal = form.pais === 'Colombia'
                 ? form.ciudad
                 : `${form.ciudad}, ${form.pais}`
 
-            const { data } = await register({ ...form, ciudad: ciudadFinal })
+            const { data } = await register({
+                ...form,
+                ciudad: ciudadFinal,
+                acceptTerms: true,
+                acceptMarketing
+            })
+            // Store consent timestamp
+            localStorage.setItem('tribu_consent_terms', JSON.stringify({ accepted: true, date: new Date().toISOString() }))
+            if (acceptMarketing) {
+                localStorage.setItem('tribu_consent_marketing', JSON.stringify({ accepted: true, date: new Date().toISOString() }))
+            }
             loginUser(data)
             toast.success(`¡Bienvenido a la Tribu, ${data.nombreCompleto.split(' ')[0]}! 🎉`)
             navigate('/')
@@ -70,11 +82,11 @@ export default function RegisterPage() {
                             boxShadow: '0 0 24px rgba(255,87,34,0.35)',
                         }}
                     >
-                        <img src="/logo-tribu.png" alt="Tribu" style={{ width: 44, height: 44, objectFit: 'contain' }} />
+                        <img src="/logo-tribu.svg" alt="Tribu" style={{ width: 44, height: 44, objectFit: 'contain' }} />
                     </motion.div>
                     <h1 style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 900, fontSize: '1.8rem' }}>Únete a la Tribu</h1>
                     <p style={{ color: 'var(--color-text-muted)', marginTop: '0.4rem' }}>
-                        +10,000 miembros ya forman parte
+                        Únete hoy y empieza a ahorrar de forma inteligente
                     </p>
                 </div>
 
@@ -152,10 +164,61 @@ export default function RegisterPage() {
                             </p>
                         </div>
 
+                        {/* Consentimientos Legales */}
+                        <div style={{
+                            marginTop: '1.5rem', padding: '1rem',
+                            background: 'rgba(79,172,254,0.04)',
+                            border: '1px solid rgba(79,172,254,0.15)',
+                            borderRadius: '12px'
+                        }}>
+                            <label style={{
+                                display: 'flex', alignItems: 'flex-start', gap: '0.75rem',
+                                cursor: 'pointer', marginBottom: '0.75rem'
+                            }}>
+                                <input
+                                    type="checkbox"
+                                    checked={acceptTerms}
+                                    onChange={e => setAcceptTerms(e.target.checked)}
+                                    style={{ marginTop: '3px', accentColor: '#4facfe', width: 18, height: 18, cursor: 'pointer' }}
+                                />
+                                <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', lineHeight: 1.5 }}>
+                                    <Shield size={12} style={{ verticalAlign: 'middle', marginRight: 4, color: '#4facfe' }} />
+                                    Acepto los{' '}
+                                    <Link to="/politicas" target="_blank" style={{ color: '#4facfe', fontWeight: 600, textDecoration: 'underline' }}
+                                        onClick={e => e.stopPropagation()}>
+                                        Términos y Condiciones
+                                    </Link>{' '}
+                                    y la{' '}
+                                    <Link to="/politicas" target="_blank" style={{ color: '#4facfe', fontWeight: 600, textDecoration: 'underline' }}
+                                        onClick={e => e.stopPropagation()}>
+                                        Política de Privacidad
+                                    </Link>
+                                    . Declaro ser mayor de 18 años.
+                                </span>
+                            </label>
+
+                            <label style={{
+                                display: 'flex', alignItems: 'flex-start', gap: '0.75rem',
+                                cursor: 'pointer'
+                            }}>
+                                <input
+                                    type="checkbox"
+                                    checked={acceptMarketing}
+                                    onChange={e => setAcceptMarketing(e.target.checked)}
+                                    style={{ marginTop: '3px', accentColor: '#4facfe', width: 18, height: 18, cursor: 'pointer' }}
+                                />
+                                <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', lineHeight: 1.5 }}>
+                                    <Mail size={12} style={{ verticalAlign: 'middle', marginRight: 4, color: '#888' }} />
+                                    Acepto recibir comunicaciones comerciales, ofertas y novedades por email
+                                    <span style={{ color: 'var(--color-text-faint)', fontWeight: 400 }}> (opcional)</span>
+                                </span>
+                            </label>
+                        </div>
+
                         <motion.button
                             whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                             type="submit" className="btn btn-primary"
-                            style={{ width: '100%', justifyContent: 'center', padding: '0.85rem', fontSize: '1rem', fontWeight: 800, marginTop: '0.25rem' }}
+                            style={{ width: '100%', justifyContent: 'center', padding: '0.85rem', fontSize: '1rem', fontWeight: 800, marginTop: '0.75rem' }}
                             disabled={loading}
                         >
                             {loading ? '⏳ Creando cuenta...' : '🔥 Unirme a la Tribu'}

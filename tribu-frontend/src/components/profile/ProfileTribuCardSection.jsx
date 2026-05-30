@@ -7,19 +7,21 @@ export default function ProfileTribuCardSection({ perfil }) {
   const tier = perfil?.tier || 'BRONCE'
   const tierColor = TIER_COLORS[tier]?.primary || '#cd7f32'
   const saldo = perfil?.saldoFavor || 0
-  const cashbackRate = tier === 'ORO' ? 5 : tier === 'PLATA' ? 4 : 3
+  const hasTribuPass = perfil?.tribuPassActiva === true;
+  
+  const baseCashbackRate = tier === 'ORO' ? 5 : tier === 'PLATA' ? 4 : 3
+  const cashbackRate = baseCashbackRate * (hasTribuPass ? 2 : 1)
+  
   const gastadoMes = perfil?.gastadoMes || 0
   const metaSiguiente = tier === 'BRONCE' ? 500000 : tier === 'PLATA' ? 1000000 : 2000000
   const proximoTier = tier === 'BRONCE' ? 'PLATA' : tier === 'PLATA' ? 'ORO' : null
   const progreso = Math.min((gastadoMes / metaSiguiente) * 100, 100)
 
-
   const beneficiosActuales = [
     { label: `Cashback ${cashbackRate}% en todas tus compras`, disponible: true },
-    { label: 'Ruleta diaria hasta 10.000 pts', disponible: true },
+    { label: hasTribuPass ? 'Ruleta diaria hasta 15.000 pts (Tribu Pass 💎)' : 'Ruleta diaria hasta 10.000 pts', disponible: true },
     { label: 'Acceso a compras grupales', disponible: true },
-    { label: 'Envío gratis (disponible en ORO)', disponible: false, tier: 'ORO' },
-    { label: `Cashback 5% (disponible en ORO)`, disponible: false, tier: 'ORO' }
+    { label: 'Envío gratis ilimitado a nivel nacional', disponible: hasTribuPass || tier === 'ORO', tier: 'ORO' }
   ]
 
   return (
@@ -42,15 +44,21 @@ export default function ProfileTribuCardSection({ perfil }) {
         whileTap={{ scale: 0.98 }}
         onClick={playExoticClick}
         style={{
-          background: `linear-gradient(135deg, ${tierColor}30, ${tierColor}10)`,
-          border: `1px solid ${tierColor}40`,
+          background: hasTribuPass
+            ? 'linear-gradient(135deg, rgba(124, 58, 237, 0.25) 0%, rgba(6, 182, 212, 0.15) 100%)'
+            : `linear-gradient(135deg, ${tierColor}30, ${tierColor}10)`,
+          border: hasTribuPass
+            ? '1px solid rgba(124, 58, 237, 0.5)'
+            : `1px solid ${tierColor}40`,
           borderRadius: '1rem',
           padding: '1.5rem',
           marginBottom: '1.5rem',
           position: 'relative',
           overflow: 'hidden',
           cursor: 'pointer',
-          boxShadow: `0 8px 32px 0 ${tierColor}10`
+          boxShadow: hasTribuPass
+            ? '0 8px 32px 0 rgba(124, 58, 237, 0.2)'
+            : `0 8px 32px 0 ${tierColor}10`
         }}
       >
         <div style={{
@@ -60,12 +68,14 @@ export default function ProfileTribuCardSection({ perfil }) {
           width: 100,
           height: 100,
           borderRadius: '50%',
-          background: `radial-gradient(circle, ${tierColor}40 0%, transparent 70%)`
+          background: hasTribuPass
+            ? 'radial-gradient(circle, rgba(6, 182, 212, 0.4) 0%, transparent 70%)'
+            : `radial-gradient(circle, ${tierColor}40 0%, transparent 70%)`
         }} />
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-          <CreditCard size={32} color={tierColor} />
-          <div>
+          <CreditCard size={32} color={hasTribuPass ? '#a855f7' : tierColor} />
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             <span style={{
               background: tierColor,
               color: '#fff',
@@ -76,6 +86,22 @@ export default function ProfileTribuCardSection({ perfil }) {
             }}>
               {tier}
             </span>
+            {hasTribuPass && (
+              <span style={{
+                background: 'linear-gradient(135deg, #7c3aed, #06b6d4)',
+                color: '#fff',
+                padding: '4px 12px',
+                borderRadius: '20px',
+                fontSize: '0.7rem',
+                fontWeight: 800,
+                boxShadow: '0 0 10px rgba(124, 58, 237, 0.5)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '2px'
+              }}>
+                💎 TRIBU PASS
+              </span>
+            )}
           </div>
         </div>
 

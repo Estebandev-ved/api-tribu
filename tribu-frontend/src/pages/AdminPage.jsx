@@ -15,7 +15,10 @@ import {
     adminGetConversacionesSoporte,
     adminGetMensajesSoporte,
     adminEnviarMensajeSoporte,
-    adminResolverConversacionSoporte
+    adminResolverConversacionSoporte,
+    getAdminGirosRuleta,
+    getAdminRuletaConfig,
+    saveAdminRuletaConfig
 } from '../api'
 import toast from 'react-hot-toast'
 import {
@@ -23,7 +26,7 @@ import {
     Check, ShoppingBag, Pencil, Trash2, Image, BarChart3,
     TrendingUp, TrendingDown, User, Zap, Tag, RotateCcw, ShieldAlert,
     Activity, Sparkles, ArrowUpRight, Search, RefreshCw, WalletCards, ArrowDownRight, ArrowRightLeft,
-    MessageSquare, Bot
+    MessageSquare, Bot, RotateCw, Gift, Phone, Mail
 } from 'lucide-react'
 import { useAdminMonitoringWebSocket } from '../hooks/useAdminMonitoringWebSocket'
 
@@ -188,6 +191,12 @@ export default function AdminPage() {
     const [accesos, setAccesos] = useState([])
     const [loading, setLoading] = useState(true)
 
+    // Ruleta Estados
+    const [girosRuleta, setGirosRuleta] = useState([])
+    const [productoRegalo, setProductoRegalo] = useState('')
+    const [loadingConfig, setLoadingConfig] = useState(false)
+    const [savingConfig, setSavingConfig] = useState(false)
+
     const [viewMode, setViewMode] = useState('overview')
 
     // Filtros (modo Operaciones)
@@ -334,8 +343,10 @@ export default function AdminPage() {
             getEstadisticasDevolucion().catch(() => ({ data: null })),
             getSeguridadAccesos().catch(() => ({ data: [] })),
             getAdminFacturas().catch(() => ({ data: [] })),
-            adminGetConversacionesSoporte().catch(() => ({ data: [] }))
-        ]).then(([p, u, n, s, cats, prods, devs, statsDevs, seg, fact, chats]) => {
+            adminGetConversacionesSoporte().catch(() => ({ data: [] })),
+            getAdminGirosRuleta().catch(() => ({ data: [] })),
+            getAdminRuletaConfig().catch(() => ({ data: { productoRegalo: '' } }))
+        ]).then(([p, u, n, s, cats, prods, devs, statsDevs, seg, fact, chats, giros, config]) => {
             setPedidos(p.data); setUsuarios(u.data)
             setNotas(n.data); setStockBajo(s.data)
             setCategorias(cats.data); setProductos(prods.data)
@@ -344,6 +355,8 @@ export default function AdminPage() {
             setAccesos(seg.data || [])
             setFacturas(fact.data || [])
             setSoporteChats(chats.data || [])
+            setGirosRuleta(giros.data || [])
+            setProductoRegalo(config.data?.productoRegalo || 'Gadget Magnético Viral 🎁')
         }).finally(() => setLoading(false))
     }
 
@@ -649,6 +662,7 @@ export default function AdminPage() {
         { id: 'facturas', label: 'Facturas', icon: <FileText size={15} />, count: facturas.length },
         { id: 'devoluciones', label: 'Devoluciones', icon: <RotateCcw size={15} />, count: devoluciones.filter(d => d.estado === 'PENDIENTE').length },
         { id: 'usuarios', label: 'Usuarios', icon: <Users size={15} />, count: usuarios.length },
+        { id: 'ruleta', label: 'Ruleta Diaria', icon: <Gift size={15} color="var(--color-primary)" />, count: girosRuleta.filter(g => g.tipoPremio === 'PRODUCTO').length },
         { id: 'crm', label: 'CRM', icon: <FileText size={15} />, count: notas.length },
         { id: 'stock', label: 'Stock Crítico', icon: <AlertTriangle size={15} />, count: stockBajo.length },
         { id: 'inventario', label: 'Finanzas e Inventario', icon: <TrendingUp size={15} color="var(--color-primary)" />, count: productos.length, link: '/admin/inventario' },
@@ -665,6 +679,7 @@ export default function AdminPage() {
         facturas: { title: 'Facturación electrónica', desc: 'Emisión automática, datos fiscales y descarga de PDFs.' },
         devoluciones: { title: 'Devoluciones', desc: 'Aprobaciones, rechazos y reembolsos.' },
         usuarios: { title: 'Usuarios', desc: 'Roles, datos y saldo a favor.' },
+        ruleta: { title: 'Gestión de Ruleta 🎰', desc: 'Configura el regalo del premio mayor, visualiza todos los giros y contacta ganadores.' },
         crm: { title: 'CRM', desc: 'Notas internas por cliente y seguimiento.' },
         stock: { title: 'Stock crítico', desc: 'Productos con riesgo de quiebre de inventario.' },
         inventario: { title: 'Finanzas e Inventario', desc: 'Control contable, desglose de COGS, MCU y rendimiento del inventario.' },
@@ -724,6 +739,23 @@ export default function AdminPage() {
             t?.receptorEmail
         ].some(v => includesQ(v, q))
     })
+
+    const girosView = (girosRuleta || [])
+        .filter(g => {
+            const u = g.usuario || {}
+            return [
+                g.id,
+                g.tipoPremio,
+                g.tipoGiro,
+                g.labelPremio,
+                g.codigoPremio,
+                u.nombreCompleto,
+                u.email,
+                u.ciudad,
+                u.telefono
+            ].some(v => includesQ(v, opsFilters.q))
+        })
+        .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
 
     if (loading) return <div className="spinner" style={{ marginTop: '4rem' }} />
 
@@ -1280,7 +1312,8 @@ export default function AdminPage() {
                                             : tab === 'facturas' ? 'Buscar por NIT, razon social o #factura...'
                                                 : tab === 'devoluciones' ? 'Buscar por pedido, email o motivo...'
                                                     : tab === 'usuarios' ? 'Buscar por nombre o email...'
-                                                        : tab === 'productos' ? 'Buscar producto o categoria...' : 'Buscar...'}
+                                                        : tab === 'ruleta' ? 'Buscar por cliente, premio, tipo o cupón...'
+                                                            : tab === 'productos' ? 'Buscar producto o categoria...' : 'Buscar...'}
                                     style={{ paddingLeft: 40 }}
                                 />
                             </div>
@@ -1837,6 +1870,233 @@ export default function AdminPage() {
                                 ))}
                             </tbody>
                         </table>
+                    </div>
+                </motion.div>
+            )}
+
+            {/* ═══ TAB: RULETA ════════════════════════════════════════════════════ */}
+            {viewMode === 'operaciones' && tab === 'ruleta' && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                    {/* 🎁 Configuración del Regalo Mayor */}
+                    <div className="card" style={{ padding: '2rem', background: 'linear-gradient(135deg, rgba(255,87,34,0.05) 0%, rgba(255,255,255,0.02) 100%)', border: '1px solid rgba(255,87,34,0.15)', borderRadius: '16px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+                            <div style={{ background: 'rgba(255,87,34,0.15)', padding: '0.5rem', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <Gift size={24} color="var(--color-primary)" />
+                            </div>
+                            <div>
+                                <h3 style={{ fontWeight: 800, fontSize: '1.2rem', margin: 0 }}>Configuración de Premio Mayor</h3>
+                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', margin: 0 }}>Personaliza el producto físico sorpresa que los usuarios pueden ganar con el segmento "¡Regalo! 🎁".</p>
+                            </div>
+                        </div>
+
+                        <form onSubmit={async (e) => {
+                            e.preventDefault();
+                            if (!productoRegalo.trim()) {
+                                toast.error('El nombre del regalo no puede estar vacío');
+                                return;
+                            }
+                            setSavingConfig(true);
+                            try {
+                                const { data } = await saveAdminRuletaConfig({ productoRegalo: productoRegalo.trim() });
+                                setProductoRegalo(data.productoRegalo);
+                                toast.success('¡Premio mayor actualizado con éxito! 🎉');
+                            } catch (err) {
+                                toast.error(err.response?.data?.mensaje || 'Error al guardar la configuración');
+                            } finally {
+                                setSavingConfig(false);
+                            }
+                        }} style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-end', marginTop: '1.5rem' }}>
+                            <div className="form-group" style={{ flex: 1, minWidth: '280px', marginBottom: 0 }}>
+                                <label style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem' }}>Nombre / Descripción del Producto de Regalo</label>
+                                <input
+                                    className="input"
+                                    type="text"
+                                    value={productoRegalo}
+                                    onChange={(e) => setProductoRegalo(e.target.value)}
+                                    placeholder="Ej: Parlante Bluetooth JBL Go 3, Smartwatch Xiaomi, etc."
+                                    required
+                                    style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: '10px' }}
+                                />
+                            </div>
+                            <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                type="submit"
+                                className="btn btn-primary"
+                                style={{ padding: '0.85rem 1.8rem', fontWeight: 800, height: '44px', display: 'flex', alignItems: 'center', gap: '0.5rem', borderRadius: '10px' }}
+                                disabled={savingConfig}
+                            >
+                                {savingConfig ? '⏳ Guardando...' : 'Guardar Configuración'}
+                            </motion.button>
+                        </form>
+                    </div>
+
+                    {/* 📊 Historial de giros */}
+                    <div className="card" style={{ padding: '2rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                            <div>
+                                <h3 style={{ fontWeight: 800, fontSize: '1.2rem', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <RotateCw size={18} color="var(--color-primary)" /> Historial Completo de Giros
+                                </h3>
+                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', margin: 0 }}>Verifica quién giró, qué premio obtuvo, y comunícate con ellos.</p>
+                            </div>
+                            <button
+                                onClick={async () => {
+                                    setLoading(true);
+                                    try {
+                                        const { data } = await getAdminGirosRuleta();
+                                        setGirosRuleta(data || []);
+                                        toast.success('Historial actualizado 🔄');
+                                    } catch {
+                                        toast.error('Error al actualizar historial');
+                                    } finally {
+                                        setLoading(false);
+                                    }
+                                }}
+                                className="btn btn-ghost"
+                                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}
+                            >
+                                <RefreshCw size={14} /> Actualizar
+                            </button>
+                        </div>
+
+                        <div className="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Usuario / Ganador</th>
+                                        <th>Contacto y Canje</th>
+                                        <th>Tipo de Giro</th>
+                                        <th>Premio Obtenido</th>
+                                        <th>Código de Cupón</th>
+                                        <th>Fecha / Hora</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {girosView.map(g => {
+                                        const u = g.usuario || {};
+                                        // Crear enlace a WhatsApp si hay teléfono
+                                        const telLimpio = u.telefono ? u.telefono.replace(/\D/g, '') : '';
+                                        const waLink = telLimpio ? `https://wa.me/${telLimpio.startsWith('57') ? telLimpio : '57' + telLimpio}?text=¡Hola%20${encodeURIComponent(u.nombreCompleto || '')}!%20Te%20contactamos%20de%20Tribu%20por%20tu%20premio%20en%20la%20ruleta%20🎁` : null;
+
+                                        return (
+                                            <tr key={g.id} style={{
+                                                background: g.tipoPremio === 'PRODUCTO' ? 'rgba(255, 87, 34, 0.04)' : 'transparent',
+                                                borderLeft: g.tipoPremio === 'PRODUCTO' ? '4px solid var(--color-primary)' : 'none'
+                                            }}>
+                                                <td>
+                                                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                        <span style={{ fontWeight: 700, fontSize: '0.92rem' }}>{u.nombreCompleto || 'Invitado'}</span>
+                                                        <span style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>{u.email || '—'}</span>
+                                                        {u.ciudad && <span style={{ color: 'var(--color-primary)', fontSize: '0.75rem', fontWeight: 600, marginTop: '2px' }}>📍 {u.ciudad}</span>}
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                                                        {u.telefono ? (
+                                                            <>
+                                                                <a
+                                                                    href={`tel:${u.telefono}`}
+                                                                    title="Llamar por teléfono"
+                                                                    style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '0.35rem', color: 'var(--color-text)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
+                                                                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,87,34,0.1)'}
+                                                                    onMouseLeave={e => e.currentTarget.style.background = 'var(--color-surface-2)'}
+                                                                >
+                                                                    <Phone size={13} />
+                                                                </a>
+                                                                {waLink && (
+                                                                    <a
+                                                                        href={waLink}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        title="Enviar WhatsApp"
+                                                                        style={{ background: '#25D366', borderRadius: '8px', padding: '0.35rem 0.5rem', color: 'white', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.75rem', fontWeight: 800, textDecoration: 'none', transition: 'transform 0.2s' }}
+                                                                        onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                                                                        onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                                                                    >
+                                                                        💬 WhatsApp
+                                                                    </a>
+                                                                )}
+                                                            </>
+                                                        ) : (
+                                                            <span style={{ color: 'var(--color-text-faint)', fontSize: '0.8rem' }}>Sin teléfono</span>
+                                                        )}
+                                                        {u.email && (
+                                                            <a
+                                                                href={`mailto:${u.email}?subject=Premio%20Ganado%20en%20la%20Ruleta%20Tribu&body=Hola%20${encodeURIComponent(u.nombreCompleto || '')},%20felicitaciones%20por%20tu%20premio...`}
+                                                                title="Enviar correo"
+                                                                style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '0.35rem', color: 'var(--color-text)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                                                            >
+                                                                <Mail size={13} />
+                                                            </a>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span style={{
+                                                        fontSize: '0.75rem',
+                                                        fontWeight: 700,
+                                                        padding: '0.25rem 0.6rem',
+                                                        borderRadius: '99px',
+                                                        background: g.tipoGiro === 'PUNTOS' ? 'rgba(79, 172, 254, 0.15)' : 'rgba(255, 255, 255, 0.06)',
+                                                        color: g.tipoGiro === 'PUNTOS' ? '#4facfe' : 'var(--color-text-muted)',
+                                                        border: g.tipoGiro === 'PUNTOS' ? '1px solid rgba(79, 172, 254, 0.3)' : '1px solid rgba(255,255,255,0.05)'
+                                                    }}>
+                                                        {g.tipoGiro}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                                        <span style={{
+                                                            fontWeight: 800,
+                                                            fontSize: '0.88rem',
+                                                            color: g.tipoPremio === 'PRODUCTO' ? '#ff9800' :
+                                                                g.tipoPremio === 'DESCUENTO' || g.tipoPremio === 'ENVIO_GRATIS' ? '#00C896' : 'var(--color-text)'
+                                                        }}>
+                                                            {g.labelPremio}
+                                                        </span>
+                                                        {g.tipoPremio === 'PRODUCTO' && (
+                                                            <span style={{ animation: 'pulse 2s infinite', fontSize: '0.65rem', background: '#ff9800', color: 'white', padding: '1px 5px', borderRadius: '4px', fontWeight: 900 }}>RECLAMABLE</span>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    {g.codigoPremio ? (
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                                            <code style={{ background: 'var(--color-surface-2)', padding: '0.2rem 0.5rem', borderRadius: '6px', fontSize: '0.82rem', fontFamily: 'monospace', color: 'var(--color-accent)', border: '1px solid var(--color-border)' }}>{g.codigoPremio}</code>
+                                                            <button
+                                                                onClick={() => {
+                                                                    navigator.clipboard.writeText(g.codigoPremio);
+                                                                    toast.success('Cupón copiado 📋');
+                                                                }}
+                                                                className="btn btn-ghost"
+                                                                style={{ padding: '0.2rem', minWidth: 'auto', border: 'none', background: 'none' }}
+                                                                title="Copiar cupón"
+                                                            >
+                                                                📋
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <span style={{ color: 'var(--color-text-faint)', fontSize: '0.8rem' }}>—</span>
+                                                    )}
+                                                </td>
+                                                <td style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
+                                                    {new Date(g.fecha).toLocaleString('es-CO')}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                    {girosView.length === 0 && (
+                                        <tr>
+                                            <td colSpan="6" style={{ textAlign: 'center', padding: '3rem', color: 'var(--color-text-muted)' }}>
+                                                <RotateCw size={36} style={{ marginBottom: '0.5rem', color: 'var(--color-text-faint)' }} />
+                                                <p style={{ margin: 0 }}>No hay giros registrados con los filtros de búsqueda.</p>
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </motion.div>
             )}

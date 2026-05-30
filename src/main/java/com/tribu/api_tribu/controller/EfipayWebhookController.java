@@ -14,9 +14,11 @@ import com.tribu.api_tribu.repository.TribuPassRepository;
 import com.tribu.api_tribu.repository.UsuarioRepository;
 import com.tribu.api_tribu.service.TierService;
 import com.tribu.api_tribu.service.AchievementService;
+import com.tribu.api_tribu.service.EmailService;
 import com.tribu.api_tribu.service.FacturaService;
 import com.tribu.api_tribu.service.CashbackTierService;
 import com.tribu.api_tribu.service.SaldoService;
+import com.tribu.api_tribu.telegram.TelegramNotificationService;
 import com.tribu.api_tribu.websocket.SaldoWebSocketService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +48,8 @@ public class EfipayWebhookController {
     private final AchievementService achievementService;
     private final FacturaService facturaService;
     private final CashbackTierService cashbackTierService;
+    private final EmailService emailService;
+    private final TelegramNotificationService telegramService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${efipay.webhook.token}")
@@ -151,6 +155,17 @@ public class EfipayWebhookController {
             tierService.reevaluarTierUsuario(pedido.getUsuario());
             achievementService.procesarLogros(pedido.getUsuario());
             procesarCashback(pedido);
+
+            // ★ Notificaciones: sólo se envían después de que Efipay confirma el pago
+            emailService.enviarConfirmacionPedido(
+                    pedido.getUsuario().getEmail(),
+                    pedido.getUsuario().getNombreCompleto(),
+                    pedido.getId(),
+                    "$" + pedido.getTotal().toPlainString());
+
+            if (pedido.getTotal().doubleValue() >= 500_000) {
+                telegramService.alertaPedidoGrande(pedido.getId(), pedido.getTotal().doubleValue());
+            }
 
             try {
                 facturaService.generarFacturaAutomatica(pedido.getId(), null, null);

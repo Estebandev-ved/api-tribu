@@ -124,13 +124,29 @@ public class PedidoService {
         pedido.setTotal(total);
         pedido.setDetalles(detalles);
         pedido.setMetodoPago(request.getMetodoPago() != null ? request.getMetodoPago() : "EFECTIVO");
+        pedido.setTransportadora(request.getTransportadora());
+        if (cashbackTierService.tieneEnvioGratis(usuario)) {
+            log.info("💎 Enforcing $0 COP free shipping for Tribu Pass / VIP user {}", usuario.getId());
+            pedido.setCostoEnvio(BigDecimal.ZERO);
+        } else if (request.getCostoEnvio() != null) {
+            pedido.setCostoEnvio(BigDecimal.valueOf(request.getCostoEnvio()));
+        } else {
+            pedido.setCostoEnvio(BigDecimal.ZERO);
+        }
+        pedido.setInstruccionesEntrega(request.getInstruccionesEntrega());
 
         // ── DETERMINAR ESTADO SEGÚN MÉTODO DE PAGO ────────────────────────
+        // TRIBU_CARD   → PAGADO inmediato (saldo descontado al momento)
+        // EFIPAY       → PENDIENTE hasta que el webhook confirme el pago
+        // CONTRAENTREGA→ PENDIENTE_ENTREGA (el cliente paga al recibir en casa)
+        // Seguridad: nunca se asume pago sin confirmación real
         String metodoPago = request.getMetodoPago() != null ? request.getMetodoPago() : "EFECTIVO";
         if ("TRIBU_CARD".equalsIgnoreCase(metodoPago)) {
             pedido.setEstado("PAGADO");
         } else if ("EFIPAY".equalsIgnoreCase(metodoPago)) {
             pedido.setEstado("PENDIENTE");
+        } else if ("CONTRAENTREGA".equalsIgnoreCase(metodoPago)) {
+            pedido.setEstado("PENDIENTE_ENTREGA");
         } else {
             pedido.setEstado("PENDIENTE");
         }
@@ -199,19 +215,27 @@ public class PedidoService {
             }
         }
 
-        // Evento de notificación (existente)
+        // Evento de notificación interna (siempre se registra al crear el pedido)
         eventPublisher.publishEvent(new NotificacionEvent(
                 "PEDIDO",
                 "Nuevo pedido recibido",
                 "El usuario " + usuario.getNombreCompleto() + " realizó un nuevo pedido.",
                 usuario.getId().toString()));
 
-        emailService.enviarConfirmacionPedido(
-                usuario.getEmail(), usuario.getNombreCompleto(),
-                savedPedido.getId(), "$" + total.toPlainString());
+        // ──────────────────────────────────────────────────────────────────────
+        // NOTA: El correo de confirmación y la alerta de Telegram para pedidos
+        // con Efipay se envían SOLO después de que el pago sea confirmado
+        // por el webhook de Efipay (EfipayWebhookController#procesarWebhookPedido).
+        // Para pedidos pagados de inmediato con Tribu Card, sí notificamos aquí.
+        // ──────────────────────────────────────────────────────────────────────
+        if (!"EFIPAY".equalsIgnoreCase(metodoPago)) {
+            emailService.enviarConfirmacionPedido(
+                    usuario.getEmail(), usuario.getNombreCompleto(),
+                    savedPedido.getId(), "$" + total.toPlainString());
 
-        if (savedPedido.getTotal().doubleValue() >= 500_000) {
-            telegramService.alertaPedidoGrande(savedPedido.getId(), savedPedido.getTotal().doubleValue());
+            if (savedPedido.getTotal().doubleValue() >= 500_000) {
+                telegramService.alertaPedidoGrande(savedPedido.getId(), savedPedido.getTotal().doubleValue());
+            }
         }
 
         return toResponse(savedPedido);
@@ -306,6 +330,10 @@ public class PedidoService {
                 .fechaPedido(p.getFechaPedido())
                 .estado(p.getEstado())
                 .total(p.getTotal())
+                .metodoPago(p.getMetodoPago())
+                .transportadora(p.getTransportadora())
+                .costoEnvio(p.getCostoEnvio())
+                .instruccionesEntrega(p.getInstruccionesEntrega())
                 .direccionEnvio(p.getDireccionEnvio())
                 .guiaRastreo(p.getGuiaRastreo())
                 .efipayCheckoutUrl(p.getEfipayCheckoutUrl())

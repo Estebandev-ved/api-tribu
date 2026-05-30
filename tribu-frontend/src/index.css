@@ -256,6 +256,12 @@ body {
   border: 1px solid rgba(254, 231, 21, 0.2);
 }
 
+.badge-contraentrega {
+  background: rgba(255, 138, 80, 0.12);
+  color: #FF8A50;
+  border: 1px solid rgba(255, 138, 80, 0.25);
+}
+
 .badge-enviado {
   background: rgba(255, 87, 34, 0.12);
   color: var(--color-primary);

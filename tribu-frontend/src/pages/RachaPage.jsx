@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Flame, Calendar, Gift, Trophy, Star } from 'lucide-react'
+import AgeVerification from '../components/AgeVerification'
 import { rachaService } from '../services/services'
 import { useAuth } from '../context/AuthContext'
 import { formatCOP, formatFecha } from '../utils/formatters'
@@ -47,13 +48,14 @@ export default function RachaPage() {
 
   const diasActivos = getDiaActivo()
 
-  return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'var(--color-background, #0a0a0a)',
-      paddingTop: '5rem',
-      paddingBottom: '2rem'
-    }}>
+    return (
+        <AgeVerification feature="racha">
+        <div style={{
+            minHeight: '100vh',
+            background: 'var(--color-background, #0a0a0a)',
+            paddingTop: '5rem',
+            paddingBottom: '2rem'
+        }}>
       <div style={{ maxWidth: 500, margin: '0 auto', padding: '0 1rem' }}>
         
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
@@ -248,5 +250,6 @@ export default function RachaPage() {
         </motion.div>
       </div>
     </div>
+    </AgeVerification>
   )
 }

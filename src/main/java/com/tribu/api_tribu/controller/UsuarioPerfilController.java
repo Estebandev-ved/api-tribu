@@ -80,6 +80,7 @@ public class UsuarioPerfilController {
         m.put("codigoReferido", u.getCodigoReferido());
         m.put("tienePin", u.getPinSeguridadHash() != null && !u.getPinSeguridadHash().isBlank());
         m.put("tarjetaCreada", Boolean.TRUE.equals(u.getTarjetaCreada()));
+        m.put("tribuPassActiva", Boolean.TRUE.equals(u.getTribuPassActiva()));
 
         return ResponseEntity.ok(m);
     }

@@ -17,8 +17,10 @@ import {
     cancelarTribuPass, 
     actualizarRenovacionAutomatica, 
     getTribuPassHistorial,
-    getTribuPassBeneficios
+    getTribuPassBeneficios,
+    syncEfipayTribuPass
 } from '../api'
+import { useAuth } from '../context/AuthContext'
 import { toast } from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
 
@@ -30,7 +32,7 @@ const trustItems = [
     { icon: <Clock size={20} />, title: 'Sin Compromiso', desc: 'Cancela cuando quieras, sin penalización' },
     { icon: <Headphones size={20} />, title: 'Soporte Premium', desc: 'Atención prioritaria 24/7' },
     { icon: <Globe size={20} />, title: 'Cobertura Total', desc: 'Envíos a todo Colombia' },
-    { icon: <CheckCircle2 size={20} />, title: ' +10K Usuarios', desc: 'La membresía más elegida' }
+    { icon: <CheckCircle2 size={20} />, title: 'Súmate hoy', desc: 'A la revolución del ahorro' }
 ];
 
 const garantiaItems = [
@@ -44,7 +46,7 @@ const statsDemo = {
     enviosGratis: 12,
     ofertasAccedidas: 8,
     proximoNivel: 75,
-    ahorroEnvios: 60000,
+    ahorroEnvios: 300000,
     comprasMes: 4
 };
 
@@ -80,6 +82,7 @@ const testimonios = [
 
 export default function TribuPassPage() {
     const navigate = useNavigate();
+    const { updateUser } = useAuth();
     const [estado, setEstado] = useState(null);
     const [historial, setHistorial] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -99,6 +102,7 @@ export default function TribuPassPage() {
             ]);
             setEstado(resEstado.data);
             setHistorial(resHistorial.data);
+            updateUser({ tribuPassActiva: resEstado.data.activa });
         } catch (error) {
             toast.error('Error al cargar información del Tribu Pass');
         } finally {
@@ -111,8 +115,18 @@ export default function TribuPassPage() {
     useEffect(() => {
         const efipayStatus = new URLSearchParams(window.location.search).get('efipay');
         if (efipayStatus === 'approved') {
-            toast.success('Pago de Tribu Pass aprobado. ¡Disfruta tus beneficios!');
-            cargarDatos();
+            const sync = async () => {
+                try {
+                    await syncEfipayTribuPass('approved');
+                    toast.success('Pago de Tribu Pass aprobado. ¡Disfruta tus beneficios!');
+                } catch (error) {
+                    console.error('Error al sincronizar pago de Tribu Pass:', error);
+                    toast.success('Pago de Tribu Pass aprobado. ¡Disfruta tus beneficios!');
+                } finally {
+                    cargarDatos();
+                }
+            };
+            sync();
         } else if (efipayStatus === 'rejected') {
             toast.error('El pago del Tribu Pass fue rechazado. Intenta con otro método.');
         } else if (efipayStatus === 'pending') {
@@ -415,11 +429,11 @@ export default function TribuPassPage() {
                                 </div>
                                 <div style={{ background: 'rgba(0,0,0,0.2)', padding: '0.8rem', borderRadius: '10px', textAlign: 'center' }}>
                                     <p style={{ color: '#666', fontSize: '0.7rem', margin: '0 0 0.3rem 0', fontWeight: 600 }}>Envío promedio</p>
-                                    <p style={{ color: '#aaa', fontSize: '1rem', fontWeight: 800, margin: 0 }}>{formatCurrency(5000)}</p>
+                                    <p style={{ color: '#aaa', fontSize: '1rem', fontWeight: 800, margin: 0 }}>{formatCurrency(25000)}</p>
                                 </div>
                             </div>
                             <p style={{ color: '#aaa', fontSize: '0.8rem', margin: 0, lineHeight: 1.5 }}>
-                                <strong style={{ color: '#00c896' }}>2 envíos = recover</strong> el costo. Con 4+ compras mensuales, ¡estás GANANDO dinero!
+                                <strong style={{ color: '#00c896' }}>¡Con 1 solo envío gratis</strong> al mes ya recuperas con creces tu inversión!
                             </p>
                         </div>
                     </motion.div>
@@ -524,9 +538,11 @@ export default function TribuPassPage() {
                                                 onClick={() => setMetodoPagoPass('EFIPAY')}
                                                 style={{
                                                     flex: 1, padding: '0.7rem', borderRadius: '10px',
-                                                    border: metodoPagoPass === 'EFIPAY' ? '2px solid #fbbf24' : '1px solid #333',
-                                                    background: metodoPagoPass === 'EFIPAY' ? 'rgba(251,191,36,0.1)' : 'transparent',
-                                                    color: '#fff', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer'
+                                                    border: metodoPagoPass === 'EFIPAY' ? '2px solid #6243FF' : '1px solid #333',
+                                                    background: metodoPagoPass === 'EFIPAY' ? 'rgba(98, 67, 255, 0.12)' : 'transparent',
+                                                    color: metodoPagoPass === 'EFIPAY' ? '#B7A9FF' : '#fff',
+                                                    fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem'
                                                 }}
                                             >
                                                 Efipay
@@ -727,7 +743,7 @@ export default function TribuPassPage() {
                             </div>
                             <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff', margin: '0 0 0.8rem 0' }}>¿Listo para desbloquear tu potencial?</h3>
                             <p style={{ color: '#aaa', fontSize: '0.95rem', margin: '0 0 1.5rem 0', lineHeight: 1.5 }}>
-                                Únete a +10,000 usuarios que ya están ahorrando más y ganando más con Tribu Pass.
+                                Súmate hoy a la comunidad de compradores inteligentes que ya están ahorrando más y ganando más con Tribu Pass.
                             </p>
                             <motion.button
                                 whileHover={{ scale: 1.05, boxShadow: '0 15px 40px rgba(245, 158, 11, 0.5)' }}

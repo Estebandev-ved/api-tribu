@@ -28,7 +28,7 @@ export default function Footer() {
                     <div>
                         <motion.div whileHover={{ scale: 1.03 }} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
                             <img
-                                src="/logo-tribu.png"
+                                src="/logo-tribu.svg"
                                 alt="Tribu"
                                 style={{ width: 120, height: 120, borderRadius: 10, objectFit: 'contain', display: 'block' }}
                             />

@@ -1,14 +1,16 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Package, Truck, CheckCircle, Clock, ChevronDown, ChevronUp } from 'lucide-react'
+import { Package, Truck, CheckCircle, Clock, ChevronDown, ChevronUp, Home, Banknote, Calendar, MapPin } from 'lucide-react'
+import OptimizedImage from './OptimizedImage'
 
 const formatCOP = (n) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n)
 
 const estadoConfig = {
-    PENDIENTE: { icon: <Clock size={16} />, color: 'var(--color-warning)', label: 'Pendiente' },
-    PAGADO: { icon: <CheckCircle size={16} />, color: 'var(--color-success)', label: 'Pagado' },
-    ENVIADO: { icon: <Truck size={16} />, color: 'var(--color-primary-light)', label: 'Enviado' },
-    ENTREGADO: { icon: <Package size={16} />, color: 'var(--color-success)', label: 'Entregado' },
+    PENDIENTE:          { icon: <Clock size={16} />,       color: '#F59E0B',                   label: 'Pendiente de pago' },
+    PENDIENTE_ENTREGA:  { icon: <Home size={16} />,        color: '#FF8A50',                   label: 'Pago Contraentrega' },
+    PAGADO:             { icon: <CheckCircle size={16} />, color: 'var(--color-success)',      label: 'Pagado' },
+    ENVIADO:            { icon: <Truck size={16} />,       color: 'var(--color-primary-light)',label: 'Enviado' },
+    ENTREGADO:          { icon: <Package size={16} />,     color: 'var(--color-success)',      label: 'Entregado' },
 }
 
 export default function PedidoCard({ pedido, index = 0 }) {
@@ -35,15 +37,18 @@ export default function PedidoCard({ pedido, index = 0 }) {
                             {config.icon} {config.label}
                         </span>
                     </div>
-                    <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>
-                        📅 {new Date(pedido.fechaPedido).toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' })}
+                    <p style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>
+                        <Calendar size={13} style={{ opacity: 0.7 }} />
+                        {new Date(pedido.fechaPedido).toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' })}
                     </p>
-                    <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
-                        📍 {pedido.direccionEnvio}
+                    <p style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--color-text-muted)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
+                        <MapPin size={13} style={{ opacity: 0.7 }} />
+                        {pedido.direccionEnvio}
                     </p>
                     {pedido.guiaRastreo && (
-                        <p style={{ color: 'var(--color-primary-light)', fontSize: '0.85rem', marginTop: '0.25rem', fontWeight: 600 }}>
-                            🚚 Guía: {pedido.guiaRastreo}
+                        <p style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--color-primary-light)', fontSize: '0.85rem', marginTop: '0.25rem', fontWeight: 600 }}>
+                            <Truck size={13} />
+                            Guía: {pedido.guiaRastreo}
                         </p>
                     )}
                 </div>
@@ -56,15 +61,34 @@ export default function PedidoCard({ pedido, index = 0 }) {
             </div>
 
             {/* Progress bar de estado */}
-            <div style={{ marginTop: '1rem', display: 'flex', gap: '4px' }}>
-                {['PENDIENTE', 'PAGADO', 'ENVIADO', 'ENTREGADO'].map((e, i) => {
-                    const estadosOrden = ['PENDIENTE', 'PAGADO', 'ENVIADO', 'ENTREGADO']
-                    const activo = estadosOrden.indexOf(pedido.estado) >= i
-                    return (
-                        <div key={e} style={{ flex: 1, height: 4, borderRadius: 2, background: activo ? config.color : 'var(--color-border)', transition: 'background 0.4s' }} />
-                    )
-                })}
-            </div>
+            {pedido.estado === 'PENDIENTE_ENTREGA' ? (
+                // Flujo especial contraentrega: pago ocurre al recibir
+                <div style={{ marginTop: '1rem' }}>
+                    <div style={{ display: 'flex', gap: '4px', marginBottom: '0.4rem' }}>
+                        {['Pedido', 'En camino', 'Pago al recibir', 'Entregado'].map((label, i) => (
+                            <div key={label} style={{
+                                flex: 1, height: 4, borderRadius: 2,
+                                background: i === 0 ? '#FF8A50' : 'var(--color-border)',
+                                transition: 'background 0.4s'
+                            }} />
+                        ))}
+                    </div>
+                    <p style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.72rem', color: '#FF8A50', fontWeight: 600 }}>
+                        <Home size={12} />
+                        Ten el dinero listo para cuando llegue tu pedido
+                    </p>
+                </div>
+            ) : (
+                <div style={{ marginTop: '1rem', display: 'flex', gap: '4px' }}>
+                    {['PENDIENTE', 'PAGADO', 'ENVIADO', 'ENTREGADO'].map((e, i) => {
+                        const estadosOrden = ['PENDIENTE', 'PAGADO', 'ENVIADO', 'ENTREGADO']
+                        const activo = estadosOrden.indexOf(pedido.estado) >= i
+                        return (
+                            <div key={e} style={{ flex: 1, height: 4, borderRadius: 2, background: activo ? config.color : 'var(--color-border)', transition: 'background 0.4s' }} />
+                        )
+                    })}
+                </div>
+            )}
 
             {/* Expandir detalles */}
             <button
@@ -92,10 +116,7 @@ export default function PedidoCard({ pedido, index = 0 }) {
                             marginBottom: '0.5rem', alignItems: 'center',
                         }}>
                             <div style={{ width: 44, height: 44, borderRadius: 8, overflow: 'hidden', background: 'var(--color-bg)', flexShrink: 0 }}>
-                                {d.productoImagenUrl
-                                    ? <img src={d.productoImagenUrl} alt={d.productoNombre} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                    : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', fontSize: '1.2rem' }}>🛍️</div>
-                                }
+                                <OptimizedImage src={d.productoImagenUrl} alt={d.productoNombre} fallback="🛍️" />
                             </div>
                             <div style={{ flex: 1 }}>
                                 <p style={{ fontWeight: 600, fontSize: '0.9rem' }}>{d.productoNombre}</p>

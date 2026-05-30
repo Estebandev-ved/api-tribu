@@ -76,6 +76,40 @@ export default function DevolucionesPage() {
                     </p>
                 </div>
 
+                {/* Garantía Legal - Ley 1480 de 2011 */}
+                <div style={{
+                    background: 'rgba(0, 200, 150, 0.04)',
+                    border: '1px solid rgba(0, 200, 150, 0.15)',
+                    borderRadius: '16px',
+                    padding: '1.5rem',
+                    marginBottom: '2rem'
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+                        <div style={{
+                            width: 44, height: 44, borderRadius: '12px',
+                            background: 'rgba(0, 200, 150, 0.1)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            flexShrink: 0
+                        }}>
+                            <Sparkles size={22} color="#00C896" />
+                        </div>
+                        <div>
+                            <h3 style={{ fontWeight: 800, marginBottom: '0.3rem', color: '#00C896', fontSize: '1rem' }}>
+                                Garantía Legal - 1 año
+                            </h3>
+                            <p style={{ color: '#aaa', fontSize: '0.85rem', lineHeight: 1.6, margin: 0 }}>
+                                De conformidad con el artículo 11 de la Ley 1480 de 2011 (Estatuto del Consumidor),
+                                todos los productos comercializados en Tribu cuentan con <strong style={{ color: '#fff' }}>garantía legal de 1 año</strong>
+                                contra defectos de fabricación. Durante este período, puedes solicitar la reparación,
+                                reposición o devolución del producto sin costo adicional. La garantía cubre defectos
+                                de fábrica y no aplica por daños derivados de mal uso, accidentes, modificaciones no
+                                autorizadas o desgaste normal por uso. Para hacer efectiva la garantía, contacta a
+                                nuestro soporte con tu número de pedido y una descripción del defecto.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '2rem', marginBottom: '4rem' }}>
                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
                         <Clock size={32} color="var(--color-primary)" style={{ flexShrink: 0 }} />

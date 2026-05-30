@@ -117,6 +117,7 @@ public class AuthService {
                 .nombreCompleto(usuario.getNombreCompleto())
                 .email(usuario.getEmail())
                 .rol(usuario.getRol() != null ? usuario.getRol().getNombre() : "CLIENTE")
+                .tribuPassActiva(Boolean.TRUE.equals(usuario.getTribuPassActiva()))
                 .tierActual(buildTierInfo(usuario))
                 .build();
     }
@@ -205,6 +206,7 @@ public class AuthService {
                 .nombreCompleto(usuario.getNombreCompleto())
                 .email(usuario.getEmail())
                 .rol(usuario.getRol() != null ? usuario.getRol().getNombre() : "CLIENTE")
+                .tribuPassActiva(Boolean.TRUE.equals(usuario.getTribuPassActiva()))
                 .tierActual(buildTierInfo(usuario))
                 .build();
     }
@@ -247,6 +249,7 @@ public class AuthService {
                 .nombreCompleto(usuario.getNombreCompleto())
                 .email(usuario.getEmail())
                 .rol(usuario.getRol() != null ? usuario.getRol().getNombre() : "CLIENTE")
+                .tribuPassActiva(Boolean.TRUE.equals(usuario.getTribuPassActiva()))
                 .tierActual(buildTierInfo(usuario))
                 .build();
     }
@@ -359,6 +362,7 @@ public class AuthService {
                 .nombreCompleto(savedUsuario.getNombreCompleto())
                 .email(savedUsuario.getEmail())
                 .rol("CLIENTE")
+                .tribuPassActiva(Boolean.TRUE.equals(savedUsuario.getTribuPassActiva()))
                 .tierActual(buildTierInfo(savedUsuario))  // ← FASE 2
                 .build();
     }

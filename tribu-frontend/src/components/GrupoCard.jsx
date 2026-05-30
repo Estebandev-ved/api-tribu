@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { Users, Clock, CheckCircle, XCircle, AlertCircle, Pizza, Gift, Sparkles, ShoppingCart } from 'lucide-react'
+import { Users, Clock, CheckCircle, XCircle, AlertCircle, Pizza, Gift, Sparkles, ShoppingCart, Zap } from 'lucide-react'
 import { formatCOP } from '../utils/formatters'
 import { getTierColor } from '../utils/tierColors'
 import { grupoService } from '../services/services'
@@ -188,8 +188,8 @@ export default function GrupoCard({ grupo, index = 0, onPaymentSuccess }) {
               {pagando ? 'Pagando...' : 'Puntos'}
             </motion.button>
             <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1.04, boxShadow: '0 4px 16px rgba(98, 67, 255, 0.35)' }}
+              whileTap={{ scale: 0.96 }}
               disabled={pagando}
               onClick={async () => {
                 setPagando(true)
@@ -205,18 +205,22 @@ export default function GrupoCard({ grupo, index = 0, onPaymentSuccess }) {
                 }
               }}
               style={{
-                background: 'linear-gradient(135deg, #1a1a2e, #16213e)',
+                background: 'linear-gradient(135deg, #6243FF, #7B5FFF)',
                 color: '#fff',
-                border: '1px solid #334',
-                padding: '0.5rem 0.8rem',
-                borderRadius: 8,
-                fontWeight: 600,
-                fontSize: '0.75rem',
+                border: '1px solid rgba(98, 67, 255, 0.3)',
+                padding: '0.55rem 1rem',
+                borderRadius: 10,
+                fontWeight: 700,
+                fontSize: '0.78rem',
                 cursor: pagando ? 'not-allowed' : 'pointer',
-                whiteSpace: 'nowrap'
+                whiteSpace: 'nowrap',
+                boxShadow: '0 2px 12px rgba(98, 67, 255, 0.25)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.35rem'
               }}
             >
-              Efipay
+              <Zap size={14} /> Efipay
             </motion.button>
           </div>
         ) : (

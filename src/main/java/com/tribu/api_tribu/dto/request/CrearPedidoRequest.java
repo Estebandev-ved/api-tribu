@@ -10,7 +10,10 @@ public class CrearPedidoRequest {
     @NotBlank(message = "La dirección de envío es requerida")
     private String direccionEnvio;
 
-    private String metodoPago; // TRIBU_CARD, etc.
+    private String metodoPago;
+    private String transportadora;
+    private Double costoEnvio;
+    private String instruccionesEntrega;
     private String cuponCodigo;
 
     @NotEmpty(message = "El pedido debe tener al menos un producto")

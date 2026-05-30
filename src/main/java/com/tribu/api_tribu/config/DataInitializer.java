@@ -52,27 +52,18 @@ public class DataInitializer implements CommandLineRunner {
                 .orElseThrow(() -> new IllegalStateException("Rol ADMIN no encontrado"));
 
         usuarioRepository.findByEmail(adminEmail).ifPresentOrElse(admin -> {
-            boolean passwordOk = false;
-            try {
-                passwordOk = admin.getPassword() != null
-                        && admin.getPassword().startsWith("$2")
-                        && passwordEncoder.matches(adminPassword, admin.getPassword());
-            } catch (Exception e) {
-                // sin logging
-            }
-
-            if (!passwordOk) {
-                // Resetear contraseña y asegurar rol ADMIN
-                admin.setPassword(passwordEncoder.encode(adminPassword));
-                admin.setRol(rolAdmin);
-                usuarioRepository.save(admin);
-            }
+            System.out.println("🔧 FORZANDO RESET DE CREDENCIALES DE ADMIN...");
+            admin.setPassword(passwordEncoder.encode(adminPassword));
+            admin.setIs2faHabilitado(false);
+            admin.setRol(rolAdmin);
+            usuarioRepository.save(admin);
+            System.out.println("🚀 CREDENCIALES Y 2FA DE ADMIN RESETEADOS EXITOSAMENTE.");
         }, () -> {
-            // El usuario no existe — crearlo desde cero
             Usuario admin = new Usuario();
             admin.setNombreCompleto("Administrador Tribu");
             admin.setEmail(adminEmail);
             admin.setPassword(passwordEncoder.encode(adminPassword));
+            admin.setIs2faHabilitado(false);
             admin.setRol(rolAdmin);
             usuarioRepository.save(admin);
         });

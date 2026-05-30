@@ -86,16 +86,12 @@ export default function Hero() {
                     style={{
                         position: 'absolute',
                         top: 0, left: 0, right: 0,
-                        // Extensión extra para que el movimiento parallax
-                        // no deje bordes blancos en la parte inferior
                         bottom: isMobile ? 0 : '-25%',
                         y: bgY,
-                        // Ancla top-center: las manos abriendo la caja siempre visibles
                         backgroundImage: 'url(/image_3.png)',
                         backgroundSize: 'cover',
                         backgroundPosition: 'top center',
                         backgroundRepeat: 'no-repeat',
-                        // En móvil sin parallax — imagen fija para rendimiento
                         ...(isMobile ? { backgroundAttachment: 'scroll' } : {}),
                     }}
                 />
@@ -147,7 +143,7 @@ export default function Hero() {
                             marginBottom: '1.5rem', letterSpacing: '0.02em',
                         }}
                     >
-                        <img src="/logo-tribu.png" alt="Tribu" style={{ width: 40, height: 40, objectFit: 'contain' }} />
+                        <img src="/logo-tribu.svg" alt="Tribu" style={{ width: 40, height: 40, objectFit: 'contain' }} />
                         Únete para crear nuestra propia tribu!
                     </motion.div>
 
@@ -240,9 +236,9 @@ export default function Hero() {
                         style={{ display: 'flex', justifyContent: 'center', gap: '2.5rem', marginTop: '3.5rem', flexWrap: 'wrap' }}
                     >
                         {[
-                            { num: '+10K', label: 'Clientes felices' },
-                            { num: '+500', label: 'Productos virales' },
-                            { num: '25', label: 'Ciudades de Colombia' },
+                            { num: 'Súmate', label: 'Revolución del ahorro inteligente' },
+                            { num: 'Viral', label: 'Productos tendencia TikTok' },
+                            { num: 'Seguro', label: 'Pagas al recibir en casa' },
                         ].map(s => (
                             <motion.div
                                 key={s.label}

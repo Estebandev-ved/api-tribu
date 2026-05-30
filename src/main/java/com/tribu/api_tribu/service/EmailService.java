@@ -69,14 +69,20 @@ public class EmailService {
       Long pedidoId, String nuevoEstado, String guiaRastreo) {
     String emoji = switch (nuevoEstado) {
       case "PAGADO" -> "💳";
+      case "PENDIENTE_ENTREGA" -> "🏠";
       case "ENVIADO" -> "🚚";
       case "ENTREGADO" -> "📦";
       default -> "📋";
     };
     String subject = emoji + " Tu pedido #" + pedidoId + " está " + nuevoEstado;
-    String detalle = nuevoEstado.equals("ENVIADO") && guiaRastreo != null
-        ? "Esta en camino. Guía de rastreo: <strong>" + guiaRastreo + "</strong>"
-        : "El estado de tu pedido fue actualizado a <strong>" + nuevoEstado + "</strong>.";
+    String detalle = switch (nuevoEstado) {
+      case "ENVIADO" -> guiaRastreo != null
+          ? "Está en camino. Guía de rastreo: <strong>" + guiaRastreo + "</strong>"
+          : "Tu pedido ya fue despachado y está en camino.";
+      case "PENDIENTE_ENTREGA" ->
+          "Tu pedido fue recibido y está siendo preparado. <strong>Recuerda tener el dinero listo</strong> para cuando llegue el domiciliario — puedes pagar en efectivo, Nequi o Daviplata.";
+      default -> "El estado de tu pedido fue actualizado a <strong>" + nuevoEstado + "</strong>.";
+    };
 
     String html = buildEmailHtml(
         emoji + " Pedido #" + pedidoId + " — " + nuevoEstado,

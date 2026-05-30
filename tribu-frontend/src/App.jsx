@@ -35,6 +35,7 @@ import FacturasPage from './pages/FacturasPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import HelpWidget from './components/HelpWidget'
+import CookieConsent from './components/CookieConsent'
 import AdminSecurityPage from './pages/admin/AdminSecurityPage'
 import RecompensasPage from './pages/RecompensasPage'
 
@@ -106,6 +107,7 @@ function AppContent() {
       />
       <SocialProofToast />
       <StickyMobileCart />
+      <CookieConsent />
       <HelpWidget />
     </BrowserRouter>
   )

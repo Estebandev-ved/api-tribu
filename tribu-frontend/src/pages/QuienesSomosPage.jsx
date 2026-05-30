@@ -7,7 +7,7 @@ export default function QuienesSomosPage() {
             <div className="container" style={{ maxWidth: '800px', margin: '0 auto', padding: '0 1rem' }}>
 
                 <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-                    <img src="/logo-tribu.png" alt="Tribu" style={{ width: 250, height: 200, objectFit: 'contain', display: 'block', margin: '0 auto' }} />
+                    <img src="/logo-tribu.svg" alt="Tribu" style={{ width: 250, height: 200, objectFit: 'contain', display: 'block', margin: '0 auto' }} />
                     <h1 style={{ fontSize: 'clamp(2.5rem, 5vw, 3.5rem)', fontWeight: 900, marginBottom: '1rem' }}>
                         Nuestra <span style={{ color: 'var(--color-primary)' }}>Tribu</span>
                     </h1>

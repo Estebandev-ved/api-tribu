@@ -36,6 +36,7 @@ public class EfipayService {
     private HttpHeaders createHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Accept", "application/json");
         String token = apiKey != null ? apiKey : "";
         int len = token.length();
         String prefix = len > 12 ? token.substring(0, 12) : token;
@@ -103,6 +104,10 @@ public class EfipayService {
             }
 
             log.error("Efipay generate payment failed: {}", response.getBody());
+            return null;
+        } catch (org.springframework.web.client.HttpStatusCodeException e) {
+            log.error("Error generating efipay payment for ref {} (Status: {}): {} | Response Body: {}", 
+                    referenceId, e.getStatusCode(), e.getMessage(), e.getResponseBodyAsString(), e);
             return null;
         } catch (Exception e) {
             log.error("Error generating efipay payment for ref {}: {}", referenceId, e.getMessage(), e);

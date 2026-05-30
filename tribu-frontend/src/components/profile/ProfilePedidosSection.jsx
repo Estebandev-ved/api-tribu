@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Package, Search, ChevronDown, MapPin, Truck, CheckCircle, XCircle, Clock } from 'lucide-react'
+import OptimizedImage from '../OptimizedImage'
 import profileService from '../../services/profileService'
 import toast from 'react-hot-toast'
 
@@ -271,7 +272,9 @@ export default function ProfilePedidosSection() {
                   {detallePedido.productos?.map((prod, idx) => (
                     <div key={idx} style={{ display: 'flex', gap: '0.75rem', padding: '0.5rem 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                       {prod.imagen && (
-                        <img src={prod.imagen} alt={prod.nombre} style={{ width: 50, height: 50, borderRadius: '0.25rem', objectFit: 'cover' }} />
+                        <div style={{ width: 50, height: 50, borderRadius: '0.25rem', overflow: 'hidden', flexShrink: 0 }}>
+                          <OptimizedImage src={prod.imagen} alt={prod.nombre} />
+                        </div>
                       )}
                       <div>
                         <p style={{ color: 'var(--color-text)', margin: 0, fontSize: '0.9rem' }}>{prod.nombre}</p>

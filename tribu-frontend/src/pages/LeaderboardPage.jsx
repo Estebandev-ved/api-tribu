@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import api from '../api'
 import { useAuth } from '../context/AuthContext'
 import TierBadge from '../components/TierBadge'
+import AgeVerification from '../components/AgeVerification'
 
 export default function LeaderboardPage() {
   const [leaderboard, setLeaderboard] = useState([])
@@ -60,6 +61,7 @@ export default function LeaderboardPage() {
   }
 
   return (
+    <AgeVerification feature="leaderboard">
     <div style={{ maxWidth: '900px', margin: '0 auto', padding: '2rem 1rem' }}>
       <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
         <h1 style={{ fontSize: '2.5rem', fontWeight: 900, color: '#fff', marginBottom: '0.5rem' }}>🏆 Leaderboard</h1>
@@ -231,5 +233,6 @@ export default function LeaderboardPage() {
         </div>
       )}
     </div>
+    </AgeVerification>
   )
 }

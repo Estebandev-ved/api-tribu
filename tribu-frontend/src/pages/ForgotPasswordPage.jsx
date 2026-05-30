@@ -42,7 +42,7 @@ export default function ForgotPasswordPage() {
                             marginBottom: '1rem',
                         }}
                     >
-                        <img src="/logo-tribu.png" alt="Tribu" style={{ width: 44, height: 44, objectFit: 'contain' }} />
+                        <img src="/logo-tribu.svg" alt="Tribu" style={{ width: 44, height: 44, objectFit: 'contain' }} />
                     </motion.div>
                     <h1 style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: '1.8rem' }}>
                         ¿Olvidaste tu contraseña?

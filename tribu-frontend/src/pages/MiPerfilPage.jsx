@@ -8,7 +8,7 @@ import toast from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
 
 export default function MiPerfilPage() {
-    const { logout } = useAuth()
+    const { logout, updateUser } = useAuth()
     const navigate = useNavigate()
     const [perfil, setPerfil] = useState({ nombreCompleto: '', email: '', telefono: '', direccion: '' })
     const [pedidos, setPedidos] = useState([])
@@ -41,6 +41,7 @@ export default function MiPerfilPage() {
                 setPerfil(resPerfil.data)
                 setPedidos(resPedidos.data)
                 setIs2faOn(res2fa.data.is2faHabilitado)
+                updateUser({ tribuPassActiva: resPerfil.data.tribuPassActiva })
             })
             .catch(() => toast.error('Error al cargar la información del perfil'))
             .finally(() => setLoading(false))

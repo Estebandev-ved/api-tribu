@@ -12,8 +12,15 @@ export default function LoginPage() {
     const [step, setStep] = useState('login') // 'login' | '2fa'
     const [codigo2fa, setCodigo2fa] = useState('')
     const [emailFor2fa, setEmailFor2fa] = useState('')
-    const { loginUser } = useAuth()
+    const { loginUser, isAuthenticated, user } = useAuth()
     const navigate = useNavigate()
+
+    // Si ya está autenticado, redirigir fuera del login
+    useEffect(() => {
+        if (isAuthenticated && user) {
+            navigate(user.rol === 'ADMIN' ? '/admin' : '/', { replace: true })
+        }
+    }, [isAuthenticated, user, navigate])
 
     const handleGoogleLoginResponse = async (response) => {
         setLoading(true)
@@ -118,7 +125,7 @@ export default function LoginPage() {
                         {step === '2fa' ? (
                             <Shield size={30} color="#fff" />
                         ) : (
-                            <img src="/logo-tribu.png" alt="Tribu" style={{ width: 44, height: 44, objectFit: 'contain' }} />
+                            <img src="/logo-tribu.svg" alt="Tribu" style={{ width: 44, height: 44, objectFit: 'contain' }} />
                         )}
                     </motion.div>
                     <h1 style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: '1.8rem' }}>

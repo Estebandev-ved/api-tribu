@@ -449,6 +449,31 @@ export default function ReferidoArbolPage() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Términos del programa de referidos */}
+        <div style={{
+            marginTop: '3rem',
+            padding: '1.25rem',
+            background: 'rgba(255, 87, 34, 0.03)',
+            border: '1px solid rgba(255, 87, 34, 0.1)',
+            borderRadius: '16px'
+        }}>
+            <h4 style={{ color: '#FF5722', fontWeight: 700, fontSize: '0.9rem', margin: '0 0 0.75rem 0' }}>
+                Términos del Programa de Referidos
+            </h4>
+            <ul style={{
+                margin: 0, paddingLeft: '1.2rem', color: '#888',
+                fontSize: '0.8rem', lineHeight: 1.8
+            }}>
+                <li>Las comisiones se calculan sobre el valor neto de la compra del referido.</li>
+                <li>Comisiones por niveles: Nivel 1 (5%), Nivel 2 (2%), Nivel 3 (1%).</li>
+                <li>Las comisiones se acreditan como Puntos Tribu y están sujetas a un período de retención de 7 días.</li>
+                <li>No se pagan comisiones por autorreferidos, cuentas duplicadas o actividad fraudulenta.</li>
+                <li>Los Puntos Tribu no tienen valor comercial externo ni son convertibles a efectivo.</li>
+                <li>Tribu se reserva el derecho de modificar o cancelar el programa en cualquier momento.</li>
+                <li>Este programa cumple con la legislación colombiana aplicable (Ley 1480 de 2011).</li>
+            </ul>
+        </div>
       </div>
     </div>
   )

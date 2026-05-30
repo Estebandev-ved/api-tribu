@@ -10,13 +10,14 @@ api.interceptors.request.use(config => {
 })
 
 // Si el servidor responde 401 o 403, limpiar sesión y redirigir
-// EXCEPTO si es el propio endpoint de login (ahí queremos mostrar el error)
+// EXCEPTO si es un endpoint de /auth/ (login, register, google, etc.)
+// y EXCEPTO si ya estamos en /login (para evitar loop infinito)
 api.interceptors.response.use(
     res => res,
     err => {
-        const isLoginEndpoint = err.config?.url?.includes('/auth/login')
-        const isRegisterEndpoint = err.config?.url?.includes('/auth/register')
-        if ((err.response?.status === 401 || err.response?.status === 403) && !isLoginEndpoint && !isRegisterEndpoint) {
+        const isAuthEndpoint = err.config?.url?.includes('/auth/')
+        const alreadyOnLogin = window.location.pathname === '/login'
+        if ((err.response?.status === 401 || err.response?.status === 403) && !isAuthEndpoint && !alreadyOnLogin) {
             localStorage.removeItem('tribu_token')
             localStorage.removeItem('tribu_user')
             window.location.href = '/login'
@@ -96,6 +97,7 @@ export const cancelarTribuPass = () => api.post('/tribu-pass/cancelar')
 export const getTribuPassBeneficios = () => api.get('/tribu-pass/beneficios')
 export const getTribuPassHistorial = () => api.get('/tribu-pass/historial')
 export const actualizarRenovacionAutomatica = (enabled) => api.put('/tribu-pass/renovacion-automatica', { enabled })
+export const syncEfipayTribuPass = (status) => api.post('/tribu-pass/sync-efipay', { status })
 
 // ——— Cupones ———
 export const validarCupon = (codigo, totalCarrito) => api.post('/cupones/validar', { codigo, totalCarrito })
@@ -149,8 +151,12 @@ export const adminGetTransferencias = ({ q = '', estado = '', page = 0, size = 2
 
 // ——— Gamificación ———
 export const girarRuleta = () => api.post('/usuarios/ruleta/girar')
+export const girarRuletaConPuntos = () => api.post('/usuarios/ruleta/girar-con-puntos')
 export const getLogros = () => api.get('/usuarios/logros')
 export const getMiRacha = () => api.get('/usuarios/mi-racha')
+export const getAdminGirosRuleta = () => api.get('/usuarios/ruleta/admin/giros')
+export const getAdminRuletaConfig = () => api.get('/usuarios/ruleta/admin/config')
+export const saveAdminRuletaConfig = (payload) => api.post('/usuarios/ruleta/admin/config', payload)
 
 // ——— Recompensas ———
 export const getRecompensas = () => api.get('/recompensas')

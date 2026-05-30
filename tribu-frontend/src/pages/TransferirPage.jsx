@@ -590,14 +590,28 @@ export default function TransferirPage() {
                 </div>
 
                 <div style={{
-                  background: 'rgba(226,75,74,0.06)',
-                  border: '1px solid rgba(226,75,74,0.12)',
-                  borderRadius: 10,
-                  padding: '0.7rem 1rem',
-                  marginBottom: '1rem'
+                    background: 'rgba(226,75,74,0.06)',
+                    border: '1px solid rgba(226,75,74,0.12)',
+                    borderRadius: 10,
+                    padding: '0.7rem 1rem',
+                    marginBottom: '0.5rem'
                 }}>
                   <p style={{ margin: 0, fontSize: '0.8rem', color: '#E24B4A' }}>
                     Esta operacion no se puede deshacer una vez confirmada.
+                  </p>
+                </div>
+
+                <div style={{
+                    background: 'rgba(255,183,77,0.06)',
+                    border: '1px solid rgba(255,183,77,0.12)',
+                    borderRadius: 10,
+                    padding: '0.7rem 1rem',
+                    marginBottom: '1rem'
+                }}>
+                  <p style={{ margin: 0, fontSize: '0.78rem', color: '#FFB84D', lineHeight: 1.4 }}>
+                    Los Puntos Tribu no son dinero real. Las transferencias deben provenir de actividades lícitas.
+                    El uso de esta plataforma para lavado de activos o financiación del terrorismo será reportado
+                    a las autoridades competentes (UIAF, Fiscalía General de la Nación).
                   </p>
                 </div>
 

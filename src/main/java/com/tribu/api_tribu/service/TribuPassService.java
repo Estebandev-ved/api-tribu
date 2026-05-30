@@ -398,4 +398,46 @@ public class TribuPassService {
             """.formatted(pass.getFechaRenovacion());
         emailService.sendEmail(pass.getUsuario().getEmail(), subject, html);
     }
+
+    @Transactional
+    public TribuPass confirmarPagoEfipayLocal(Long usuarioId) {
+        TribuPass pass = passRepo.findByUsuarioId(usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException("No tienes un Tribu Pass registrado"));
+
+        if (pass.getEstado() == EstadoPass.PENDIENTE) {
+            pass.setEstado(EstadoPass.ACTIVA);
+            pass.setRenovacionAutomatica(true);
+            pass.setFechaInicio(LocalDateTime.now());
+            pass.setFechaRenovacion(LocalDateTime.now().plusDays(DIAS_RENOVACION));
+            pass = passRepo.save(pass);
+
+            Usuario usuario = pass.getUsuario();
+            usuario.setTribuPassActiva(true);
+            usuarioRepo.save(usuario);
+
+            // Registrar renovación exitosa
+            TribuPassRenovacion renovacion = TribuPassRenovacion.builder()
+                    .pass(pass)
+                    .fecha(LocalDateTime.now())
+                    .monto(pass.getPrecio())
+                    .estado(EstadoRenovacion.EXITOSA)
+                    .movimientoId(null)
+                    .build();
+            
+            if (pass.getHistorial() == null) {
+                pass.setHistorial(new java.util.ArrayList<>());
+            }
+            pass.getHistorial().add(renovacion);
+            pass = passRepo.save(pass);
+
+            wsService.notificarSaldoActualizado(
+                    usuario.getId(), 0,
+                    "TRIBU_PASS_ACTIVADO",
+                    "Tribu Pass activado via Efipay (Sincronizado)");
+            
+            enviarEmailBienvenida(usuario);
+            log.info("💎 Tribu Pass activado localmente mediante callback para usuario {}", usuario.getId());
+        }
+        return pass;
+    }
 }

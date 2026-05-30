@@ -161,11 +161,11 @@ export default function Navbar() {
                     <Link to="/" style={{ textDecoration: 'none', flexShrink: 0 }} onClick={() => setMenuOpen(false)}>
                         <motion.div whileHover={{ scale: 1.04 }} style={{ display: 'flex', alignItems: 'center' }}>
                             <img
-                                src="/logo-tribu.png"
+                                src="/logo-tribu.svg"
                                 alt="Tribu"
                                 style={{
-                                    width: 120,
-                                    height: 120,
+                                    width: 70,
+                                    height: 70,
                                     borderRadius: 10,
                                     objectFit: 'contain',
                                     background: 'transparent',

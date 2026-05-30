@@ -13,6 +13,13 @@ export function AuthProvider({ children }) {
         setUser(userData)
     }
 
+    const updateUser = (fieldsToUpdate) => {
+        if (!user) return
+        const updated = { ...user, ...fieldsToUpdate }
+        localStorage.setItem('tribu_user', JSON.stringify(updated))
+        setUser(updated)
+    }
+
     const logout = () => {
         localStorage.removeItem('tribu_token')
         localStorage.removeItem('tribu_user')
@@ -23,7 +30,7 @@ export function AuthProvider({ children }) {
     const isAuthenticated = !!user
 
     return (
-        <AuthContext.Provider value={{ user, loginUser, logout, isAdmin, isAuthenticated }}>
+        <AuthContext.Provider value={{ user, loginUser, logout, isAdmin, isAuthenticated, updateUser }}>
             {children}
         </AuthContext.Provider>
     )

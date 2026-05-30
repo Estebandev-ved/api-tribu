@@ -15,6 +15,10 @@ public class PedidoResponse {
     private LocalDateTime fechaPedido;
     private String estado;
     private BigDecimal total;
+    private String metodoPago;
+    private String transportadora;
+    private BigDecimal costoEnvio;
+    private String instruccionesEntrega;
     private String direccionEnvio;
     private String guiaRastreo;
     private String efipayCheckoutUrl;

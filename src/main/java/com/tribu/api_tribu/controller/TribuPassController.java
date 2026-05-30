@@ -117,4 +117,33 @@ public class TribuPassController {
             ));
         }
     }
+
+    @PostMapping("/sync-efipay")
+    public ResponseEntity<?> syncEfipay(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestBody Map<String, String> body) {
+        Usuario usuario = usuarioRepo.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+
+        String status = body.get("status");
+        if ("approved".equalsIgnoreCase(status) || "Aprobada".equalsIgnoreCase(status)) {
+            try {
+                TribuPass pass = passService.confirmarPagoEfipayLocal(usuario.getId());
+                return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "Pago sincronizado localmente con éxito",
+                    "estado", pass.getEstado()
+                ));
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "error", e.getMessage()
+                ));
+            }
+        }
+        return ResponseEntity.badRequest().body(Map.of(
+            "success", false,
+            "error", "El estado provisto no es 'approved'"
+        ));
+    }
 }

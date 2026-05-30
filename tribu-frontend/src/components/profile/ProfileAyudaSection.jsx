@@ -227,6 +227,9 @@ function ReportarProblemaModal({ onClose, onReportCreated }) {
 export default function ProfileAyudaSection() {
   const [busqueda, setBusqueda] = useState('')
   const [showReportModal, setShowReportModal] = useState(false)
+  const [showEliminarModal, setShowEliminarModal] = useState(false)
+  const [deleteConfirmText, setDeleteConfirmText] = useState('')
+  const [deleting, setDeleting] = useState(false)
   
   // ——— Estados del Chat de Soporte ———
   const [conversaciones, setConversaciones] = useState([])
@@ -868,23 +871,170 @@ export default function ProfileAyudaSection() {
         <span style={{ color: 'var(--color-text-faint)', fontSize: '0.8rem' }}>
           Versión de la app: 2.5.0 (Soporte IA integrado)
         </span>
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => setShowReportModal(true)}
-          style={{
-            background: 'transparent',
-            border: '1px solid #ff4d4d',
-            color: '#ff4d4d',
-            borderRadius: '0.5rem',
-            padding: '0.5rem 1rem',
-            cursor: 'pointer',
-            fontSize: '0.85rem'
-          }}
-        >
-          Reportar un problema
-        </motion.button>
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setShowEliminarModal(true)}
+            style={{
+              background: 'transparent',
+              border: '1px solid rgba(239,68,68,0.4)',
+              color: '#ef4444',
+              borderRadius: '0.5rem',
+              padding: '0.5rem 1rem',
+              cursor: 'pointer',
+              fontSize: '0.8rem',
+              fontWeight: 600
+            }}
+          >
+            Eliminar mi cuenta
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setShowReportModal(true)}
+            style={{
+              background: 'transparent',
+              border: '1px solid #ff4d4d',
+              color: '#ff4d4d',
+              borderRadius: '0.5rem',
+              padding: '0.5rem 1rem',
+              cursor: 'pointer',
+              fontSize: '0.85rem'
+            }}
+          >
+            Reportar un problema
+          </motion.button>
+        </div>
       </div>
+
+      {/* Modal de Eliminación de Cuenta */}
+      <AnimatePresence>
+        {showEliminarModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+              background: 'rgba(0,0,0,0.8)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              zIndex: 1000, padding: '1rem'
+            }}
+            onClick={() => setShowEliminarModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: '#1a1a1a', borderRadius: '1rem',
+                padding: '2rem', maxWidth: 440, width: '100%'
+              }}
+            >
+              <div style={{
+                width: 56, height: 56, borderRadius: '50%',
+                background: 'rgba(239,68,68,0.1)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto 1.25rem'
+              }}>
+                <AlertTriangle size={28} color="#ef4444" />
+              </div>
+
+              <h3 style={{ color: '#fff', textAlign: 'center', fontSize: '1.2rem', marginBottom: '0.75rem' }}>
+                Eliminar cuenta
+              </h3>
+
+              <div style={{
+                background: 'rgba(239,68,68,0.06)',
+                border: '1px solid rgba(239,68,68,0.15)',
+                borderRadius: '10px', padding: '0.8rem 1rem',
+                marginBottom: '1rem'
+              }}>
+                <p style={{ margin: 0, fontSize: '0.8rem', color: '#ef4444', lineHeight: 1.5 }}>
+                  Esta acción es irreversible. Al eliminar tu cuenta:
+                </p>
+                <ul style={{ margin: '0.5rem 0 0', paddingLeft: '1.2rem', fontSize: '0.78rem', color: '#ef4444', lineHeight: 1.6 }}>
+                  <li>Perderás todos tus Puntos Tribu acumulados</li>
+                  <li>No podrás acceder a tus pedidos ni facturas anteriores</li>
+                  <li>Tus datos personales serán eliminados de nuestra plataforma</li>
+                  <li>Las suscripciones activas (Tribu Pass) serán canceladas</li>
+                  <li>No podrás recuperar tu cuenta ni tus datos</li>
+                </ul>
+              </div>
+
+              <p style={{ color: '#aaa', fontSize: '0.85rem', marginBottom: '1rem', textAlign: 'center' }}>
+                Escribe <strong style={{ color: '#ef4444' }}>ELIMINAR</strong> para confirmar
+              </p>
+
+              <input
+                type="text"
+                placeholder="ELIMINAR"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                style={{
+                  width: '100%',
+                  textAlign: 'center',
+                  textTransform: 'uppercase',
+                  fontWeight: 700,
+                  fontSize: '1.1rem',
+                  letterSpacing: '4px',
+                  background: 'rgba(30,30,30,0.8)',
+                  border: `1px solid ${deleteConfirmText === 'ELIMINAR' ? 'rgba(239,68,68,0.5)' : 'rgba(255,255,255,0.1)'}`,
+                  borderRadius: '0.5rem',
+                  padding: '0.875rem 1rem',
+                  color: '#fff',
+                  outline: 'none',
+                  marginBottom: '1.25rem'
+                }}
+              />
+
+              <div style={{ display: 'flex', gap: '0.75rem' }}>
+                <button
+                  onClick={() => { setShowEliminarModal(false); setDeleteConfirmText(''); setDeleting(false) }}
+                  style={{
+                    flex: 1, padding: '0.75rem',
+                    background: 'transparent', border: '1px solid #333',
+                    color: '#888', borderRadius: '0.5rem',
+                    cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem'
+                  }}
+                >
+                  Cancelar
+                </button>
+                <motion.button
+                  whileHover={{ scale: deleteConfirmText === 'ELIMINAR' ? 1.02 : 1 }}
+                  whileTap={{ scale: deleteConfirmText === 'ELIMINAR' ? 0.98 : 1 }}
+                  disabled={deleteConfirmText !== 'ELIMINAR' || deleting}
+                  onClick={async () => {
+                    setDeleting(true)
+                    try {
+                      await profileService.eliminarCuenta({ confirmacion: true })
+                      toast.success('Cuenta eliminada. Serás redirigido.')
+                      localStorage.clear()
+                      setTimeout(() => window.location.href = '/', 1500)
+                    } catch (err) {
+                      toast.error(err.response?.data?.message || 'Error al eliminar la cuenta. Contacta a soporte.')
+                    } finally {
+                      setDeleting(false)
+                    }
+                  }}
+                  style={{
+                    flex: 1, padding: '0.75rem',
+                    background: deleteConfirmText === 'ELIMINAR' ? '#ef4444' : '#333',
+                    color: deleteConfirmText === 'ELIMINAR' ? '#fff' : '#666',
+                    border: 'none', borderRadius: '0.5rem',
+                    cursor: deleteConfirmText === 'ELIMINAR' ? 'pointer' : 'not-allowed',
+                    fontWeight: 700, fontSize: '0.9rem',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
+                  }}
+                >
+                  {deleting ? 'Eliminando...' : 'Eliminar cuenta'}
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {showReportModal && (

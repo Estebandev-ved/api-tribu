@@ -3,6 +3,7 @@ import { ShoppingCart, Flame, Users, TrendingUp, Clock } from 'lucide-react'
 import { useCart } from '../context/CartContext'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import OptimizedImage from './OptimizedImage'
 
 const formatCOP = (n) => new Intl.NumberFormat('es-CO', {
     style: 'currency', currency: 'COP', maximumFractionDigits: 0
@@ -70,10 +71,9 @@ export default function ProductoCard({ producto, index = 0 }) {
             <div style={{ position: 'relative', aspectRatio: '1/1', background: 'var(--color-surface-2)', overflow: 'hidden' }}>
                 {producto.imagenUrl ? (
                     <Link to={`/producto/${producto.id}`} style={{ display: 'block', width: '100%', height: '100%' }}>
-                        <img src={producto.imagenUrl} alt={producto.nombre}
-                            style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s ease' }}
-                            onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.07)'}
-                            onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                        <OptimizedImage src={producto.imagenUrl} alt={producto.nombre}
+                            onMouseEnter={e => e.currentTarget.querySelector('img').style.transform = 'scale(1.07)'}
+                            onMouseLeave={e => e.currentTarget.querySelector('img').style.transform = 'scale(1)'}
                         />
                     </Link>
                 ) : (

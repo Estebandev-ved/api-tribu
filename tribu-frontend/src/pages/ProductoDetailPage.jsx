@@ -4,6 +4,7 @@ import { getProductoById } from '../api'
 import { useCart } from '../context/CartContext'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ShoppingCart, ArrowLeft, ShieldCheck, Truck, RotateCcw } from 'lucide-react'
+import OptimizedImage from '../components/OptimizedImage'
 import toast from 'react-hot-toast'
 
 export default function ProductoDetailPage() {
@@ -140,11 +141,13 @@ export default function ProductoDetailPage() {
                                 cursor: 'crosshair',
                             }}
                         >
-                            <img
-                                src={producto.imagenUrl || 'https://via.placeholder.com/600'}
-                                alt={producto.nombre}
-                                style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: isZooming ? 0 : 1, transition: 'opacity 0.3s' }}
-                            />
+                            <div style={{ width: '100%', height: '100%', opacity: isZooming ? 0 : 1, transition: 'opacity 0.3s' }}>
+                                <OptimizedImage
+                                    src={producto.imagenUrl}
+                                    alt={producto.nombre}
+                                    fallback="📦"
+                                />
+                            </div>
 
                             {/* Capa de Zoom */}
                             {isZooming && (
@@ -306,7 +309,7 @@ export default function ProductoDetailPage() {
                     >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0 }}>
                             <div style={{ width: 44, height: 44, borderRadius: 8, overflow: 'hidden', background: 'var(--color-surface-2)', flexShrink: 0 }}>
-                                <img src={producto.imagenUrl} alt={producto.nombre} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                <OptimizedImage src={producto.imagenUrl} alt={producto.nombre} fallback="📦" />
                             </div>
                             <div style={{ minWidth: 0 }}>
                                 <p style={{ fontWeight: 700, fontSize: '0.85rem', color: '#fff', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

@@ -48,7 +48,16 @@ public class Pedido {
     private String guiaRastreo;
 
     @Column(name = "metodo_pago")
-    private String metodoPago; // TRIBU_CARD, EFIPAY, etc.
+    private String metodoPago;
+
+    @Column(name = "transportadora")
+    private String transportadora;
+
+    @Column(name = "costo_envio")
+    private BigDecimal costoEnvio;
+
+    @Column(name = "instrucciones_entrega", columnDefinition = "TEXT")
+    private String instruccionesEntrega;
 
     @Column(name = "efipay_payment_id")
     private String efipayPaymentId;
