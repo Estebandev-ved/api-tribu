@@ -37,9 +37,11 @@ public class EfipayService {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         String token = apiKey != null ? apiKey : "";
-        log.info("Efipay auth - using key suffix: ...{} (commerce_id={}, office={})",
-                token.length() > 6 ? token.substring(token.length() - 6) : token,
-                commerceId, officeId);
+        int len = token.length();
+        String prefix = len > 12 ? token.substring(0, 12) : token;
+        String suffix = len > 6 ? token.substring(len - 6) : token;
+        log.info("Efipay auth - len={}, prefix='{}', suffix='{}' (commerce_id={}, office={})",
+                len, prefix, suffix, commerceId, officeId);
         headers.set("Authorization", "Bearer " + token);
         return headers;
     }
