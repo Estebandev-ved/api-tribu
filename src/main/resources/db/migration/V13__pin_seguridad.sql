@@ -1,6 +1,20 @@
 -- =============================================
 -- V13: PIN de seguridad para transferencias
+-- NOTA: Usa procedimiento para evitar error si columna ya existe
 -- =============================================
 
-ALTER TABLE usuarios
-ADD COLUMN pin_seguridad_hash VARCHAR(128) DEFAULT NULL AFTER reset_password_expires;
+DROP PROCEDURE IF EXISTS add_col_v13;
+CREATE PROCEDURE add_col_v13(IN p_table VARCHAR(64), IN p_column VARCHAR(64), IN p_definition TEXT)
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = p_table AND COLUMN_NAME = p_column
+    ) THEN
+        SET @s = CONCAT('ALTER TABLE `', p_table, '` ADD COLUMN `', p_column, '` ', p_definition);
+        PREPARE st FROM @s; EXECUTE st; DEALLOCATE PREPARE st;
+    END IF;
+END;
+
+CALL add_col_v13('usuarios', 'pin_seguridad_hash', 'VARCHAR(128) DEFAULT NULL');
+
+DROP PROCEDURE IF EXISTS add_col_v13;

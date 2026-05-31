@@ -1,5 +1,7 @@
 -- =============================================
 -- V7: MÓDULO TRIBU PASS (Suscripción mensual)
+-- NOTA: Se reemplaza SET @sql/PREPARE suelto por procedimientos almacenados
+-- para compatibilidad con MySQL 8.x en Aiven/DigitalOcean.
 -- =============================================
 
 -- Tabla principal de suscripciones Tribu Pass
@@ -28,24 +30,20 @@ CREATE TABLE IF NOT EXISTS tribu_pass_renovaciones (
     FOREIGN KEY (pass_id) REFERENCES tribu_pass(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Agregar columna tribu_pass_activa a usuarios
-SET @column_exists = (
-    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
-    WHERE TABLE_SCHEMA = DATABASE()
-    AND TABLE_NAME = 'usuarios'
-    AND COLUMN_NAME = 'tribu_pass_activa'
-);
-SET @sql = IF(@column_exists = 0,
-    'ALTER TABLE usuarios ADD COLUMN tribu_pass_activa BOOLEAN DEFAULT false',
-    'SELECT 1');
-PREPARE stmt FROM @sql;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
+-- Agregar columnas de forma segura usando procedimiento
+DROP PROCEDURE IF EXISTS add_col_v7;
+CREATE PROCEDURE add_col_v7(IN p_table VARCHAR(64), IN p_column VARCHAR(64), IN p_definition TEXT)
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = p_table AND COLUMN_NAME = p_column
+    ) THEN
+        SET @s = CONCAT('ALTER TABLE `', p_table, '` ADD COLUMN `', p_column, '` ', p_definition);
+        PREPARE st FROM @s; EXECUTE st; DEALLOCATE PREPARE st;
+    END IF;
+END;
 
--- Agregar tipo de movimiento para pago de Tribu Pass
-SET @tipo_exists = (
-    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
-    WHERE TABLE_SCHEMA = DATABASE()
-    AND TABLE_NAME = 'movimientos_saldo'
-    AND COLUMN_NAME = 'tipo'
-);
+CALL add_col_v7('usuarios',          'tribu_pass_activa', 'BOOLEAN DEFAULT false');
+CALL add_col_v7('movimientos_saldo', 'tipo',              'VARCHAR(30)');
+
+DROP PROCEDURE IF EXISTS add_col_v7;

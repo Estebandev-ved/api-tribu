@@ -1,14 +1,28 @@
 -- =============================================
 -- V6: MÓDULO GAMIFICACIÓN
 -- Streak (Racha), Leaderboard, Árbol de Referidos
+-- NOTA: ADD COLUMN IF NOT EXISTS es sintaxis MariaDB, NO MySQL 8.
+-- Se usa procedimiento almacenado para compatibilidad con MySQL 8.x en Aiven.
 -- =============================================
 
--- Campos de streak en usuarios
-ALTER TABLE usuarios
-    ADD COLUMN IF NOT EXISTS racha_actual INT DEFAULT 0,
-    ADD COLUMN IF NOT EXISTS racha_maxima INT DEFAULT 0,
-    ADD COLUMN IF NOT EXISTS ultima_actividad_fecha DATE,
-    ADD COLUMN IF NOT EXISTS codigo_referido_usado VARCHAR(20);
+DROP PROCEDURE IF EXISTS add_col_v6;
+CREATE PROCEDURE add_col_v6(IN p_table VARCHAR(64), IN p_column VARCHAR(64), IN p_definition TEXT)
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = p_table AND COLUMN_NAME = p_column
+    ) THEN
+        SET @s = CONCAT('ALTER TABLE `', p_table, '` ADD COLUMN `', p_column, '` ', p_definition);
+        PREPARE st FROM @s; EXECUTE st; DEALLOCATE PREPARE st;
+    END IF;
+END;
+
+CALL add_col_v6('usuarios', 'racha_actual',           'INT DEFAULT 0');
+CALL add_col_v6('usuarios', 'racha_maxima',           'INT DEFAULT 0');
+CALL add_col_v6('usuarios', 'ultima_actividad_fecha', 'DATE');
+CALL add_col_v6('usuarios', 'codigo_referido_usado',  'VARCHAR(20)');
+
+DROP PROCEDURE IF EXISTS add_col_v6;
 
 -- Tabla de snapshots del leaderboard mensual
 CREATE TABLE IF NOT EXISTS leaderboard_snapshots (

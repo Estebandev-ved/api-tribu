@@ -1,7 +1,21 @@
 -- =============================================
 -- V10: DATOS FISCALES DE USUARIO
+-- NOTA: Usa procedimiento para evitar error si columna ya existe
 -- =============================================
 
-ALTER TABLE usuarios
-    ADD COLUMN nit_fiscal VARCHAR(20),
-    ADD COLUMN razon_social_fiscal VARCHAR(200);
+DROP PROCEDURE IF EXISTS add_col_v10;
+CREATE PROCEDURE add_col_v10(IN p_table VARCHAR(64), IN p_column VARCHAR(64), IN p_definition TEXT)
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = p_table AND COLUMN_NAME = p_column
+    ) THEN
+        SET @s = CONCAT('ALTER TABLE `', p_table, '` ADD COLUMN `', p_column, '` ', p_definition);
+        PREPARE st FROM @s; EXECUTE st; DEALLOCATE PREPARE st;
+    END IF;
+END;
+
+CALL add_col_v10('usuarios', 'nit_fiscal',           'VARCHAR(20)');
+CALL add_col_v10('usuarios', 'razon_social_fiscal',  'VARCHAR(200)');
+
+DROP PROCEDURE IF EXISTS add_col_v10;
