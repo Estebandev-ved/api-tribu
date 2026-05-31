@@ -70,20 +70,50 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /**
+     * Configuración global de CORS (Cross-Origin Resource Sharing).
+     *
+     * PROPÓSITO:
+     *   Permitir de forma segura que el frontend consuma los endpoints de la API (incluidos los WebSockets/SockJS).
+     *
+     * MEDIDAS DE SEGURIDAD IMPLEMENTADAS:
+     *   1. Orígenes Permitidos Específicos: Se listan explícitamente los dominios de desarrollo local y los dominios
+     *      de producción oficiales (tribucol.shop y www.tribucol.shop). Esto evita el uso de comodines de origen ('*')
+     *      cuando las credenciales están habilitadas, reduciendo el riesgo de ataques CSRF e inyección de datos sensibles.
+     *   2. Soporte de Credenciales: Se permite el uso de cookies y cabeceras de autorización seguras para la sesión JWT.
+     *   3. Métodos HTTP Restringidos: Solo se permiten los verbos HTTP estándar necesarios (GET, POST, PUT, DELETE, PATCH, OPTIONS).
+     *   4. Resiliencia ante Configuración Incompleta: Si la variable de entorno 'CORS_ALLOWED_ORIGINS' está presente pero
+     *      no contiene los dominios oficiales de producción, el backend los agrega automáticamente para evitar caídas de servicio.
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         String allowedOriginsStr = System.getenv("CORS_ALLOWED_ORIGINS");
-        List<String> allowedOrigins = allowedOriginsStr != null && !allowedOriginsStr.isEmpty()
-                ? List.of(allowedOriginsStr.split(","))
-                : List.of(
+        
+        List<String> defaultOrigins = List.of(
                 "http://localhost:3000",
                 "http://localhost:3001",
                 "http://localhost:5173",
                 "http://127.0.0.1:3000",
                 "http://127.0.0.1:3001",
-                "http://127.0.0.1:5173"
-          );
+                "http://127.0.0.1:5173",
+                "https://www.tribucol.shop",
+                "https://tribucol.shop"
+        );
+
+        List<String> allowedOrigins = new java.util.ArrayList<>();
+        if (allowedOriginsStr != null && !allowedOriginsStr.isEmpty()) {
+            allowedOrigins.addAll(List.of(allowedOriginsStr.split(",")));
+            // Aseguramos que los dominios de producción siempre estén incluidos para evitar bloqueos
+            if (!allowedOrigins.contains("https://www.tribucol.shop")) {
+                allowedOrigins.add("https://www.tribucol.shop");
+            }
+            if (!allowedOrigins.contains("https://tribucol.shop")) {
+                allowedOrigins.add("https://tribucol.shop");
+            }
+        } else {
+            allowedOrigins.addAll(defaultOrigins);
+        }
 
         config.setAllowedOrigins(allowedOrigins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
@@ -93,6 +123,7 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", config);
         return source;
     }
+
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
