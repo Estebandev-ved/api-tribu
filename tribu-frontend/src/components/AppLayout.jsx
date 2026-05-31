@@ -42,7 +42,7 @@ export default function AppLayout({ children }) {
       margin: '0 auto', 
       minHeight: '100vh',
       paddingBottom: 80,
-      background: 'var(--color-background, #0a0a0a)'
+      background: 'var(--color-bg)'
     }}>
       {children}
       
@@ -56,8 +56,10 @@ export default function AppLayout({ children }) {
           right: 0,
           maxWidth: 480,
           margin: '0 auto',
-          background: 'var(--color-background-primary, #1a1a1a)',
-          borderTop: '0.5px solid var(--color-border-tertiary, #333)',
+          background: 'var(--color-nav-bg)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          borderTop: '1px solid var(--color-nav-border)',
           display: 'flex',
           justifyContent: 'space-around',
           padding: '0.5rem 0',
@@ -81,7 +83,7 @@ export default function AppLayout({ children }) {
                   flexDirection: 'column',
                   alignItems: 'center',
                   padding: '0.5rem 0.75rem',
-                  color: isActive ? tierColor.primary : '#666',
+                  color: isActive ? tierColor.primary : 'var(--color-nav-text-inactive)',
                   transition: 'color 0.2s'
                 }}
               >

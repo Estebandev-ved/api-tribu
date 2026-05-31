@@ -55,7 +55,7 @@ public class EmailService {
         "¡Pedido confirmado, " + nombreCliente + "!",
         "Tu pedido <strong>#" + pedidoId + "</strong> fue recibido exitosamente.",
         "💰 Total: <strong>" + total + "</strong>",
-        "Estamos preparando tu pedido desde Mocoa, Putumayo. Te avisaremos cuando sea despachado.",
+        "Estamos preparando tu pedido desde nuestra bodega principal. Debido a la alta demanda, el tiempo de entrega estimado es de 4 a 6 días hábiles. Te avisaremos cuando sea despachado con tu número de guía.",
         "Ver mis pedidos",
         "http://localhost:3000/mis-pedidos");
     sendEmail(resendFromPedidos, toEmail, subject, html);
@@ -169,7 +169,7 @@ public class EmailService {
             </div>
             <!-- Footer -->
             <p style="text-align:center;color:#555555;font-size:12px;line-height:1.5;">
-              © 2026 Tribu E-commerce · Mocoa, Putumayo, Colombia<br>
+              © 2026 Tribu E-commerce · Colombia<br>
               <a href="http://localhost:3000" style="color:#FF5722;text-decoration:none;font-weight:600;">tribucol.shop</a>
             </p>
           </div>
@@ -222,7 +222,7 @@ public class EmailService {
             </div>
             <!-- Footer -->
             <p style="text-align:center;color:#555555;font-size:12px;line-height:1.5;">
-              © 2026 Tribu E-commerce · Mocoa, Putumayo, Colombia<br>
+              © 2026 Tribu E-commerce · Colombia<br>
               <a href="http://localhost:3000" style="color:#FF5722;text-decoration:none;font-weight:600;">tribucol.shop</a>
             </p>
           </div>
@@ -248,7 +248,7 @@ public class EmailService {
 
     String instruccion = switch (nuevoEstado) {
       case "APROBADA" ->
-        "Por favor, empaca el producto en su caja original y envíalo a nuestra bodega principal en Mocoa. Los costos de envío serán reembolsados si aplica la garantía.";
+        "Por favor, empaca el producto en su caja original y envíalo a nuestra bodega principal. Los costos de envío serán reembolsados si aplica la garantía.";
       case "RECHAZADA" ->
         "Lamentablemente tu solicitud no cumple con nuestras políticas de garantía (ej. daño por mal uso). Revisa los detalles en nuestras políticas web.";
       case "COMPLETADA" ->
@@ -304,7 +304,7 @@ public class EmailService {
             </div>
             <!-- Footer -->
             <p style="text-align:center;color:#555555;font-size:12px;line-height:1.5;">
-              © 2026 Tribu E-commerce · Mocoa, Putumayo, Colombia<br>
+              © 2026 Tribu E-commerce · Colombia<br>
               <a href="http://localhost:3000" style="color:#FF5722;text-decoration:none;font-weight:600;">tribucol.shop</a>
             </p>
           </div>
@@ -434,7 +434,7 @@ public class EmailService {
             </div>
             <!-- Footer -->
             <p style="text-align:center;color:#555555;font-size:12px;line-height:1.5;">
-              © 2026 Tribu E-commerce · Mocoa, Putumayo, Colombia<br>
+              © 2026 Tribu E-commerce · Colombia<br>
               <span style="color:#555555;">Notificaciones automáticas de seguridad e inicio de sesión</span>
             </p>
           </div>
@@ -514,7 +514,7 @@ public class EmailService {
             </div>
             <!-- Footer -->
             <p style="text-align:center;color:#555555;font-size:12px;line-height:1.5;">
-              © 2026 Tribu E-commerce · Mocoa, Putumayo, Colombia<br>
+              © 2026 Tribu E-commerce · Colombia<br>
               <a href="http://localhost:3000" style="color:#FF5722;text-decoration:none;font-weight:600;">tribucol.shop</a>
             </p>
           </div>
@@ -557,7 +557,7 @@ public class EmailService {
             </div>
             <!-- Footer -->
             <p style="text-align:center;color:#555555;font-size:12px;line-height:1.5;">
-              © 2026 Tribu E-commerce · Mocoa, Putumayo, Colombia<br>
+              © 2026 Tribu E-commerce · Colombia<br>
               <a href="http://localhost:3000" style="color:#FF5722;text-decoration:none;font-weight:600;">tribucol.shop</a>
             </p>
           </div>

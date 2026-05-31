@@ -537,6 +537,23 @@ export default function CheckoutPage() {
                 </div>
             </div>
 
+            {/* Banner de aviso de demora por alta demanda */}
+            <div style={{
+                background: 'rgba(255, 87, 34, 0.08)',
+                border: '1px solid rgba(255, 87, 34, 0.25)',
+                borderRadius: 'var(--radius-lg)',
+                padding: '1rem 1.5rem',
+                marginBottom: '2rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '1rem',
+            }}>
+                <Truck size={24} style={{ color: 'var(--color-primary)', flexShrink: 0 }} />
+                <div style={{ fontSize: '0.88rem', lineHeight: 1.5, color: 'var(--color-text)' }}>
+                    🚚 <strong>AVISO DE ENTREGA:</strong> Debido a la alta demanda de nuestros productos virales, el tiempo estimado de entrega a nivel nacional es de <strong>4 a 6 días hábiles</strong>. ¡Tu pedido está 100% garantizado!
+                </div>
+            </div>
+
             <div style={{ 
                 display: 'grid', 
                 gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 380px), 1fr))', 

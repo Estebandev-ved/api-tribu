@@ -40,13 +40,27 @@ const formatCOP = (n) => new Intl.NumberFormat('es-CO', { style: 'currency', cur
 // ─── Modal de Producto ─────────────────────────────────────────────────────────
 const PRODUCTO_VACIO = { nombre: '', descripcion: '', precio: '', stock: '', esViral: false, categoriaId: '', imagenUrl: '', imagenesAdicionales: '', costoProveedor: '', costoEmpaqueEnvio: '', comisionPasarelaFija: '' }
 
+// Convierte string CSV → array de strings limpiadas
+const csvToArr = (csv) => (csv || '').split(',').map(s => s.trim()).filter(Boolean)
+// Convierte array → CSV para enviar al backend
+const arrToCsv = (arr) => arr.filter(s => s.trim()).join(',')
+
 function ModalProducto({ prod, categorias, onClose, onSave }) {
+    // Inicializar imágenes adicionales como array para que cada una tenga su propio input
     const [form, setForm] = useState(prod || PRODUCTO_VACIO)
+    const [extraImgs, setExtraImgs] = useState(() => {
+        const arr = csvToArr(prod?.imagenesAdicionales || '')
+        return arr.length > 0 ? arr : ['']
+    })
     const [loading, setLoading] = useState(false)
 
     const set = (k) => (e) => setForm(f => ({
         ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value
     }))
+
+    const setExtraImg = (idx, val) => setExtraImgs(prev => prev.map((v, i) => i === idx ? val : v))
+    const addExtraImg = () => setExtraImgs(prev => prev.length < 5 ? [...prev, ''] : prev)
+    const removeExtraImg = (idx) => setExtraImgs(prev => prev.length > 1 ? prev.filter((_, i) => i !== idx) : [''])
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -59,7 +73,9 @@ function ModalProducto({ prod, categorias, onClose, onSave }) {
                 categoriaId: Number(form.categoriaId),
                 costoProveedor: Number(form.costoProveedor || 0),
                 costoEmpaqueEnvio: Number(form.costoEmpaqueEnvio || 0),
-                comisionPasarelaFija: Number(form.comisionPasarelaFija || 0)
+                comisionPasarelaFija: Number(form.comisionPasarelaFija || 0),
+                // Serializar array de imágenes a CSV para el backend
+                imagenesAdicionales: arrToCsv(extraImgs)
             }
             if (prod?.id) {
                 await actualizarProducto(prod.id, payload)
@@ -158,22 +174,37 @@ function ModalProducto({ prod, categorias, onClose, onSave }) {
                         )}
                     </div>
                     <div className="form-group">
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <Image size={13} /> Imágenes adicionales (Separadas por comas)
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                            <Image size={13} /> Imágenes adicionales (máx. 5 perspectivas)
                         </label>
-                        <input className="input" value={form.imagenesAdicionales || ''} onChange={set('imagenesAdicionales')} placeholder="https://img1.jpg, https://img2.jpg" />
-                        {form.imagenesAdicionales && (
-                            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
-                                {form.imagenesAdicionales.split(',').map((url, idx) => {
-                                    const cleanUrl = url.trim();
-                                    return cleanUrl && (
-                                        <div key={idx} style={{ borderRadius: '6px', overflow: 'hidden', height: 50, width: 50, background: 'var(--color-surface-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--color-border)' }}>
-                                            <img src={cleanUrl} alt={`preview-${idx}`} style={{ height: '100%', width: '100%', objectFit: 'cover' }}
-                                                onError={e => e.target.style.display = 'none'} />
-                                        </div>
-                                    );
-                                })}
+                        {extraImgs.map((url, idx) => (
+                            <div key={idx} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.5rem' }}>
+                                {/* Vista previa minuatura en tiempo real */}
+                                <div style={{ width: 44, height: 44, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--color-border)', background: 'var(--color-surface-2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>
+                                    {url.trim()
+                                        ? <img src={url.trim()} alt={`img-${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='block' }} />
+                                        : null}
+                                    <span style={{ display: url.trim() ? 'none' : 'block' }}>🖼️</span>
+                                </div>
+                                <input
+                                    className="input"
+                                    value={url}
+                                    onChange={e => setExtraImg(idx, e.target.value)}
+                                    placeholder={`URL foto ${idx + 1} — https://...`}
+                                    style={{ flex: 1 }}
+                                />
+                                {/* Botón quitar */}
+                                <button type="button" onClick={() => removeExtraImg(idx)}
+                                    style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, padding: '0 10px', height: 38, cursor: 'pointer', color: '#ef4444', fontWeight: 700, fontSize: '1rem', flexShrink: 0 }}>
+                                    −
+                                </button>
                             </div>
+                        ))}
+                        {extraImgs.length < 5 && (
+                            <button type="button" onClick={addExtraImg}
+                                style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(255,87,34,0.08)', border: '1px dashed var(--color-primary)', borderRadius: 8, padding: '7px 14px', cursor: 'pointer', color: 'var(--color-primary)', fontWeight: 700, fontSize: '0.85rem', marginTop: '0.25rem' }}>
+                                <Plus size={14} /> Agregar otra foto
+                            </button>
                         )}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
@@ -835,7 +866,7 @@ export default function AdminPage() {
             style={{
                 padding: '2.5rem 1.5rem 6rem',
                 minHeight: '100vh',
-                background: 'radial-gradient(circle at 20% -10%, #222 0%, #0f0f0f 45%, #0a0a0a 100%)'
+                background: 'var(--color-admin-bg)'
             }}
         >
             {/* Header */}
@@ -848,10 +879,10 @@ export default function AdminPage() {
                     <p style={{ color: '#8b8b8b', fontSize: '0.8rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Administrador</p>
                     <h1 className="page-title" style={{ marginBottom: '0.4rem' }}>Centro de Control</h1>
                     <p style={{ color: 'var(--color-text-muted)', marginBottom: '1.5rem' }}>
-                        Tribu · Medellín, Antioquia — Estado general del negocio en tiempo real
+                        Tribu · Bodega Central — Estado general del negocio en tiempo real
                     </p>
                 </div>
-                <div style={{ display: 'flex', gap: '0.6rem', background: 'rgba(255,255,255,0.04)', borderRadius: '999px', padding: '0.35rem' }}>
+                <div style={{ display: 'flex', gap: '0.6rem', background: 'var(--color-card-bg-soft)', borderRadius: '999px', padding: '0.35rem', border: '1px solid var(--color-card-border)' }}>
                     {[
                         { id: 'overview', label: 'Resumen' },
                         { id: 'operaciones', label: 'Operaciones' }
@@ -862,7 +893,7 @@ export default function AdminPage() {
                             style={{
                                 border: 'none',
                                 background: viewMode === mode.id ? 'linear-gradient(135deg, #f97316, #f59e0b)' : 'transparent',
-                                color: viewMode === mode.id ? '#0a0a0a' : '#aaa',
+                                color: viewMode === mode.id ? '#0a0a0a' : 'var(--color-text-muted)',
                                 padding: '0.45rem 0.9rem',
                                 borderRadius: '999px',
                                 fontWeight: 700,
@@ -882,23 +913,23 @@ export default function AdminPage() {
                 className="admin-stats-grid"
                 style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '2rem' }}
             >
-                {[
-                    { label: 'Ventas', value: hayVentas ? formatCOP(totalVentas || 0) : 'Sin datos', color: '#22c55e', Icon: TrendingUp, hint: hayVentas ? 'Tendencia por definir' : 'Aun no hay ventas' },
+                    {[
+                        { label: 'Ventas', value: hayVentas ? formatCOP(totalVentas || 0) : 'Sin datos', color: '#22c55e', Icon: TrendingUp, hint: hayVentas ? 'Tendencia por definir' : 'Aun no hay ventas' },
                     { label: 'Pedidos', value: pedidos.length, color: '#3b82f6', Icon: Package, hint: `${pedidosPendientes} pendientes` },
                     { label: 'Stock crítico', value: stockBajo.length, color: '#ef4444', Icon: AlertTriangle, link: '/admin/inventario', hint: 'Ver inventario completo' },
                     { label: 'Usuarios', value: usuarios.length, color: '#a855f7', Icon: Users, hint: 'Clientes activos' },
                     { label: 'Devoluciones', value: devolucionesPendientes, color: '#f97316', Icon: RotateCcw, hint: 'Pendientes' },
                     { label: 'Campañas', value: 'Ver', color: '#facc15', Icon: Zap, link: '/admin/campanas', hint: 'Marketing' },
-                ].map((s, i) => (
-                    <motion.div key={s.label} className="card" whileHover={{ scale: 1.03, borderColor: s.color + '40' }}
-                        onClick={() => s.link && (window.location.href = s.link)}
-                        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
-                        style={{ textAlign: 'left', cursor: s.link ? 'pointer' : 'default', position: 'relative', overflow: 'hidden' }}>
+                    ].map((s, i) => (
+                        <motion.div key={s.label} className="card" whileHover={{ scale: 1.03, borderColor: s.color + '40' }}
+                            onClick={() => s.link && (window.location.href = s.link)}
+                            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
+                            style={{ textAlign: 'left', cursor: s.link ? 'pointer' : 'default', position: 'relative', overflow: 'hidden' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
                             <div>
                                 <p style={{ color: 'var(--color-text-muted)', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{s.label}</p>
                                 <p style={{ fontFamily: 'Sora, sans-serif', fontWeight: 800, fontSize: '1.6rem', color: s.color }}>{s.value}</p>
-                                <p style={{ color: '#8b8b8b', fontSize: '0.74rem' }}>{s.hint}</p>
+                                <p style={{ color: 'var(--color-text-faint)', fontSize: '0.74rem' }}>{s.hint}</p>
                             </div>
                             <div style={{ width: 44, height: 44, borderRadius: 12, background: `${s.color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <s.Icon size={22} color={s.color} strokeWidth={1.8} />
@@ -914,7 +945,7 @@ export default function AdminPage() {
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
                             <div>
                                 <h3 style={{ fontWeight: 800, marginBottom: '0.25rem' }}>Flujo de pedidos</h3>
-                                <p style={{ color: '#8b8b8b', fontSize: '0.85rem' }}>Estados actuales del pipeline</p>
+                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>Estados actuales del pipeline</p>
                             </div>
                             <BarChart3 size={20} color="#f97316" />
                         </div>
@@ -924,7 +955,7 @@ export default function AdminPage() {
                                     {orderFlow.map(item => (
                                         <div key={item.label} style={{ display: 'grid', gridTemplateColumns: '120px 1fr 60px', alignItems: 'center', gap: '0.75rem' }}>
                                             <span style={{ color: '#c4c4c4', fontSize: '0.85rem' }}>{item.label}</span>
-                                            <div style={{ height: 8, borderRadius: 999, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                                            <div style={{ height: 8, borderRadius: 999, background: 'var(--color-card-bg-soft)', overflow: 'hidden', border: '1px solid var(--color-card-border)' }}>
                                                 <div style={{ width: `${(item.value / maxFlow) * 100}%`, height: '100%', background: item.color, borderRadius: 999 }} />
                                             </div>
                                             <span style={{ color: '#f1f1f1', fontWeight: 700, textAlign: 'right' }}>{item.value}</span>
@@ -1008,14 +1039,14 @@ export default function AdminPage() {
                                             <div style={{ width: '100%', height: 160, display: 'flex', alignItems: 'flex-end' }}>
                                                 <div style={{ width: '100%', height, background: 'linear-gradient(180deg, rgba(34,197,94,0.9), rgba(34,197,94,0.2))', borderRadius: 10 }} />
                                             </div>
-                                            <span style={{ color: '#8b8b8b', fontSize: '0.72rem' }}>{dayNames[d.getDay()]}</span>
-                                            <span style={{ color: '#f1f1f1', fontSize: '0.72rem', fontWeight: 700 }}>{formatCOP(value)}</span>
+                                            <span style={{ color: 'var(--color-text-muted)', fontSize: '0.72rem' }}>{dayNames[d.getDay()]}</span>
+                                            <span style={{ color: 'var(--color-text)', fontSize: '0.72rem', fontWeight: 700 }}>{formatCOP(value)}</span>
                                         </div>
                                     )
                                 })}
                             </div>
                         ) : (
-                            <div style={{ textAlign: 'center', padding: '2rem 1rem', color: '#8b8b8b' }}>
+                            <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--color-text-muted)' }}>
                                 <TrendingUp size={28} color="#555" />
                                 <p style={{ marginTop: '0.6rem' }}>Sin ventas aun. La grafica se llena automaticamente.</p>
                             </div>
@@ -1026,7 +1057,7 @@ export default function AdminPage() {
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
                             <div>
                                 <h3 style={{ fontWeight: 800, marginBottom: '0.25rem' }}>Pedidos por dia</h3>
-                                <p style={{ color: '#8b8b8b', fontSize: '0.85rem' }}>Cantidad de pedidos</p>
+                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>Cantidad de pedidos</p>
                             </div>
                             <Package size={20} color="#3b82f6" />
                         </div>
@@ -1037,17 +1068,17 @@ export default function AdminPage() {
                                     const value = ordersByDay[key]
                                     return (
                                         <div key={key} style={{ display: 'grid', gridTemplateColumns: '60px 1fr 40px', alignItems: 'center', gap: '0.75rem' }}>
-                                            <span style={{ color: '#8b8b8b', fontSize: '0.75rem' }}>{dayNames[d.getDay()]}</span>
-                                            <div style={{ height: 8, borderRadius: 999, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                                            <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem' }}>{dayNames[d.getDay()]}</span>
+                                            <div style={{ height: 8, borderRadius: 999, background: 'var(--color-card-bg-soft)', overflow: 'hidden', border: '1px solid var(--color-card-border)' }}>
                                                 <div style={{ width: `${(value / maxPedidosDia) * 100}%`, height: '100%', background: '#3b82f6', borderRadius: 999 }} />
                                             </div>
-                                            <span style={{ color: '#f1f1f1', fontSize: '0.75rem', fontWeight: 700, textAlign: 'right' }}>{value}</span>
+                                            <span style={{ color: 'var(--color-text)', fontSize: '0.75rem', fontWeight: 700, textAlign: 'right' }}>{value}</span>
                                         </div>
                                     )
                                 })}
                             </div>
                         ) : (
-                            <div style={{ textAlign: 'center', padding: '2rem 1rem', color: '#8b8b8b' }}>
+                            <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--color-text-muted)' }}>
                                 <Package size={28} color="#555" />
                                 <p style={{ marginTop: '0.6rem' }}>Sin pedidos aun. Esta vista aparecera cuando haya ventas.</p>
                             </div>
@@ -1062,17 +1093,17 @@ export default function AdminPage() {
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
                             <div>
                                 <h3 style={{ fontWeight: 800, marginBottom: '0.25rem' }}>Inventario estratégico</h3>
-                                <p style={{ color: '#8b8b8b', fontSize: '0.85rem' }}>Top productos por stock disponible</p>
+                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>Top productos por stock disponible</p>
                             </div>
                             <button
                                 onClick={() => window.location.href = '/admin/inventario'}
-                                style={{ border: 'none', background: 'rgba(255,255,255,0.04)', color: '#f97316', padding: '0.4rem 0.8rem', borderRadius: 999, cursor: 'pointer', fontWeight: 700, fontSize: '0.75rem' }}
+                                style={{ border: '1px solid var(--color-border)', background: 'var(--color-card-bg-soft)', color: '#f97316', padding: '0.4rem 0.8rem', borderRadius: 999, cursor: 'pointer', fontWeight: 700, fontSize: '0.75rem' }}
                             >
                                 Ver inventario
                             </button>
                         </div>
                         {topProductos.length === 0 ? (
-                            <div style={{ textAlign: 'center', padding: '2rem 1rem', color: '#8b8b8b' }}>
+                            <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--color-text-muted)' }}>
                                 <Package size={26} color="#555" />
                                 <p style={{ marginTop: '0.6rem' }}>Aun no hay productos cargados.</p>
                             </div>
@@ -1081,16 +1112,16 @@ export default function AdminPage() {
                                 {topProductos.map(p => (
                                     <div key={p.id} style={{ display: 'grid', gridTemplateColumns: '1fr 80px 80px', gap: '0.75rem', alignItems: 'center' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--color-card-bg-soft)', border: '1px solid var(--color-card-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                 <Package size={16} color="#f97316" />
                                             </div>
                                             <div>
                                                 <p style={{ fontWeight: 600 }}>{p.nombre}</p>
-                                                <p style={{ color: '#8b8b8b', fontSize: '0.75rem' }}>{p.categoriaNombre || 'Sin categoría'}</p>
+                                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem' }}>{p.categoriaNombre || 'Sin categoría'}</p>
                                             </div>
                                         </div>
-                                        <span style={{ color: '#c4c4c4', fontSize: '0.8rem' }}>Stock</span>
-                                        <span style={{ color: '#f1f1f1', fontWeight: 700, textAlign: 'right' }}>{p.stock}</span>
+                                        <span style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>Stock</span>
+                                        <span style={{ color: 'var(--color-text)', fontWeight: 700, textAlign: 'right' }}>{p.stock}</span>
                                     </div>
                                 ))}
                             </div>
@@ -1101,12 +1132,12 @@ export default function AdminPage() {
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
                             <div>
                                 <h3 style={{ fontWeight: 800, marginBottom: '0.25rem' }}>Alertas críticas</h3>
-                                <p style={{ color: '#8b8b8b', fontSize: '0.85rem' }}>Productos con bajo stock</p>
+                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>Productos con bajo stock</p>
                             </div>
                             <AlertTriangle size={20} color="#ef4444" />
                         </div>
                         {stockCriticoList.length === 0 ? (
-                            <div style={{ textAlign: 'center', color: '#8b8b8b', padding: '1.5rem 0' }}>
+                            <div style={{ textAlign: 'center', color: 'var(--color-text-muted)', padding: '1.5rem 0' }}>
                                 <Check size={28} color="#22c55e" />
                                 <p style={{ marginTop: '0.5rem' }}>Todo en orden</p>
                             </div>
@@ -1116,7 +1147,7 @@ export default function AdminPage() {
                                     <div key={p.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                         <div>
                                             <p style={{ fontWeight: 600 }}>{p.nombre}</p>
-                                            <p style={{ color: '#8b8b8b', fontSize: '0.75rem' }}>{p.categoriaNombre || 'Sin categoría'}</p>
+                                            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem' }}>{p.categoriaNombre || 'Sin categoría'}</p>
                                         </div>
                                         <span style={{ color: '#ef4444', fontWeight: 800 }}>{p.stock}</span>
                                     </div>
@@ -1132,7 +1163,7 @@ export default function AdminPage() {
                 <div className="admin-ops-grid" style={{ marginBottom: '2rem' }}>
                     <aside className="card admin-ops-sidenav" style={{ padding: '1.25rem' }}>
                         <div style={{ marginBottom: '1rem' }}>
-                            <p style={{ color: '#8b8b8b', fontSize: '0.78rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Operaciones</p>
+                            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.78rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Operaciones</p>
                             <p style={{ color: 'var(--color-text-muted)', fontSize: '0.86rem' }}>Gestiona pedidos, inventario, CRM y seguridad.</p>
                         </div>
 
@@ -1154,7 +1185,7 @@ export default function AdminPage() {
                                         padding: '0.75rem 0.8rem',
                                         borderRadius: 12,
                                         border: '1px solid ' + (tab === t.id ? 'rgba(255,87,34,0.35)' : 'var(--color-border)'),
-                                        background: tab === t.id ? 'rgba(255,87,34,0.08)' : 'rgba(255,255,255,0.02)',
+                                        background: tab === t.id ? 'rgba(255,87,34,0.08)' : 'var(--color-card-bg-soft)',
                                         cursor: 'pointer',
                                         color: tab === t.id ? 'var(--color-text)' : 'var(--color-text-muted)'
                                     }}
@@ -1180,7 +1211,7 @@ export default function AdminPage() {
                         </div>
 
                         <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid var(--color-border)' }}>
-                            <p style={{ fontSize: '0.78rem', color: '#8b8b8b', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Atajos</p>
+                            <p style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Atajos</p>
                             <div style={{ display: 'grid', gap: '0.5rem' }}>
                                 <button onClick={() => window.location.href = '/admin/campanas'} className="btn btn-ghost" style={{ justifyContent: 'center' }}>
                                     <Zap size={15} /> Campañas
@@ -1199,7 +1230,7 @@ export default function AdminPage() {
                         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
                             <div>
                                 <h2 style={{ fontWeight: 900, marginBottom: '0.25rem' }}>{tabMeta[tab]?.title || 'Operaciones'}</h2>
-                                <p style={{ color: '#8b8b8b', fontSize: '0.88rem' }}>{tabMeta[tab]?.desc || 'Herramientas operativas del negocio.'}</p>
+                                    <p style={{ color: 'var(--color-text-muted)', fontSize: '0.88rem' }}>{tabMeta[tab]?.desc || 'Herramientas operativas del negocio.'}</p>
                             </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                 <motion.button
@@ -1291,7 +1322,7 @@ export default function AdminPage() {
                                     onClick={k.onClick}
                                     style={{
                                         border: '1px solid var(--color-border)',
-                                        background: 'rgba(255,255,255,0.02)',
+                                        background: 'var(--color-card-bg-soft)',
                                         borderRadius: 14,
                                         padding: '0.9rem 1rem',
                                         cursor: 'pointer',
@@ -1897,7 +1928,7 @@ export default function AdminPage() {
             {viewMode === 'operaciones' && tab === 'ruleta' && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                     {/* 🎁 Configuración del Regalo Mayor */}
-                    <div className="card" style={{ padding: '2rem', background: 'linear-gradient(135deg, rgba(255,87,34,0.05) 0%, rgba(255,255,255,0.02) 100%)', border: '1px solid rgba(255,87,34,0.15)', borderRadius: '16px' }}>
+                    <div className="card" style={{ padding: '2rem', background: 'linear-gradient(135deg, rgba(255,87,34,0.08) 0%, var(--color-card-bg-soft) 100%)', border: '1px solid rgba(255,87,34,0.2)', borderRadius: '16px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
                             <div style={{ background: 'rgba(255,87,34,0.15)', padding: '0.5rem', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <Gift size={24} color="var(--color-primary)" />
@@ -2057,9 +2088,9 @@ export default function AdminPage() {
                                                         fontWeight: 700,
                                                         padding: '0.25rem 0.6rem',
                                                         borderRadius: '99px',
-                                                        background: g.tipoGiro === 'PUNTOS' ? 'rgba(79, 172, 254, 0.15)' : 'rgba(255, 255, 255, 0.06)',
+                                                        background: g.tipoGiro === 'PUNTOS' ? 'rgba(79, 172, 254, 0.15)' : 'var(--color-card-bg-soft)',
                                                         color: g.tipoGiro === 'PUNTOS' ? '#4facfe' : 'var(--color-text-muted)',
-                                                        border: g.tipoGiro === 'PUNTOS' ? '1px solid rgba(79, 172, 254, 0.3)' : '1px solid rgba(255,255,255,0.05)'
+                                                        border: g.tipoGiro === 'PUNTOS' ? '1px solid rgba(79, 172, 254, 0.3)' : '1px solid var(--color-card-border)'
                                                     }}>
                                                         {g.tipoGiro}
                                                     </span>
@@ -2205,7 +2236,7 @@ export default function AdminPage() {
                                                             color: t.estado === 'COMPLETADA' ? '#00C896'
                                                                 : t.estado === 'PENDIENTE' ? '#3b82f6'
                                                                     : '#ef4444',
-                                                            border: '1px solid rgba(255,255,255,0.06)'
+                                                            border: '1px solid var(--color-card-border)'
                                                         }}>
                                                             {t.estado}
                                                         </span>
@@ -2339,7 +2370,7 @@ export default function AdminPage() {
                                                                 : m.estado === 'ON_HOLD' ? '#F5D800'
                                                                     : m.estado === 'PENDING' ? '#3b82f6'
                                                                         : '#ef4444',
-                                                            border: '1px solid rgba(255,255,255,0.06)'
+                                                            border: '1px solid var(--color-card-border)'
                                                         }}>
                                                             {m.estado}
                                                         </span>
@@ -2484,29 +2515,29 @@ export default function AdminPage() {
             {/* ═══ TAB: SOPORTE EN VIVO ══════════════════════════════════════════════ */}
             {viewMode === 'operaciones' && tab === 'soporte' && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ height: 'calc(100vh - 240px)', minHeight: '600px' }}>
-                    <div style={{
-                        display: 'flex',
-                        gap: '1.5rem',
-                        height: '100%',
-                        background: 'rgba(255, 255, 255, 0.02)',
-                        backdropFilter: 'blur(16px)',
-                        border: '1px solid rgba(255, 255, 255, 0.06)',
-                        borderRadius: '16px',
-                        padding: '1rem',
-                        overflow: 'hidden'
-                    }}>
+                        <div style={{
+                            display: 'flex',
+                            gap: '1.5rem',
+                            height: '100%',
+                            background: 'var(--color-card-bg)',
+                            backdropFilter: 'blur(16px)',
+                            border: '1px solid var(--color-card-border)',
+                            borderRadius: '16px',
+                            padding: '1rem',
+                            overflow: 'hidden'
+                        }}>
                         {/* Panel Izquierdo: Lista de Chats */}
                         <div style={{
                             width: '340px',
                             display: 'flex',
                             flexDirection: 'column',
                             gap: '1rem',
-                            borderRight: '1px solid rgba(255, 255, 255, 0.08)',
+                            borderRight: '1px solid var(--color-card-border)',
                             paddingRight: '1rem',
                             height: '100%'
                         }}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                <h3 style={{ fontWeight: 800, fontSize: '1.1rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <h3 style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--color-text)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                     <MessageSquare size={18} color="var(--color-primary)" />
                                     Cola de Soporte
                                 </h3>
@@ -2524,10 +2555,10 @@ export default function AdminPage() {
                                     style={{
                                         width: '100%',
                                         padding: '0.6rem 2.2rem 0.6rem 1rem',
-                                        background: 'rgba(0, 0, 0, 0.25)',
-                                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                                        background: 'var(--color-card-bg-soft)',
+                                        border: '1px solid var(--color-card-border)',
                                         borderRadius: '8px',
-                                        color: '#fff',
+                                        color: 'var(--color-text)',
                                         fontSize: '0.85rem'
                                     }}
                                 />
@@ -2570,8 +2601,8 @@ export default function AdminPage() {
                                                 style={{
                                                     padding: '0.85rem',
                                                     borderRadius: '10px',
-                                                    background: esActivo ? 'rgba(124, 58, 237, 0.12)' : 'rgba(255, 255, 255, 0.02)',
-                                                    border: esActivo ? '1px solid var(--color-primary)' : '1px solid rgba(255, 255, 255, 0.04)',
+                                                    background: esActivo ? 'rgba(124, 58, 237, 0.12)' : 'var(--color-card-bg-soft)',
+                                                    border: esActivo ? '1px solid var(--color-primary)' : '1px solid var(--color-card-border)',
                                                     cursor: 'pointer',
                                                     display: 'flex',
                                                     flexDirection: 'column',
@@ -2581,7 +2612,7 @@ export default function AdminPage() {
                                                 }}
                                             >
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                    <span style={{ fontWeight: 700, fontSize: '0.9rem', color: '#fff' }}>
+                                                    <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--color-text)' }}>
                                                         {chat.usuarioNombreCompleto || 'Usuario sin Nombre'}
                                                     </span>
                                                     <span style={{
@@ -2604,9 +2635,9 @@ export default function AdminPage() {
                                                 </div>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.2rem' }}>
                                                     {chat.pedidoId ? (
-                                                        <span style={{ fontSize: '0.75rem', background: 'rgba(255,255,255,0.05)', padding: '0.15rem 0.4rem', borderRadius: '4px', color: 'var(--color-primary)', fontWeight: 600 }}>
-                                                            📦 Pedido #{chat.pedidoId}
-                                                        </span>
+                                                    <span style={{ fontSize: '0.75rem', background: 'var(--color-card-bg-soft)', border: '1px solid var(--color-card-border)', padding: '0.15rem 0.4rem', borderRadius: '4px', color: 'var(--color-primary)', fontWeight: 600 }}>
+                                                        📦 Pedido #{chat.pedidoId}
+                                                    </span>
                                                     ) : (
                                                         <span style={{ fontSize: '0.75rem', color: 'var(--color-text-faint)' }}>Sin pedido vinculado</span>
                                                     )}
@@ -2654,9 +2685,9 @@ export default function AdminPage() {
                                             boxShadow: '0 8px 24px rgba(124, 58, 237, 0.3)'
                                         }}
                                     >
-                                        <MessageSquare size={38} color="#fff" />
-                                    </motion.div>
-                                    <h4 style={{ fontWeight: 800, color: '#fff', fontSize: '1.2rem', marginTop: '0.5rem' }}>Consola de Atención al Cliente</h4>
+                                    <MessageSquare size={38} color="var(--color-text)" />
+                                </motion.div>
+                                <h4 style={{ fontWeight: 800, color: 'var(--color-text)', fontSize: '1.2rem', marginTop: '0.5rem' }}>Consola de Atención al Cliente</h4>
                                     <p style={{ maxWidth: '380px', fontSize: '0.85rem', lineHeight: 1.5 }}>
                                         Selecciona una conversación del listado lateral para ver el historial completo, interactuar con el cliente o tomar el control del asistente virtual.
                                     </p>
@@ -2666,8 +2697,8 @@ export default function AdminPage() {
                                     {/* Cabecera del Chat Activo */}
                                     <div style={{
                                         padding: '0.75rem 1rem',
-                                        background: 'rgba(255,255,255,0.01)',
-                                        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                                        background: 'var(--color-card-bg-soft)',
+                                        borderBottom: '1px solid var(--color-card-border)',
                                         display: 'flex',
                                         justifyContent: 'space-between',
                                         alignItems: 'center',
@@ -2675,13 +2706,14 @@ export default function AdminPage() {
                                     }}>
                                         <div>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                <h4 style={{ fontWeight: 800, color: '#fff', fontSize: '1rem' }}>
+                                                <h4 style={{ fontWeight: 800, color: 'var(--color-text)', fontSize: '1rem' }}>
                                                     {soporteChatActivo.usuarioNombreCompleto || 'Cliente'}
                                                 </h4>
                                                 <span style={{
                                                     fontSize: '0.7rem',
                                                     padding: '0.1rem 0.35rem',
-                                                    background: 'rgba(255,255,255,0.08)',
+                                                    background: 'var(--color-card-bg-soft)',
+                                                    border: '1px solid var(--color-card-border)',
                                                     borderRadius: '4px',
                                                     color: 'var(--color-primary)'
                                                 }}>ID #{soporteChatActivo.id}</span>
@@ -2719,21 +2751,21 @@ export default function AdminPage() {
                                     {/* Subcabecera: Información Detallada del Pedido Vinculado */}
                                     {soporteChatActivo.pedidoId && (
                                         <div style={{
-                                            background: 'rgba(124, 58, 237, 0.04)',
-                                            borderBottom: '1px solid rgba(124, 58, 237, 0.1)',
-                                            padding: '0.6rem 1rem',
-                                            display: 'flex',
-                                            justifyContent: 'space-between',
-                                            alignItems: 'center',
-                                            fontSize: '0.82rem'
-                                        }}>
+                                        background: 'rgba(124, 58, 237, 0.08)',
+                                        borderBottom: '1px solid rgba(124, 58, 237, 0.16)',
+                                        padding: '0.6rem 1rem',
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        fontSize: '0.82rem'
+                                    }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#c084fc' }}>
                                                 <ShoppingBag size={14} />
                                                 <strong>Contexto de Transacción: Pedido #{soporteChatActivo.pedidoId}</strong>
                                             </div>
                                             {pedidos.find(p => p.id === soporteChatActivo.pedidoId) && (
                                                 <div style={{ display: 'flex', gap: '1rem', color: 'var(--color-text-muted)' }}>
-                                                    <span>Monto: <strong style={{ color: '#fff' }}>{formatCOP(pedidos.find(p => p.id === soporteChatActivo.pedidoId).total)}</strong></span>
+                                                    <span>Monto: <strong style={{ color: 'var(--color-text)' }}>{formatCOP(pedidos.find(p => p.id === soporteChatActivo.pedidoId).total)}</strong></span>
                                                     <span>Estado: <strong style={{
                                                         color: pedidos.find(p => p.id === soporteChatActivo.pedidoId).estado === 'ENTREGADO' ? '#34d399' : '#fb923c'
                                                     }}>{pedidos.find(p => p.id === soporteChatActivo.pedidoId).estado}</strong></span>
@@ -2752,7 +2784,7 @@ export default function AdminPage() {
                                         gap: '0.75rem',
                                         maxHeight: '400px',
                                         minHeight: '280px',
-                                        background: 'rgba(0,0,0,0.1)'
+                                        background: 'var(--color-card-bg-soft)'
                                     }}>
                                         {soporteCargandoChat ? (
                                             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
@@ -2769,14 +2801,14 @@ export default function AdminPage() {
                                                 const esAdmin = msg.remitente === 'ADMIN';
 
                                                 let alignment = 'flex-start';
-                                                let bubbleBg = 'rgba(255, 255, 255, 0.05)';
-                                                let bubbleColor = '#fff';
-                                                let bubbleBorder = '1px solid rgba(255,255,255,0.06)';
+                                                let bubbleBg = 'var(--color-card-bg-soft)';
+                                                let bubbleColor = 'var(--color-text)';
+                                                let bubbleBorder = '1px solid var(--color-card-border)';
                                                 let label = 'Cliente';
 
                                                 if (esUsuario) {
                                                     alignment = 'flex-start';
-                                                    bubbleBg = 'rgba(255, 255, 255, 0.04)';
+                                                    bubbleBg = 'var(--color-card-bg-soft)';
                                                 } else if (esIA) {
                                                     alignment = 'flex-end';
                                                     bubbleBg = 'linear-gradient(135deg, rgba(124, 58, 237, 0.25), rgba(79, 70, 229, 0.25))';
@@ -2790,7 +2822,7 @@ export default function AdminPage() {
                                                 } else {
                                                     // Sistema
                                                     alignment = 'center';
-                                                    bubbleBg = 'rgba(255, 255, 255, 0.02)';
+                                                    bubbleBg = 'var(--color-card-bg-soft)';
                                                     bubbleColor = 'var(--color-text-muted)';
                                                     label = 'Sistema';
                                                 }
@@ -2840,7 +2872,7 @@ export default function AdminPage() {
                                     {/* Formulario de Entrada */}
                                     <div style={{
                                         padding: '0.75rem 1rem 0 1rem',
-                                        borderTop: '1px solid rgba(255, 255, 255, 0.08)'
+                                        borderTop: '1px solid var(--color-card-border)'
                                     }}>
                                         {soporteChatActivo.estado === 'RESUELTA' ? (
                                             <div style={{
@@ -2869,10 +2901,10 @@ export default function AdminPage() {
                                                     style={{
                                                         flex: 1,
                                                         padding: '0.75rem 1rem',
-                                                        background: 'rgba(0, 0, 0, 0.3)',
-                                                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                                                        background: 'var(--color-card-bg-soft)',
+                                                        border: '1px solid var(--color-card-border)',
                                                         borderRadius: '8px',
-                                                        color: '#fff',
+                                                        color: 'var(--color-text)',
                                                         fontSize: '0.88rem'
                                                     }}
                                                 />

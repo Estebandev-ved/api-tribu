@@ -12,7 +12,7 @@ export default function QuienesSomosPage() {
                         Nuestra <span style={{ color: 'var(--color-primary)' }}>Tribu</span>
                     </h1>
                     <p style={{ fontSize: '1.2rem', color: 'var(--color-text-muted)', lineHeight: 1.6 }}>
-                        Descubriendo los productos más virales del mundo, desde Medellín para toda Colombia.
+                        Descubriendo los productos más virales del mundo para toda Colombia.
                     </p>
                 </div>
 
@@ -22,7 +22,7 @@ export default function QuienesSomosPage() {
                         En <strong>Tribu E-commerce</strong> no somos una tienda online tradicional. Somos un equipo apasionado por buscar, probar y seleccionar los productos más virales, innovadores y útiles que están rompiéndola en internet.
                     </p>
                     <p style={{ color: 'var(--color-text-muted)', lineHeight: 1.8 }}>
-                        Nacimos en Medellín, Antioquia, con una visión clara: acortar la distancia entre las tendencias mundiales y el consumidor colombiano. Queremos que tengas acceso temprano a lo que todo el mundo de lo que estará hablando mañana.
+                        Nacimos con una visión clara: acortar la distancia entre las tendencias mundiales y el consumidor colombiano. Queremos que tengas acceso temprano a lo que todo el mundo de lo que estará hablando mañana.
                     </p>
                 </div>
 

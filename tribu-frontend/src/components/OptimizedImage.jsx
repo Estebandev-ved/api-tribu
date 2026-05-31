@@ -1,13 +1,36 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
-export default function OptimizedImage({ src, alt, style, className, fallback }) {
+/**
+ * Componente de imagen optimizado con skeleton shimmer.
+ * Corrige el bug clásico de caché en React donde las imágenes ya cargadas
+ * no disparan el evento onLoad.
+ */
+export default function OptimizedImage({ src, alt, style, className, fallback, eager = false }) {
     const [loaded, setLoaded] = useState(false)
     const [errored, setErrored] = useState(false)
+    const imgRef = useRef(null)
 
     useEffect(() => {
-        setLoaded(false)
-        setErrored(false)
+        // Al cambiar de src, si ya tenemos la ref y ya se completó la carga por caché, la activamos de una
+        if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth !== 0) {
+            setLoaded(true)
+        } else {
+            setLoaded(false)
+            setErrored(false)
+        }
     }, [src])
+
+    const handleRefCallback = (el) => {
+        if (el) {
+            imgRef.current = el
+            // Si la imagen ya se cargó desde la caché antes de que React monte el onLoad listener:
+            if (el.complete && el.naturalWidth !== 0) {
+                if (!loaded) {
+                    setLoaded(true)
+                }
+            }
+        }
+    }
 
     if (!src || errored) {
         return (
@@ -31,15 +54,18 @@ export default function OptimizedImage({ src, alt, style, className, fallback })
                 }} />
             )}
             <img
+                ref={handleRefCallback}
                 src={src}
                 alt={alt}
-                loading="lazy"
+                loading={eager ? 'eager' : 'lazy'}
+                fetchpriority={eager ? 'high' : 'auto'}
+                decoding={eager ? 'sync' : 'async'}
                 onLoad={() => setLoaded(true)}
                 onError={() => setErrored(true)}
                 style={{
                     width: '100%', height: '100%', objectFit: 'cover',
                     opacity: loaded ? 1 : 0,
-                    transition: 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+                    transition: 'opacity 0.2s ease'
                 }}
             />
         </div>

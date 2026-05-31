@@ -56,11 +56,11 @@ export default function TrendingMarquee() {
                             }}>
                                 <TrendingUp
                                     size={13}
-                                    color={i % 3 === 0 ? 'var(--color-primary)' : i % 3 === 1 ? 'var(--color-accent-dark)' : 'var(--color-text-faint)'}
+                                    color={i % 2 === 0 ? 'var(--color-primary)' : 'var(--color-text-faint)'}
                                     strokeWidth={2.5}
                                 />
                                 <span style={{
-                                    color: i % 3 === 0 ? 'var(--color-primary)' : i % 3 === 1 ? 'var(--color-accent-dark)' : 'var(--color-text-muted)',
+                                    color: i % 2 === 0 ? 'var(--color-primary)' : 'var(--color-text-muted)',
                                     fontWeight: 600, fontSize: '0.9rem',
                                 }}>
                                     {item}

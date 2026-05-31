@@ -250,7 +250,7 @@ export default function TribuPassPage() {
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.2 }}
-                        style={{ fontSize: 'clamp(2rem, 5vw, 2.8rem)', fontWeight: 900, color: '#fff', margin: '0 0 0.8rem 0', letterSpacing: '-1px' }}
+                        style={{ fontSize: 'clamp(2rem, 5vw, 2.8rem)', fontWeight: 900, color: 'var(--color-text)', margin: '0 0 0.8rem 0', letterSpacing: '-1px' }}
                     >
                         Potencia tu <span style={{ background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Experiencia Tribu</span>
                     </motion.h1>
@@ -272,8 +272,8 @@ export default function TribuPassPage() {
                         style={{ marginBottom: '3rem' }}
                     >
                         <div style={{ 
-                            background: 'linear-gradient(135deg, rgba(20,20,25,0.9), rgba(30,30,40,0.7))', 
-                            border: '1px solid rgba(251, 191, 36, 0.2)', 
+                            background: 'var(--color-card-bg-strong)', 
+                            border: '1px solid rgba(251, 191, 36, 0.18)', 
                             borderRadius: '24px', 
                             padding: '1.5rem',
                             display: 'grid',
@@ -284,28 +284,28 @@ export default function TribuPassPage() {
                                 <div style={{ background: 'rgba(251, 191, 36, 0.1)', width: 48, height: 48, borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.6rem' }}>
                                     <TrendingUp color="#fbbf24" size={22} />
                                 </div>
-                                <p style={{ color: '#888', fontSize: '0.7rem', fontWeight: 700, margin: '0 0 0.2rem 0', textTransform: 'uppercase' }}>Cashback Ganado</p>
+                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.7rem', fontWeight: 700, margin: '0 0 0.2rem 0', textTransform: 'uppercase' }}>Cashback Ganado</p>
                                 <p style={{ color: '#fbbf24', fontSize: '1.3rem', fontWeight: 900, margin: 0 }}>{formatCurrency(statsDemo.cashbackGanado)}</p>
                             </div>
-                            <div style={{ textAlign: 'center', padding: '1rem', borderLeft: '1px solid rgba(255,255,255,0.05)' }}>
+                            <div style={{ textAlign: 'center', padding: '1rem', borderLeft: '1px solid var(--color-border)' }}>
                                 <div style={{ background: 'rgba(0, 200, 150, 0.1)', width: 48, height: 48, borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.6rem' }}>
                                     <Package color="#00c896" size={22} />
                                 </div>
-                                <p style={{ color: '#888', fontSize: '0.7rem', fontWeight: 700, margin: '0 0 0.2rem 0', textTransform: 'uppercase' }}>Envíos Gratis</p>
-                                <p style={{ color: '#fff', fontSize: '1.3rem', fontWeight: 900, margin: 0 }}>{statsDemo.enviosGratis}</p>
+                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.7rem', fontWeight: 700, margin: '0 0 0.2rem 0', textTransform: 'uppercase' }}>Envíos Gratis</p>
+                                <p style={{ color: 'var(--color-text)', fontSize: '1.3rem', fontWeight: 900, margin: 0 }}>{statsDemo.enviosGratis}</p>
                             </div>
-                            <div style={{ textAlign: 'center', padding: '1rem', borderLeft: '1px solid rgba(255,255,255,0.05)' }}>
+                            <div style={{ textAlign: 'center', padding: '1rem', borderLeft: '1px solid var(--color-border)' }}>
                                 <div style={{ background: 'rgba(30, 144, 255, 0.1)', width: 48, height: 48, borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.6rem' }}>
                                     <Sparkles color="#1e90ff" size={22} />
                                 </div>
-                                <p style={{ color: '#888', fontSize: '0.7rem', fontWeight: 700, margin: '0 0 0.2rem 0', textTransform: 'uppercase' }}>Ofertas VIP</p>
-                                <p style={{ color: '#fff', fontSize: '1.3rem', fontWeight: 900, margin: 0 }}>{statsDemo.ofertasAccedidas}</p>
+                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.7rem', fontWeight: 700, margin: '0 0 0.2rem 0', textTransform: 'uppercase' }}>Ofertas VIP</p>
+                                <p style={{ color: 'var(--color-text)', fontSize: '1.3rem', fontWeight: 900, margin: 0 }}>{statsDemo.ofertasAccedidas}</p>
                             </div>
-                            <div style={{ textAlign: 'center', padding: '1rem', borderLeft: '1px solid rgba(255,255,255,0.05)' }}>
+                            <div style={{ textAlign: 'center', padding: '1rem', borderLeft: '1px solid var(--color-border)' }}>
                                 <div style={{ background: 'rgba(168, 85, 247, 0.1)', width: 48, height: 48, borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.6rem' }}>
                                     <Wallet color="#a855f7" size={22} />
                                 </div>
-                                <p style={{ color: '#888', fontSize: '0.7rem', fontWeight: 700, margin: '0 0 0.2rem 0', textTransform: 'uppercase' }}>Ahorro Total</p>
+                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.7rem', fontWeight: 700, margin: '0 0 0.2rem 0', textTransform: 'uppercase' }}>Ahorro Total</p>
                                 <p style={{ color: '#a855f7', fontSize: '1.3rem', fontWeight: 900, margin: 0 }}>{formatCurrency(statsDemo.cashbackGanado + statsDemo.ahorroEnvios)}</p>
                             </div>
                         </div>
@@ -320,21 +320,21 @@ export default function TribuPassPage() {
                     style={{ marginBottom: '2.5rem' }}
                 >
                     <div style={{ textAlign: 'center', marginBottom: '1.2rem' }}>
-                        <p style={{ color: '#666', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2px', margin: 0 }}>¿Por qué confiar en Tribu Pass?</p>
+                        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2px', margin: 0 }}>¿Por qué confiar en Tribu Pass?</p>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '0.8rem' }}>
                         {trustItems.map((item, i) => (
                             <motion.div 
                                 key={i}
                                 whileHover={{ scale: 1.02, y: -2 }}
-                                style={{ display: 'flex', alignItems: 'center', gap: '0.7rem', background: 'rgba(20,20,25,0.5)', padding: '0.9rem 1rem', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.03)', cursor: 'default' }}
+                                style={{ display: 'flex', alignItems: 'center', gap: '0.7rem', background: 'var(--color-card-bg)', padding: '0.9rem 1rem', borderRadius: '14px', border: '1px solid var(--color-card-border)', cursor: 'default' }}
                             >
                                 <div style={{ background: 'rgba(251, 191, 36, 0.08)', padding: '0.5rem', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                     <div style={{ color: '#fbbf24' }}>{item.icon}</div>
                                 </div>
                                 <div style={{ minWidth: 0 }}>
-                                    <p style={{ color: '#fff', fontWeight: 700, fontSize: '0.8rem', margin: 0, whiteSpace: 'nowrap' }}>{item.title}</p>
-                                    <p style={{ color: '#555', fontSize: '0.7rem', margin: 0 }}>{item.desc}</p>
+                                    <p style={{ color: 'var(--color-text)', fontWeight: 700, fontSize: '0.8rem', margin: 0, whiteSpace: 'nowrap' }}>{item.title}</p>
+                                    <p style={{ color: 'var(--color-text-faint)', fontSize: '0.7rem', margin: 0 }}>{item.desc}</p>
                                 </div>
                             </motion.div>
                         ))}
@@ -349,8 +349,8 @@ export default function TribuPassPage() {
                     style={{ marginBottom: '2.5rem' }}
                 >
                     <div style={{ 
-                        background: 'linear-gradient(135deg, rgba(0, 200, 150, 0.05), rgba(0, 200, 150, 0.02))', 
-                        border: '1px solid rgba(0, 200, 150, 0.12)', 
+                        background: 'linear-gradient(135deg, rgba(0, 200, 150, 0.08), rgba(0, 200, 150, 0.03))', 
+                        border: '1px solid rgba(0, 200, 150, 0.18)', 
                         borderRadius: '20px', 
                         padding: '1.2rem 1.5rem',
                         display: 'flex',
@@ -363,20 +363,20 @@ export default function TribuPassPage() {
                             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                                 <span style={{ fontSize: '1.2rem' }}>{g.icono}</span>
                                 <div>
-                                    <p style={{ color: '#00c896', fontWeight: 700, fontSize: '0.8rem', margin: 0 }}>{g.titulo}</p>
-                                    <p style={{ color: '#666', fontSize: '0.7rem', margin: 0 }}>{g.desc}</p>
-                                </div>
-                            </div>
-                        ))}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', paddingLeft: '1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>
-                            <BadgeCheck color="#00c896" size={22} />
-                            <div>
-                                <p style={{ color: '#00c896', fontWeight: 700, fontSize: '0.8rem', margin: 0 }}>100% Transparente</p>
-                                <p style={{ color: '#666', fontSize: '0.7rem', margin: 0 }}>Sin letras pequeñas</p>
+                                <p style={{ color: '#00c896', fontWeight: 700, fontSize: '0.8rem', margin: 0 }}>{g.titulo}</p>
+                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.7rem', margin: 0 }}>{g.desc}</p>
                             </div>
                         </div>
+                    ))}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', paddingLeft: '1rem', borderLeft: '1px solid var(--color-border)' }}>
+                        <BadgeCheck color="#00c896" size={22} />
+                        <div>
+                            <p style={{ color: '#00c896', fontWeight: 700, fontSize: '0.8rem', margin: 0 }}>100% Transparente</p>
+                            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.7rem', margin: 0 }}>Sin letras pequeñas</p>
+                        </div>
                     </div>
-                </motion.div>
+                </div>
+            </motion.div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 450px), 1fr))', gap: '2rem' }}>
                     
@@ -384,10 +384,10 @@ export default function TribuPassPage() {
                     <motion.div
                         initial={{ opacity: 0, x: -30 }}
                         animate={{ opacity: 1, x: 0 }}
-                        style={{ background: 'rgba(20,20,25,0.6)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '28px', padding: '2rem', backdropFilter: 'blur(20px)' }}
+                        style={{ background: 'var(--color-card-bg)', border: '1px solid var(--color-card-border)', borderRadius: '28px', padding: '2rem', backdropFilter: 'blur(20px)' }}
                     >
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-                            <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '0.8rem', margin: 0 }}>
+                            <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--color-text)', display: 'flex', alignItems: 'center', gap: '0.8rem', margin: 0 }}>
                                 <ShieldCheck color="#fbbf24" size={26} /> Tu Pack de Beneficios
                             </h2>
                             <div style={{ background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', padding: '0.4rem 0.8rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 800, color: '#000' }}>
@@ -400,7 +400,7 @@ export default function TribuPassPage() {
                                 <motion.div 
                                     key={i} 
                                     whileHover={{ scale: 1.02, borderColor: 'rgba(251, 191, 36, 0.3)' }}
-                                    style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '14px', border: '1px solid rgba(251, 191, 36, 0.08)', position: 'relative', overflow: 'hidden' }}
+                                    style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem', background: 'var(--color-card-bg-soft)', borderRadius: '14px', border: '1px solid rgba(251, 191, 36, 0.12)', position: 'relative', overflow: 'hidden' }}
                                 >
                                     <div style={{ position: 'absolute', top: 0, right: 0, background: 'linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.15))', padding: '0.2rem 0.5rem', borderRadius: '0 14px 0 10px', fontSize: '0.6rem', fontWeight: 800, color: '#fbbf24' }}>
                                         {b.highlight}
@@ -409,30 +409,30 @@ export default function TribuPassPage() {
                                         {b.icon}
                                     </div>
                                     <div>
-                                        <h4 style={{ color: '#fff', fontWeight: 700, margin: '0 0 0.2rem 0', fontSize: '0.9rem' }}>{b.title}</h4>
-                                        <p style={{ color: '#777', fontSize: '0.75rem', margin: 0, lineHeight: 1.4 }}>{b.desc}</p>
+                                        <h4 style={{ color: 'var(--color-text)', fontWeight: 700, margin: '0 0 0.2rem 0', fontSize: '0.9rem' }}>{b.title}</h4>
+                                        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', margin: 0, lineHeight: 1.4 }}>{b.desc}</p>
                                     </div>
                                 </motion.div>
                             ))}
                         </div>
 
                         {/* ROI Section */}
-                        <div style={{ marginTop: '1.5rem', padding: '1.2rem', background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(245, 158, 11, 0.02))', borderRadius: '14px', border: '1px solid rgba(245, 158, 11, 0.1)' }}>
+                        <div style={{ marginTop: '1.5rem', padding: '1.2rem', background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(245, 158, 11, 0.03))', borderRadius: '14px', border: '1px solid rgba(245, 158, 11, 0.16)' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.8rem' }}>
                                 <Calculator color="#fbbf24" size={18} />
                                 <p style={{ color: '#fbbf24', fontSize: '0.85rem', fontWeight: 700, margin: 0 }}>¿Vale la pena?</p>
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '0.8rem' }}>
-                                <div style={{ background: 'rgba(0,0,0,0.2)', padding: '0.8rem', borderRadius: '10px', textAlign: 'center' }}>
-                                    <p style={{ color: '#666', fontSize: '0.7rem', margin: '0 0 0.3rem 0', fontWeight: 600 }}>Costo Mensual</p>
+                                <div style={{ background: 'var(--color-card-bg-soft)', padding: '0.8rem', borderRadius: '10px', textAlign: 'center', border: '1px solid var(--color-card-border)' }}>
+                                    <p style={{ color: 'var(--color-text-muted)', fontSize: '0.7rem', margin: '0 0 0.3rem 0', fontWeight: 600 }}>Costo Mensual</p>
                                     <p style={{ color: '#ff6b6b', fontSize: '1rem', fontWeight: 800, margin: 0 }}>{formatCurrency(9900)}</p>
                                 </div>
-                                <div style={{ background: 'rgba(0,0,0,0.2)', padding: '0.8rem', borderRadius: '10px', textAlign: 'center' }}>
-                                    <p style={{ color: '#666', fontSize: '0.7rem', margin: '0 0 0.3rem 0', fontWeight: 600 }}>Envío promedio</p>
-                                    <p style={{ color: '#aaa', fontSize: '1rem', fontWeight: 800, margin: 0 }}>{formatCurrency(25000)}</p>
+                                <div style={{ background: 'var(--color-card-bg-soft)', padding: '0.8rem', borderRadius: '10px', textAlign: 'center', border: '1px solid var(--color-card-border)' }}>
+                                    <p style={{ color: 'var(--color-text-muted)', fontSize: '0.7rem', margin: '0 0 0.3rem 0', fontWeight: 600 }}>Envío promedio</p>
+                                    <p style={{ color: 'var(--color-text)', fontSize: '1rem', fontWeight: 800, margin: 0 }}>{formatCurrency(25000)}</p>
                                 </div>
                             </div>
-                            <p style={{ color: '#aaa', fontSize: '0.8rem', margin: 0, lineHeight: 1.5 }}>
+                            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', margin: 0, lineHeight: 1.5 }}>
                                 <strong style={{ color: '#00c896' }}>¡Con 1 solo envío gratis</strong> al mes ya recuperas con creces tu inversión!
                             </p>
                         </div>
@@ -446,8 +446,8 @@ export default function TribuPassPage() {
                     >
                         {/* Status Card */}
                         <div style={{ 
-                            background: estado?.activa ? 'linear-gradient(135deg, #12121a, #1a1a28)' : 'rgba(20,20,25,0.4)', 
-                            border: estado?.activa ? '1px solid #fbbf2430' : '1px solid rgba(255,255,255,0.05)',
+                            background: estado?.activa ? 'linear-gradient(135deg, rgba(18, 18, 26, 0.92), rgba(26, 26, 40, 0.75))' : 'var(--color-card-bg)', 
+                            border: estado?.activa ? '1px solid rgba(251, 191, 36, 0.2)' : '1px solid var(--color-card-border)',
                             borderRadius: '28px', padding: '2rem', position: 'relative', overflow: 'hidden' 
                         }}>
                             {estado?.activa && (
@@ -456,42 +456,42 @@ export default function TribuPassPage() {
 
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
                                 <div>
-                                    <span style={{ color: '#666', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                    <span style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}>
                                         Estado de Suscripción
                                     </span>
-                                    <h3 style={{ fontSize: '2rem', fontWeight: 900, color: '#fff', margin: '0.5rem 0' }}>
+                                    <h3 style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--color-text)', margin: '0.5rem 0' }}>
                                         {estado?.activa ? <span style={{ color: '#fbbf24' }}>Activa <Sparkles size={24} style={{ verticalAlign: 'middle', marginLeft: 4 }} /></span> : 'Inactiva'}
                                     </h3>
                                 </div>
-                                <div style={{ background: estado?.activa ? '#fbbf2415' : '#333', padding: '0.6rem 1.2rem', borderRadius: '12px', color: estado?.activa ? '#fbbf24' : '#aaa', fontWeight: 700, fontSize: '0.85rem' }}>
+                                <div style={{ background: estado?.activa ? 'rgba(251, 191, 36, 0.12)' : 'var(--color-surface-2)', padding: '0.6rem 1.2rem', borderRadius: '12px', color: estado?.activa ? '#fbbf24' : 'var(--color-text-muted)', fontWeight: 700, fontSize: '0.85rem' }}>
                                     {formatCurrency(9900)} <span style={{ fontSize: '0.7rem', opacity: 0.7 }}>/mes</span>
                                 </div>
                             </div>
 
                             {estado?.activa ? (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '14px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'var(--color-card-bg-soft)', padding: '1rem', borderRadius: '14px', border: '1px solid var(--color-card-border)' }}>
                                         <Calendar size={18} color="#888" />
                                         <div style={{ flex: 1 }}>
-                                            <p style={{ color: '#666', fontSize: '0.7rem', margin: 0, fontWeight: 700, textTransform: 'uppercase' }}>Próxima Renovación</p>
-                                            <p style={{ color: '#fff', fontWeight: 600, fontSize: '0.95rem', margin: 0 }}>
+                                            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.7rem', margin: 0, fontWeight: 700, textTransform: 'uppercase' }}>Próxima Renovación</p>
+                                            <p style={{ color: 'var(--color-text)', fontWeight: 600, fontSize: '0.95rem', margin: 0 }}>
                                                 {new Date(estado.fechaRenovacion).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })}
                                             </p>
                                         </div>
                                     </div>
 
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '14px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', background: 'var(--color-card-bg-soft)', borderRadius: '14px', border: '1px solid var(--color-card-border)' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                             <RefreshCcw size={18} color="#888" />
                                             <div>
-                                                <p style={{ color: '#666', fontSize: '0.7rem', margin: 0, fontWeight: 700, textTransform: 'uppercase' }}>Renovación Auto</p>
-                                                <p style={{ color: '#fff', fontWeight: 600, fontSize: '0.95rem', margin: 0 }}>{estado.renovacionAutomatica ? 'Activada' : 'Desactivada'}</p>
+                                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.7rem', margin: 0, fontWeight: 700, textTransform: 'uppercase' }}>Renovación Auto</p>
+                                                <p style={{ color: 'var(--color-text)', fontWeight: 600, fontSize: '0.95rem', margin: 0 }}>{estado.renovacionAutomatica ? 'Activada' : 'Desactivada'}</p>
                                             </div>
                                         </div>
                                         <div 
                                             onClick={handleToggleRenovacion}
                                             style={{ 
-                                                width: '48px', height: '26px', background: estado.renovacionAutomatica ? 'var(--color-primary)' : '#444', 
+                                                width: '48px', height: '26px', background: estado.renovacionAutomatica ? 'var(--color-primary)' : 'var(--color-surface-3)', 
                                                 borderRadius: '20px', cursor: 'pointer', position: 'relative', transition: 'all 0.3s' 
                                             }}
                                         >
@@ -513,23 +513,23 @@ export default function TribuPassPage() {
                                 </div>
                             ) : (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', color: '#888', fontSize: '0.9rem' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
                                         <CheckCircle2 size={18} color="#00C896" /> Sin contratos, cancela cuando quieras
                                     </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', color: '#888', fontSize: '0.9rem' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
                                         <CheckCircle2 size={18} color="#00C896" /> Renovación automática opcional
                                     </div>
 
                                     <div style={{ marginBottom: '0.8rem' }}>
-                                        <label style={{ color: '#888', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '0.5rem' }}>Método de pago</label>
+                                        <label style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '0.5rem' }}>Método de pago</label>
                                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                                             <button
                                                 onClick={() => setMetodoPagoPass('SALDO_TRIBU')}
                                                 style={{
                                                     flex: 1, padding: '0.7rem', borderRadius: '10px',
-                                                    border: metodoPagoPass === 'SALDO_TRIBU' ? '2px solid #fbbf24' : '1px solid #333',
-                                                    background: metodoPagoPass === 'SALDO_TRIBU' ? 'rgba(251,191,36,0.1)' : 'transparent',
-                                                    color: '#fff', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer'
+                                                    border: metodoPagoPass === 'SALDO_TRIBU' ? '2px solid #fbbf24' : '1px solid var(--color-border)',
+                                                    background: metodoPagoPass === 'SALDO_TRIBU' ? 'rgba(251,191,36,0.12)' : 'transparent',
+                                                    color: 'var(--color-text)', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer'
                                                 }}
                                             >
                                                 Tribu Card
@@ -538,9 +538,9 @@ export default function TribuPassPage() {
                                                 onClick={() => setMetodoPagoPass('EFIPAY')}
                                                 style={{
                                                     flex: 1, padding: '0.7rem', borderRadius: '10px',
-                                                    border: metodoPagoPass === 'EFIPAY' ? '2px solid #6243FF' : '1px solid #333',
+                                                    border: metodoPagoPass === 'EFIPAY' ? '2px solid #6243FF' : '1px solid var(--color-border)',
                                                     background: metodoPagoPass === 'EFIPAY' ? 'rgba(98, 67, 255, 0.12)' : 'transparent',
-                                                    color: metodoPagoPass === 'EFIPAY' ? '#B7A9FF' : '#fff',
+                                                    color: metodoPagoPass === 'EFIPAY' ? '#4B2FFF' : 'var(--color-text)',
                                                     fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer',
                                                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem'
                                                 }}
@@ -570,13 +570,13 @@ export default function TribuPassPage() {
                         </div>
 
                         {/* Tip Card */}
-                        <div style={{ background: 'rgba(30, 144, 255, 0.05)', border: '1px solid rgba(30, 144, 255, 0.15)', borderRadius: '20px', padding: '1.2rem', display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                        <div style={{ background: 'rgba(30, 144, 255, 0.08)', border: '1px solid rgba(30, 144, 255, 0.2)', borderRadius: '20px', padding: '1.2rem', display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
                             <div style={{ background: '#1e90ff15', padding: '0.6rem', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                 <AlertCircle size={20} color="#1e90ff" />
                             </div>
                             <div>
                                 <p style={{ color: '#1e90ff', fontSize: '0.8rem', fontWeight: 700, margin: '0 0 0.3rem 0' }}>Tip Premium</p>
-                                <p style={{ color: '#aaa', fontSize: '0.85rem', margin: 0, lineHeight: 1.5 }}>
+                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', margin: 0, lineHeight: 1.5 }}>
                                     Con el doble de cashback, en solo 2-3 compras ya habrás recuperado el costo mensual. ¡Cada compra cuenta el doble!
                                 </p>
                             </div>
@@ -593,27 +593,27 @@ export default function TribuPassPage() {
                         transition={{ delay: 0.3 }}
                         style={{ marginTop: '4rem' }}
                     >
-                        <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#fff', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                        <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--color-text)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
                             <History size={24} color="var(--color-primary)" /> Historial de Renovaciones
                         </h3>
                         
-                        <div style={{ background: 'rgba(20,20,25,0.4)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+                        <div style={{ background: 'var(--color-card-bg)', borderRadius: '24px', border: '1px solid var(--color-card-border)', overflow: 'hidden' }}>
                             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                                 <thead>
-                                    <tr style={{ background: 'rgba(255,255,255,0.03)' }}>
-                                        <th style={{ padding: '1.2rem', color: '#888', fontSize: '0.8rem', fontWeight: 800 }}>FECHA</th>
-                                        <th style={{ padding: '1.2rem', color: '#888', fontSize: '0.8rem', fontWeight: 800 }}>MONTO</th>
-                                        <th style={{ padding: '1.2rem', color: '#888', fontSize: '0.8rem', fontWeight: 800 }}>ESTADO</th>
-                                        <th style={{ padding: '1.2rem', color: '#888', fontSize: '0.8rem', fontWeight: 800 }}>REF. MOVIMIENTO</th>
+                                    <tr style={{ background: 'var(--color-card-bg-soft)' }}>
+                                        <th style={{ padding: '1.2rem', color: 'var(--color-text-muted)', fontSize: '0.8rem', fontWeight: 800 }}>FECHA</th>
+                                        <th style={{ padding: '1.2rem', color: 'var(--color-text-muted)', fontSize: '0.8rem', fontWeight: 800 }}>MONTO</th>
+                                        <th style={{ padding: '1.2rem', color: 'var(--color-text-muted)', fontSize: '0.8rem', fontWeight: 800 }}>ESTADO</th>
+                                        <th style={{ padding: '1.2rem', color: 'var(--color-text-muted)', fontSize: '0.8rem', fontWeight: 800 }}>REF. MOVIMIENTO</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {historial.map((h, i) => (
-                                        <tr key={h.id} style={{ borderTop: '1px solid rgba(255,255,255,0.03)' }}>
-                                            <td style={{ padding: '1.2rem', color: '#fff', fontSize: '0.9rem' }}>
+                                        <tr key={h.id} style={{ borderTop: '1px solid var(--color-card-border)' }}>
+                                            <td style={{ padding: '1.2rem', color: 'var(--color-text)', fontSize: '0.9rem' }}>
                                                 {new Date(h.fecha).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' })}
                                             </td>
-                                            <td style={{ padding: '1.2rem', color: '#fff', fontWeight: 700 }}>{formatCurrency(h.monto)}</td>
+                                            <td style={{ padding: '1.2rem', color: 'var(--color-text)', fontWeight: 700 }}>{formatCurrency(h.monto)}</td>
                                             <td style={{ padding: '1.2rem' }}>
                                                 <span style={{ 
                                                     background: h.estado === 'EXITOSA' ? 'rgba(0, 200, 150, 0.1)' : 'rgba(255, 77, 77, 0.1)', 
@@ -623,7 +623,7 @@ export default function TribuPassPage() {
                                                     {h.estado}
                                                 </span>
                                             </td>
-                                            <td style={{ padding: '1.2rem', color: '#666', fontSize: '0.9rem', fontFamily: 'monospace' }}>#{h.movimientoId || 'N/A'}</td>
+                                            <td style={{ padding: '1.2rem', color: 'var(--color-text-muted)', fontSize: '0.9rem', fontFamily: 'monospace' }}>#{h.movimientoId || 'N/A'}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -641,7 +641,7 @@ export default function TribuPassPage() {
                 >
                     <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
                         <p style={{ color: '#fbbf24', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2px', margin: '0 0 0.5rem 0' }}>Lo que dicen nuestros miembros</p>
-                        <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                        <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--color-text)', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
                             <Quote size={24} color="var(--color-primary)" /> Reseñas Reales
                         </h3>
                     </div>
@@ -651,21 +651,21 @@ export default function TribuPassPage() {
                             <motion.div
                                 key={i}
                                 whileHover={{ scale: 1.02 }}
-                                style={{ background: 'rgba(20,20,25,0.5)', borderRadius: '16px', padding: '1.2rem', border: '1px solid rgba(255,255,255,0.03)', position: 'relative' }}
+                                style={{ background: 'var(--color-card-bg)', borderRadius: '16px', padding: '1.2rem', border: '1px solid var(--color-card-border)', position: 'relative' }}
                             >
                                 <div style={{ display: 'flex', gap: '0.2rem', marginBottom: '0.8rem' }}>
                                     {[...Array(t.estrellas)].map((_, i) => (
                                         <Star key={i} size={14} fill="#fbbf24" color="#fbbf24" />
                                     ))}
                                 </div>
-                                <p style={{ color: '#ccc', fontSize: '0.85rem', lineHeight: 1.5, margin: '0 0 1rem 0', fontStyle: 'italic' }}>"{t.texto}"</p>
+                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', lineHeight: 1.5, margin: '0 0 1rem 0', fontStyle: 'italic' }}>"{t.texto}"</p>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                                     <div style={{ width: '32px', height: '32px', background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.8rem', color: '#000' }}>
                                         {t.nombre.charAt(0)}
                                     </div>
                                     <div>
-                                        <p style={{ color: '#fff', fontWeight: 700, fontSize: '0.85rem', margin: 0 }}>{t.nombre}</p>
-                                        <p style={{ color: '#666', fontSize: '0.7rem', margin: 0 }}>{t.ciudad || t.ciudades?.join(', ')}</p>
+                                        <p style={{ color: 'var(--color-text)', fontWeight: 700, fontSize: '0.85rem', margin: 0 }}>{t.nombre}</p>
+                                        <p style={{ color: 'var(--color-text-faint)', fontSize: '0.7rem', margin: 0 }}>{t.ciudad || t.ciudades?.join(', ')}</p>
                                     </div>
                                 </div>
                             </motion.div>
@@ -681,8 +681,8 @@ export default function TribuPassPage() {
                     style={{ marginTop: '4rem', marginBottom: '2rem' }}
                 >
                     <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                        <p style={{ color: '#666', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2px', margin: '0 0 0.5rem 0' }}>¿Tienes dudas?</p>
-                        <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2px', margin: '0 0 0.5rem 0' }}>¿Tienes dudas?</p>
+                        <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--color-text)', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
                             <HelpCircle size={24} color="var(--color-primary)" /> Preguntas Frecuentes
                         </h3>
                     </div>
@@ -692,13 +692,13 @@ export default function TribuPassPage() {
                             <motion.div
                                 key={i}
                                 layout
-                                style={{ background: 'rgba(20,20,25,0.5)', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.03)', overflow: 'hidden' }}
+                                style={{ background: 'var(--color-card-bg)', borderRadius: '14px', border: '1px solid var(--color-card-border)', overflow: 'hidden' }}
                             >
                                 <button
                                     onClick={() => setFaqOpen(faqOpen === i ? null : i)}
                                     style={{ width: '100%', padding: '1rem 1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left' }}
                                 >
-                                    <span style={{ color: '#fff', fontWeight: 600, fontSize: '0.9rem' }}>{faq.pregunta}</span>
+                                    <span style={{ color: 'var(--color-text)', fontWeight: 600, fontSize: '0.9rem' }}>{faq.pregunta}</span>
                                     <div style={{ color: '#fbbf24', display: 'flex', alignItems: 'center' }}>
                                         {faqOpen === i ? <Minus size={18} /> : <Plus size={18} />}
                                     </div>
@@ -712,7 +712,7 @@ export default function TribuPassPage() {
                                             style={{ overflow: 'hidden' }}
                                         >
                                             <div style={{ padding: '0 1.2rem 1rem 1.2rem' }}>
-                                                <p style={{ color: '#888', fontSize: '0.85rem', lineHeight: 1.6, margin: 0 }}>{faq.respuesta}</p>
+                                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', lineHeight: 1.6, margin: 0 }}>{faq.respuesta}</p>
                                             </div>
                                         </motion.div>
                                     )}
@@ -731,8 +731,8 @@ export default function TribuPassPage() {
                         style={{ marginTop: '3rem', textAlign: 'center' }}
                     >
                         <div style={{ 
-                            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.02))', 
-                            border: '1px solid rgba(245, 158, 11, 0.2)', 
+                            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(245, 158, 11, 0.03))', 
+                            border: '1px solid rgba(245, 158, 11, 0.25)', 
                             borderRadius: '24px', 
                             padding: '2.5rem',
                             maxWidth: '600px',
@@ -741,8 +741,8 @@ export default function TribuPassPage() {
                             <div style={{ width: '60px', height: '60px', background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.2rem' }}>
                                 <Rocket size={28} color="#000" />
                             </div>
-                            <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff', margin: '0 0 0.8rem 0' }}>¿Listo para desbloquear tu potencial?</h3>
-                            <p style={{ color: '#aaa', fontSize: '0.95rem', margin: '0 0 1.5rem 0', lineHeight: 1.5 }}>
+                            <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text)', margin: '0 0 0.8rem 0' }}>¿Listo para desbloquear tu potencial?</h3>
+                            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem', margin: '0 0 1.5rem 0', lineHeight: 1.5 }}>
                                 Súmate hoy a la comunidad de compradores inteligentes que ya están ahorrando más y ganando más con Tribu Pass.
                             </p>
                             <motion.button
@@ -772,25 +772,25 @@ export default function TribuPassPage() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}
+                        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}
                     >
                         <motion.div
                             initial={{ scale: 0.9, y: 20 }}
                             animate={{ scale: 1, y: 0 }}
                             exit={{ scale: 0.9, y: 20 }}
-                            style={{ background: '#12121a', border: '1px solid rgba(255,77,77,0.3)', borderRadius: '32px', padding: '2.5rem', maxWidth: '450px', width: '100%', textAlign: 'center' }}
+                            style={{ background: 'var(--color-modal-bg)', border: '1px solid rgba(255,77,77,0.3)', borderRadius: '32px', padding: '2.5rem', maxWidth: '450px', width: '100%', textAlign: 'center' }}
                         >
                             <div style={{ width: '80px', height: '80px', background: 'rgba(255, 77, 77, 0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
                                 <XCircle size={40} color="#ff4d4d" />
                             </div>
-                            <h3 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#fff', marginBottom: '1rem' }}>¿Estás seguro?</h3>
-                            <p style={{ color: '#aaa', lineHeight: 1.6, marginBottom: '2.5rem' }}>
+                            <h3 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--color-text)', marginBottom: '1rem' }}>¿Estás seguro?</h3>
+                            <p style={{ color: 'var(--color-text-muted)', lineHeight: 1.6, marginBottom: '2.5rem' }}>
                                 Perderás tu beneficio de <strong>cashback x2</strong> y los <strong>envíos gratis</strong> inmediatamente al finalizar el periodo actual.
                             </p>
                             <div style={{ display: 'flex', gap: '1rem' }}>
                                 <button 
                                     onClick={() => setShowCancelConfirm(false)}
-                                    style={{ flex: 1, padding: '1rem', borderRadius: '14px', background: 'rgba(255,255,255,0.05)', border: 'none', color: '#fff', fontWeight: 600, cursor: 'pointer' }}
+                                    style={{ flex: 1, padding: '1rem', borderRadius: '14px', background: 'var(--color-card-bg-soft)', border: '1px solid var(--color-card-border)', color: 'var(--color-text)', fontWeight: 600, cursor: 'pointer' }}
                                 >
                                     ¡No, mantener!
                                 </button>

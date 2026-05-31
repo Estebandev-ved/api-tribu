@@ -67,8 +67,10 @@ public class SaldoService {
      */
     @Transactional
     public MovimientoSaldo registrarBonoReferente(Usuario referente, String nombreInvitado) {
+        LocalDateTime unlockTime = LocalDateTime.now().plusMinutes(30);
+        String hora = unlockTime.format(java.time.format.DateTimeFormatter.ofPattern("hh:mm a")).toLowerCase();
         return crearBonoOnHold(referente, BONO_REFERENTE, TipoMovimiento.REFERRAL_BONUS, null,
-                "Bono PENDIENTE por invitar a " + nombreInvitado + " — disponible en 30 minutos");
+                "Bono por invitar a " + nombreInvitado + " — disponible hoy a las " + hora);
     }
 
     /**
@@ -76,8 +78,10 @@ public class SaldoService {
      */
     @Transactional
     public MovimientoSaldo registrarBonoNuevoUsuario(Usuario usuario, String codigoUsado) {
+        LocalDateTime unlockTime = LocalDateTime.now().plusMinutes(30);
+        String hora = unlockTime.format(java.time.format.DateTimeFormatter.ofPattern("hh:mm a")).toLowerCase();
         return crearBonoOnHold(usuario, BONO_NUEVO_USUARIO, TipoMovimiento.WELCOME_BONUS, null,
-                "Bono PENDIENTE por usar el código de referido: " + codigoUsado + " — disponible en 30 minutos");
+                "Bono de bienvenida por código " + codigoUsado + " — disponible hoy a las " + hora);
     }
 
     /**

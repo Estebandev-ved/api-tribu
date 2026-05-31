@@ -148,7 +148,7 @@ export default function MiPerfilPage() {
                 </div>
 
                 {/* Pestañas */}
-                <div style={{ display: 'flex', gap: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.06)', marginBottom: '2rem', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', borderBottom: '1px solid var(--color-border)', marginBottom: '2rem', flexWrap: 'wrap' }}>
                     {tabs.map(tab => (
                         <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                             style={{
@@ -168,28 +168,28 @@ export default function MiPerfilPage() {
                 <AnimatePresence mode="wait">
                     {activeTab === 'datos' && (
                         <motion.div key="datos" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
-                            <div style={{ background: 'rgba(20,20,20,0.6)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '1rem', padding: '2rem' }}>
+                            <div style={{ background: 'var(--color-card-bg)', border: '1px solid var(--color-card-border)', borderRadius: '1rem', padding: '2rem' }}>
                                 <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                                     <div>
-                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#888', marginBottom: '0.4rem' }}>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--color-text-muted)', marginBottom: '0.4rem' }}>
                                             <Mail size={14} /> Correo Electrónico (No modificable)
                                         </label>
                                         <input className="input" type="email" value={perfil.email} disabled style={{ opacity: 0.6, cursor: 'not-allowed' }} />
                                     </div>
                                     <div>
-                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#aaa', marginBottom: '0.4rem' }}>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--color-text-muted)', marginBottom: '0.4rem' }}>
                                             <User size={14} /> Nombre Completo
                                         </label>
                                         <input className="input" type="text" name="nombreCompleto" value={perfil.nombreCompleto} onChange={handleChange} required placeholder="¿Cómo te llamas?" />
                                     </div>
                                     <div>
-                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#aaa', marginBottom: '0.4rem' }}>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--color-text-muted)', marginBottom: '0.4rem' }}>
                                             <Phone size={14} /> Teléfono
                                         </label>
                                         <input className="input" type="text" name="telefono" value={perfil.telefono} onChange={handleChange} placeholder="Tu número de contacto" />
                                     </div>
                                     <div>
-                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#aaa', marginBottom: '0.4rem' }}>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--color-text-muted)', marginBottom: '0.4rem' }}>
                                             <MapPin size={14} /> Dirección de Envío Principal
                                         </label>
                                         <textarea className="input" name="direccion" value={perfil.direccion} onChange={handleChange} rows={3} placeholder="Calle, número, apto, barrio, ciudad..." style={{ resize: 'vertical' }} />
@@ -224,22 +224,22 @@ export default function MiPerfilPage() {
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
                                 {/* Contraseña */}
-                                <div style={{ background: 'rgba(20,20,20,0.6)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '1rem', padding: '1.5rem' }}>
+                                <div style={{ background: 'var(--color-card-bg)', border: '1px solid var(--color-card-border)', borderRadius: '1rem', padding: '1.5rem' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
                                         <Lock size={20} color="var(--color-primary)" />
                                         <h3 style={{ margin: 0, fontWeight: 700 }}>Cambiar Contraseña</h3>
                                     </div>
-                                    <p style={{ color: '#888', fontSize: '0.9rem', marginBottom: '1rem' }}>
+                                    <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', marginBottom: '1rem' }}>
                                         Si olvidaste tu contraseña actual, usa el flujo de recuperación por correo.
                                     </p>
                                     <button className="btn btn-ghost" onClick={() => navigate('/forgot-password')}
-                                        style={{ border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '0.6rem 1.2rem' }}>
+                                        style={{ border: '1px solid var(--color-border)', borderRadius: '8px', padding: '0.6rem 1.2rem' }}>
                                         📧 Enviar enlace de recuperación a mi correo
                                     </button>
                                 </div>
 
                                 {/* 2FA */}
-                                <div style={{ background: 'rgba(20,20,20,0.6)', border: `1px solid ${is2faOn ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.06)'}`, borderRadius: '1rem', padding: '1.5rem' }}>
+                                <div style={{ background: 'var(--color-card-bg)', border: `1px solid ${is2faOn ? 'rgba(34,197,94,0.3)' : 'var(--color-card-border)'}`, borderRadius: '1rem', padding: '1.5rem' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                                             <Shield size={20} color={is2faOn ? '#22c55e' : 'var(--color-primary)'} />
@@ -254,7 +254,7 @@ export default function MiPerfilPage() {
                                             {is2faOn ? '✅ Activo' : '⚠️ Inactivo'}
                                         </span>
                                     </div>
-                                    <p style={{ color: '#888', fontSize: '0.88rem', lineHeight: 1.6, marginBottom: '1.25rem' }}>
+                                    <p style={{ color: 'var(--color-text-muted)', fontSize: '0.88rem', lineHeight: 1.6, marginBottom: '1.25rem' }}>
                                         {is2faOn
                                             ? 'Tu cuenta está protegida. Cada vez que inicies sesión, necesitarás un código de tu app autenticadora.'
                                             : 'Añade una capa extra de seguridad usando Google Authenticator o Authy. Incluso si alguien obtiene tu contraseña, no podrá acceder sin tu teléfono.'}
@@ -274,22 +274,22 @@ export default function MiPerfilPage() {
                                     {/* Activar 2FA — Paso 2: escanear QR y verificar */}
                                     {!is2faOn && qrSetup && (
                                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                                            <div style={{ background: '#1a1a28', borderRadius: '12px', padding: '1.5rem', marginBottom: '1.25rem' }}>
-                                                <p style={{ color: '#aaa', fontSize: '0.85rem', marginBottom: '1rem', lineHeight: 1.6 }}>
-                                                    <strong style={{ color: '#f1f5f9' }}>Paso 1:</strong> Abre Google Authenticator o Authy y escanea este QR:
+                                            <div style={{ background: 'var(--color-card-bg-soft)', borderRadius: '12px', padding: '1.5rem', marginBottom: '1.25rem', border: '1px solid var(--color-card-border)' }}>
+                                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', marginBottom: '1rem', lineHeight: 1.6 }}>
+                                                    <strong style={{ color: 'var(--color-text)' }}>Paso 1:</strong> Abre Google Authenticator o Authy y escanea este QR:
                                                 </p>
                                                 <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
                                                     <img src={qrSetup.qrCode} alt="Código QR para 2FA" style={{ width: 180, height: 180, borderRadius: '12px', background: '#fff', padding: '8px' }} />
                                                 </div>
-                                                <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '0.75rem', marginBottom: '0.5rem' }}>
-                                                    <p style={{ color: '#888', fontSize: '0.75rem', margin: 0 }}>¿No puedes escanear? Ingresa este código manualmente en tu app:</p>
+                                                <div style={{ background: 'var(--color-card-bg-soft)', borderRadius: '8px', padding: '0.75rem', marginBottom: '0.5rem', border: '1px solid var(--color-card-border)' }}>
+                                                    <p style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', margin: 0 }}>¿No puedes escanear? Ingresa este código manualmente en tu app:</p>
                                                     <p style={{ color: '#7c3aed', fontFamily: 'monospace', fontSize: '0.9rem', fontWeight: 700, margin: '0.25rem 0 0 0', wordBreak: 'break-all' }}>{qrSetup.secreto}</p>
                                                 </div>
                                             </div>
                                             <form onSubmit={handleActivar2fa} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
                                                 <div style={{ flex: 1, minWidth: 160 }}>
-                                                    <label style={{ display: 'block', fontSize: '0.82rem', color: '#aaa', marginBottom: '0.4rem' }}>
-                                                        <strong style={{ color: '#f1f5f9' }}>Paso 2:</strong> Ingresa el código de 6 dígitos:
+                                                    <label style={{ display: 'block', fontSize: '0.82rem', color: 'var(--color-text-muted)', marginBottom: '0.4rem' }}>
+                                                        <strong style={{ color: 'var(--color-text)' }}>Paso 2:</strong> Ingresa el código de 6 dígitos:
                                                     </label>
                                                     <input
                                                         id="codigo-activar-2fa"
@@ -311,7 +311,7 @@ export default function MiPerfilPage() {
                                                     <CheckCircle size={18} /> {loadingSec ? 'Verificando...' : 'Activar'}
                                                 </motion.button>
                                                 <button type="button" onClick={() => { setQrSetup(null); setCodigoActivar('') }}
-                                                    style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: '#888', padding: '0.75rem 1rem', borderRadius: '10px', cursor: 'pointer', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                    style={{ background: 'none', border: '1px solid var(--color-border)', color: 'var(--color-text-muted)', padding: '0.75rem 1rem', borderRadius: '10px', cursor: 'pointer', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                                     <XCircle size={16} /> Cancelar
                                                 </button>
                                             </form>
@@ -328,7 +328,7 @@ export default function MiPerfilPage() {
 
                                     {is2faOn && showDesactivar && (
                                         <motion.form initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} onSubmit={handleDesactivar2fa}
-                                            style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '10px', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                            style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '10px', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                             <p style={{ color: '#ef4444', fontSize: '0.88rem', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                                 <AlertTriangle size={16} /> Confirma tu contraseña para desactivar el 2FA:
                                             </p>
@@ -347,7 +347,7 @@ export default function MiPerfilPage() {
                                                     {loadingSec ? 'Procesando...' : 'Confirmar desactivación'}
                                                 </button>
                                                 <button type="button" onClick={() => { setShowDesactivar(false); setPasswordDesactivar('') }}
-                                                    style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: '#888', padding: '0.65rem 1rem', borderRadius: '8px', cursor: 'pointer', fontSize: '0.88rem' }}>
+                                                    style={{ background: 'none', border: '1px solid var(--color-border)', color: 'var(--color-text-muted)', padding: '0.65rem 1rem', borderRadius: '8px', cursor: 'pointer', fontSize: '0.88rem' }}>
                                                     Cancelar
                                                 </button>
                                             </div>

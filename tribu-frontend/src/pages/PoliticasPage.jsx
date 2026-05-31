@@ -10,7 +10,7 @@ const sections = [
         subsections: [
             {
                 title: '1. Responsable del Tratamiento',
-                content: 'TRIBU E-COMMERCE (en adelante "Tribu", "la plataforma", "nosotros"), con domicilio en Medellín, Antioquia, Colombia, es el responsable del tratamiento de los datos personales recopilados a través del sitio web tribucol.shop y sus aplicaciones asociadas. El contacto del responsable es: contacto@tribu.com.'
+                content: 'TRIBU E-COMMERCE (en adelante "Tribu", "la plataforma", "nosotros"), con domicilio principal en Colombia, es el responsable del tratamiento de los datos personales recopilados a través del sitio web tribucol.shop y sus aplicaciones asociadas. El contacto del responsable es: contacto@tribu.com.'
             },
             {
                 title: '2. Datos Personales Recopilados',
@@ -146,7 +146,7 @@ const sections = [
             },
             {
                 title: '22. Ley Aplicable y Jurisdicción',
-                content: 'Estos términos y condiciones se rigen por las leyes de la República de Colombia. Cualquier controversia que surja en relación con estos términos, la plataforma o las transacciones realizadas a través de ella, será sometida a la jurisdicción de los jueces y tribunales de Medellín, Antioquia, Colombia, renunciando el usuario a cualquier otro fuero que pudiera corresponderle. Antes de iniciar cualquier acción legal, las partes acuerdan intentar resolver la disputa de manera amigable a través del centro de solución de controversias de la Cámara de Comercio de Medellín para Antioquia.'
+                content: 'Estos términos y condiciones se rigen por las leyes de la República de Colombia. Cualquier controversia que surja en relación con estos términos, la plataforma o las transacciones realizadas a través de ella, será sometida a la jurisdicción de los jueces y tribunales de la República de Colombia, renunciando el usuario a cualquier otro fuero que pudiera corresponderle. Antes de iniciar cualquier acción legal, las partes acuerdan intentar resolver la disputa de manera amigable a través de un Centro de Conciliación y Arbitraje legalmente constituido en el país.'
             },
             {
                 title: '23. Notificaciones',
@@ -162,7 +162,7 @@ const sections = [
             },
             {
                 title: '26. Contacto',
-                content: 'Para cualquier consulta, queja o notificación relacionada con estos términos y condiciones o la política de privacidad, el usuario puede contactar a Tribu a través de: Correo electrónico: contacto@tribu.com. WhatsApp: +57 300 000 0000. Chat de soporte: disponible en la plataforma. Dirección: Medellín, Antioquia, Colombia. Para consultas sobre protección de datos, contactar al correo: contacto@tribu.com con el asunto "Protección de Datos".'
+                content: 'Para cualquier consulta, queja o notificación relacionada con estos términos y condiciones o la política de privacidad, el usuario puede contactar a Tribu a través de: Correo electrónico: contacto@tribu.com. WhatsApp: +57 300 000 0000. Chat de soporte: disponible en la plataforma. Dirección: Bodega Central, Colombia. Para consultas sobre protección de datos, contactar al correo: contacto@tribu.com con el asunto "Protección de Datos".'
             }
         ]
     }

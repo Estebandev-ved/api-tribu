@@ -1,7 +1,7 @@
 {
     "name": "Tribu Card",
     "short_name": "Tribu",
-    "description": "E-commerce Tribu - Compra local en Medellín",
+    "description": "E-commerce Tribu - Tienda de productos virales",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#ffffff",

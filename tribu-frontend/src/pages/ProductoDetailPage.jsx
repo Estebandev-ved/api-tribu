@@ -132,52 +132,55 @@ export default function ProductoDetailPage() {
 
                     {/* Columna Izquierda: Imagen con Zoom y Galería */}
                     <div style={{ flex: '1 1 400px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        <div
-                            ref={imageRef}
-                            onMouseEnter={() => setIsZooming(true)}
-                            onMouseLeave={() => setIsZooming(false)}
-                            onMouseMove={handleMouseMove}
-                            style={{
-                                position: 'relative',
-                                width: '100%',
-                                aspectRatio: '1/1',
-                                borderRadius: 'var(--radius-lg)',
-                                overflow: 'hidden',
-                                background: 'var(--color-surface)',
-                                border: '1px solid var(--color-border)',
-                                cursor: 'crosshair',
-                            }}
-                        >
-                            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: isZooming ? 0 : 1, transition: 'opacity 0.3s' }}>
-                                <OptimizedImage
-                                    src={activeImage || producto.imagenUrl}
-                                    alt={producto.nombre}
-                                    fallback="📦"
-                                />
-                            </div>
+                        {/* Contenedor cuadrado estable para navegadores móviles y desktop */}
+                        <div style={{ position: 'relative', width: '100%', paddingTop: '100%' }}>
+                            <div
+                                ref={imageRef}
+                                onMouseEnter={() => setIsZooming(true)}
+                                onMouseLeave={() => setIsZooming(false)}
+                                onMouseMove={handleMouseMove}
+                                style={{
+                                    position: 'absolute',
+                                    top: 0, left: 0, right: 0, bottom: 0,
+                                    borderRadius: 'var(--radius-lg)',
+                                    overflow: 'hidden',
+                                    background: 'var(--color-surface)',
+                                    border: '1px solid var(--color-border)',
+                                    cursor: 'crosshair',
+                                }}
+                            >
+                                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: isZooming ? 0 : 1, transition: 'opacity 0.3s' }}>
+                                    <OptimizedImage
+                                        src={activeImage || producto.imagenUrl}
+                                        alt={producto.nombre}
+                                        fallback="📦"
+                                        eager={true}
+                                    />
+                                </div>
 
-                            {/* Capa de Zoom */}
-                            {isZooming && (
-                                <div
-                                    style={{
-                                        position: 'absolute',
-                                        top: 0, left: 0, right: 0, bottom: 0,
-                                        pointerEvents: 'none',
-                                        backgroundImage: `url(${activeImage || producto.imagenUrl || 'https://via.placeholder.com/600'})`,
-                                        backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
-                                        backgroundSize: '250%', // Nivel de zoom
-                                        backgroundRepeat: 'no-repeat'
-                                    }}
-                                />
-                            )}
+                                {/* Capa de Zoom */}
+                                {isZooming && (
+                                    <div
+                                        style={{
+                                            position: 'absolute',
+                                            top: 0, left: 0, right: 0, bottom: 0,
+                                            pointerEvents: 'none',
+                                            backgroundImage: `url(${activeImage || producto.imagenUrl || 'https://via.placeholder.com/600'})`,
+                                            backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
+                                            backgroundSize: '250%', // Nivel de zoom
+                                            backgroundRepeat: 'no-repeat'
+                                        }}
+                                    />
+                                )}
+                            </div>
                         </div>
 
                         {/* Miniaturas de Perspectivas */}
                         {(() => {
-                            const imagesList = producto?.imagenesAdicionales 
+                            const imagesList = producto?.imagenesAdicionales
                                 ? [producto.imagenUrl, ...producto.imagenesAdicionales.split(',').map(img => img.trim()).filter(Boolean)]
                                 : [producto?.imagenUrl].filter(Boolean);
-                            
+
                             return imagesList.length > 1 && (
                                 <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap', marginTop: '0.25rem' }}>
                                     {imagesList.map((img, idx) => (
@@ -255,7 +258,7 @@ export default function ProductoDetailPage() {
                                 </p>
                             </div>
 
-                             <button
+                            <button
                                 ref={mainButtonRef}
                                 onClick={handleAddToCart}
                                 disabled={producto.stock === 0}
@@ -268,6 +271,25 @@ export default function ProductoDetailPage() {
                                 <ShoppingCart size={20} style={{ marginRight: '0.5rem' }} />
                                 {producto.stock > 0 ? 'Agregar al Carrito' : 'Agotado'}
                             </button>
+
+                            {/* Banner de aviso de demora por alta demanda */}
+                            {producto.stock > 0 && (
+                                <div style={{
+                                    background: 'rgba(255, 87, 34, 0.08)',
+                                    border: '1px solid rgba(255, 87, 34, 0.25)',
+                                    borderRadius: 'var(--radius-md)',
+                                    padding: '0.85rem 1rem',
+                                    marginTop: '1.25rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.75rem',
+                                }}>
+                                    <Truck size={18} style={{ color: 'var(--color-primary)', flexShrink: 0 }} />
+                                    <div style={{ fontSize: '0.8rem', lineHeight: 1.45, color: 'var(--color-text)' }}>
+                                        🔥 <strong>Alta demanda:</strong> Los pedidos tardan de <strong>4 a 6 días hábiles</strong> en llegar a tu puerta. ¡Gracias por tu paciencia!
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Tarea 7: Sellos de Garantía Visuales Integrados */}
                             {producto.stock > 0 && (

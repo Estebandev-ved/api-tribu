@@ -14,11 +14,24 @@
 :root {
   /* ── Paleta Principal ── */
   --color-bg: #111111;
+  --color-background: var(--color-bg);
   --color-surface: #1A1A1A;
   --color-surface-2: #222222;
   --color-surface-3: #2a2a2a;
   --color-border: rgba(255, 255, 255, 0.08);
   --color-border-warm: rgba(255, 87, 34, 0.2);
+  --color-card-bg: rgba(20, 20, 20, 0.65);
+  --color-card-bg-strong: rgba(20, 20, 25, 0.85);
+  --color-card-bg-soft: rgba(255, 255, 255, 0.02);
+  --color-card-border: rgba(255, 255, 255, 0.06);
+  --color-modal-bg: rgba(15, 15, 18, 0.9);
+  --color-input-bg: var(--color-surface-2);
+  --color-footer-bg: #0d0d0d;
+  --color-footer-text: #ffffff;
+  --color-footer-muted: #a3a3a3;
+  --color-footer-border: rgba(255, 87, 34, 0.12);
+  --color-footer-divider: rgba(255, 255, 255, 0.08);
+  --color-admin-bg: radial-gradient(circle at 20% -10%, #222 0%, #0f0f0f 45%, #0a0a0a 100%);
 
   /* Naranja Vibrante — Acción e impulso */
   --color-primary: #FF5722;
@@ -59,6 +72,15 @@
   --shadow-orange: 0 4px 20px var(--color-primary-glow);
   --shadow-yellow: 0 4px 20px var(--color-accent-glow);
   --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.5);
+
+  /* Navbar Variables (Dark Mode por defecto) */
+  --color-nav-bg: rgba(13, 13, 13, 0.95);
+  --color-nav-border: rgba(255, 255, 255, 0.06);
+  --color-nav-text-inactive: #888888;
+  --color-nav-text-active: #ffffff;
+  --color-dropdown-bg: rgba(20, 20, 20, 0.98);
+  --color-dropdown-border: rgba(255, 255, 255, 0.08);
+  --shadow-nav: 0 4px 30px rgba(0, 0, 0, 0.5);
 }
 
 html {
@@ -291,7 +313,7 @@ body {
    =========================== */
 .input {
   width: 100%;
-  background: var(--color-surface-2);
+  background: var(--color-input-bg);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   color: var(--color-text);
@@ -700,15 +722,37 @@ tr:hover td {
 /* ── Light Mode Theme ── */
 :root[data-theme='light'] {
   --color-bg: #F5F7FB;
+  --color-background: var(--color-bg);
   --color-surface: #FFFFFF;
   --color-surface-2: #EEF1F6;
   --color-surface-3: #E2E6EE;
   --color-border: rgba(0, 0, 0, 0.08);
   --color-border-warm: rgba(255, 87, 34, 0.15);
+  --color-card-bg: #FFFFFF;
+  --color-card-bg-strong: #FFFFFF;
+  --color-card-bg-soft: #F4F6FB;
+  --color-card-border: rgba(0, 0, 0, 0.08);
+  --color-modal-bg: rgba(255, 255, 255, 0.95);
+  --color-input-bg: #FFFFFF;
+  --color-footer-bg: #F4F6FB;
+  --color-footer-text: #111111;
+  --color-footer-muted: #666666;
+  --color-footer-border: rgba(0, 0, 0, 0.08);
+  --color-footer-divider: rgba(0, 0, 0, 0.08);
+  --color-admin-bg: linear-gradient(180deg, #F7F8FB 0%, #EEF1F6 55%, #E8ECF4 100%);
   --color-text: #111111;
   --color-text-muted: #555555;
   --color-text-faint: #888888;
   --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.04);
+
+  /* Navbar Variables (Light Mode) */
+  --color-nav-bg: rgba(255, 255, 255, 0.92);
+  --color-nav-border: rgba(0, 0, 0, 0.06);
+  --color-nav-text-inactive: #555555;
+  --color-nav-text-active: var(--color-primary);
+  --color-dropdown-bg: rgba(255, 255, 255, 0.98);
+  --color-dropdown-border: rgba(0, 0, 0, 0.08);
+  --shadow-nav: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
 /* Glassmorphism Panel */

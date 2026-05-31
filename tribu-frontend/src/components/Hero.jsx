@@ -15,7 +15,7 @@ import { Link } from 'react-router-dom'
 
 const features = [
     { icon: <Flame size={22} />, title: 'Productos Virales', desc: 'Curados directamente de TikTok y las tendencias globales.' },
-    { icon: <Truck size={22} />, title: 'Envío a Todo Colombia', desc: 'Desde Medellín, Antioquia. Rastreo en tiempo real.' },
+    { icon: <Truck size={22} />, title: 'Envío a Todo Colombia', desc: 'Despachos rápidos nacionales. Rastreo en tiempo real.' },
     { icon: <TrendingUp size={22} />, title: 'Precios Imbatibles', desc: 'Acceso directo a proveedores. Sin intermediarios.' },
     { icon: <ShieldCheck size={22} />, title: 'Compra 100% Segura', desc: 'Tu pedido protegido desde el pago hasta la entrega.' },
 ]
@@ -155,6 +155,7 @@ export default function Hero() {
                         style={{
                             fontFamily: 'Outfit, sans-serif', fontWeight: 900, lineHeight: 1.08,
                             fontSize: 'clamp(2.5rem, 7vw, 5.2rem)', marginBottom: '1.5rem',
+                            color: '#ffffff',
                         }}
                     >
                         Lo más <span className="gradient-text">viral</span><br />
@@ -167,12 +168,12 @@ export default function Hero() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: 0.2 }}
                         style={{
-                            color: 'var(--color-text-muted)', fontSize: '1.1rem',
+                            color: 'rgba(255, 255, 255, 0.7)', fontSize: '1.1rem',
                             maxWidth: '520px', margin: '0 auto 2.5rem', lineHeight: 1.65,
                         }}
                     >
                         Los gadgets que arrasan en TikTok hoy.<br />
-                        <strong style={{ color: 'var(--color-text)' }}>
+                        <strong style={{ color: '#ffffff' }}>
                             Pocas unidades. No esperes a verlo en el perfil de alguien más.
                         </strong>
                     </motion.p>
@@ -222,7 +223,13 @@ export default function Hero() {
                             transition={{ type: 'spring', stiffness: 280, damping: 18 }}
                         >
                             <Link to="/" className="btn btn-ghost"
-                                style={{ fontSize: '1rem', padding: '0.9rem 2rem' }}>
+                                style={{ 
+                                    fontSize: '1rem', 
+                                    padding: '0.9rem 2rem',
+                                    color: '#ffffff',
+                                    borderColor: 'rgba(255, 255, 255, 0.25)',
+                                    background: 'rgba(255, 255, 255, 0.05)',
+                                }}>
                                 Explorar catálogo
                             </Link>
                         </motion.div>
@@ -246,7 +253,7 @@ export default function Hero() {
                                 style={{ textAlign: 'center', cursor: 'default' }}
                             >
                                 <p style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 900, fontSize: '1.9rem', color: 'var(--color-primary)' }}>{s.num}</p>
-                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.82rem' }}>{s.label}</p>
+                                <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.82rem' }}>{s.label}</p>
                             </motion.div>
                         ))}
                     </motion.div>
@@ -259,7 +266,7 @@ export default function Hero() {
                             transition={{ delay: 1.2 }}
                             style={{ marginTop: '3rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem' }}
                         >
-                            <span style={{ fontSize: '0.72rem', color: 'var(--color-text-faint)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>Scroll</span>
+                            <span style={{ fontSize: '0.72rem', color: 'rgba(255, 255, 255, 0.4)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>Scroll</span>
                             <motion.div
                                 animate={{ y: [0, 7, 0] }}
                                 transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}

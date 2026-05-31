@@ -36,7 +36,7 @@ function DropdownMenu({ label, Icon, links, isActive }) {
                     alignItems: 'center',
                     gap: '0.35rem',
                     transition: 'all 0.2s',
-                    color: isActive ? '#fff' : '#888',
+                    color: isActive ? 'var(--color-nav-text-active)' : 'var(--color-nav-text-inactive)',
                     background: isActive ? 'rgba(255,87,34,0.15)' : 'transparent',
                     border: isActive ? '1px solid rgba(255,87,34,0.3)' : '1px solid transparent',
                     cursor: 'pointer'
@@ -63,12 +63,12 @@ function DropdownMenu({ label, Icon, links, isActive }) {
                             top: '120%',
                             left: 0,
                             minWidth: '200px',
-                            background: 'rgba(20, 20, 20, 0.98)',
+                            background: 'var(--color-dropdown-bg)',
                             backdropFilter: 'blur(20px)',
-                            border: '1px solid rgba(255, 255, 255, 0.08)',
+                            border: '1px solid var(--color-dropdown-border)',
                             borderRadius: '16px',
                             padding: '0.5rem',
-                            boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                            boxShadow: 'var(--shadow-nav)',
                             zIndex: 1000
                         }}
                     >
@@ -80,14 +80,14 @@ function DropdownMenu({ label, Icon, links, isActive }) {
                                 style={{ textDecoration: 'none' }}
                             >
                                 <motion.div
-                                    whileHover={{ background: 'rgba(255, 255, 255, 0.03)', x: 4 }}
+                                    whileHover={{ background: 'rgba(255, 87, 34, 0.08)', x: 4 }}
                                     style={{
                                         padding: '0.75rem 1rem',
                                         borderRadius: '10px',
                                         display: 'flex',
                                         alignItems: 'center',
                                         gap: '0.75rem',
-                                        color: '#ccc',
+                                        color: 'var(--color-text)',
                                         fontSize: '0.9rem',
                                         fontWeight: 500,
                                         transition: 'all 0.2s'
@@ -150,10 +150,10 @@ export default function Navbar() {
                 transition={{ duration: 0.45, ease: 'easeOut' }}
                 style={{
                     position: 'sticky', top: 0, zIndex: 100,
-                    background: 'rgba(13,13,13,0.97)',
+                    background: 'var(--color-nav-bg)',
                     backdropFilter: 'blur(14px)',
                     WebkitBackdropFilter: 'blur(14px)',
-                    borderBottom: '1px solid rgba(255,255,255,0.06)',
+                    borderBottom: '1px solid var(--color-nav-border)',
                 }}
             >
                 <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 72, gap: '0.75rem' }}>
@@ -182,7 +182,7 @@ export default function Navbar() {
                             <motion.span whileHover={{ scale: 1.05 }}
                                 style={{
                                     padding: '0.4rem 0.9rem', borderRadius: 'var(--radius-full)',
-                                    fontSize: '0.87rem', fontWeight: 600, color: isActive('/') ? '#fff' : '#888',
+                                    fontSize: '0.87rem', fontWeight: 600, color: isActive('/') ? 'var(--color-nav-text-active)' : 'var(--color-nav-text-inactive)',
                                     background: isActive('/') ? 'rgba(255,87,34,0.15)' : 'transparent',
                                 }}>
                                 Tienda
@@ -194,7 +194,7 @@ export default function Navbar() {
                                 style={{
                                     padding: '0.4rem 0.9rem', borderRadius: 'var(--radius-full)',
                                     fontSize: '0.87rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem',
-                                    color: isActive('/virales') ? '#fff' : '#888',
+                                    color: isActive('/virales') ? 'var(--color-nav-text-active)' : 'var(--color-nav-text-inactive)',
                                     background: isActive('/virales') ? 'rgba(255,87,34,0.15)' : 'transparent',
                                 }}>
                                 <TrendingUp size={14} />
@@ -209,7 +209,7 @@ export default function Navbar() {
                                         style={{
                                             padding: '0.4rem 0.9rem', borderRadius: 'var(--radius-full)',
                                             fontSize: '0.87rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem',
-                                            color: isActive('/billetera') ? '#fff' : '#888',
+                                            color: isActive('/billetera') ? 'var(--color-nav-text-active)' : 'var(--color-nav-text-inactive)',
                                             background: isActive('/billetera') ? 'rgba(255,87,34,0.15)' : 'transparent',
                                         }}>
                                         <WalletCards size={14} />
@@ -223,7 +223,7 @@ export default function Navbar() {
                                             padding: '0.4rem 0.9rem', borderRadius: 'var(--radius-full)',
                                             fontSize: '0.87rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem',
                                             whiteSpace: 'nowrap',
-                                            color: isActive('/tribu-pass') ? '#fbbf24' : '#888',
+                                            color: isActive('/tribu-pass') ? '#fbbf24' : 'var(--color-nav-text-inactive)',
                                             background: isActive('/tribu-pass') ? 'rgba(245, 158, 11, 0.15)' : 'transparent',
                                             border: isActive('/tribu-pass') ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid transparent',
                                         }}>
@@ -246,9 +246,9 @@ export default function Navbar() {
                                 <motion.span whileHover={{ scale: 1.05 }}
                                     style={{
                                         padding: '0.4rem 0.9rem', borderRadius: 'var(--radius-full)',
-                                        fontSize: '0.87rem', fontWeight: 600, color: isActive('/admin') ? '#fff' : '#888',
+                                        fontSize: '0.87rem', fontWeight: 600, color: isActive('/admin') ? 'var(--color-nav-text-active)' : 'var(--color-nav-text-inactive)',
                                         whiteSpace: 'nowrap',
-                                        background: isActive('/admin') ? 'rgba(255,255,255,0.05)' : 'transparent',
+                                        background: isActive('/admin') ? 'rgba(255,87,34,0.08)' : 'transparent',
                                     }}>
                                     Panel Admin
                                 </motion.span>
@@ -263,7 +263,7 @@ export default function Navbar() {
                             whileTap={{ scale: 0.9 }}
                             onClick={toggleTheme}
                             style={{
-                                background: 'rgba(255,255,255,0.05)',
+                                background: 'var(--color-surface-2)',
                                 border: '1px solid var(--color-border)',
                                 borderRadius: '9999px',
                                 padding: '0.5rem',
@@ -333,7 +333,7 @@ export default function Navbar() {
                             aria-label="Menú"
                             style={{
                                 display: 'none', background: 'none', border: 'none',
-                                cursor: 'pointer', color: '#fff', padding: '0.4rem',
+                                cursor: 'pointer', color: 'var(--color-text)', padding: '0.4rem',
                             }}
                         >
                             {menuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -351,11 +351,11 @@ export default function Navbar() {
                         exit={{ opacity: 0, y: -12 }}
                         transition={{ duration: 0.22 }}
                         style={{
-                            position: 'fixed', top: 62, left: 0, right: 0,
-                            background: 'rgba(13,13,13,0.99)',
+                            position: 'fixed', top: 72, left: 0, right: 0,
+                            background: 'var(--color-dropdown-bg)',
                             backdropFilter: 'blur(16px)',
                             WebkitBackdropFilter: 'blur(16px)',
-                            borderBottom: '1px solid rgba(255,87,34,0.12)',
+                            borderBottom: '1px solid var(--color-nav-border)',
                             zIndex: 99, padding: '1.25rem 1.5rem 2rem',
                             display: 'flex', flexDirection: 'column', gap: '0.35rem',
                         }}
@@ -382,11 +382,11 @@ export default function Navbar() {
                                     style={{
                                         display: 'flex', alignItems: 'center', gap: '0.6rem',
                                         padding: '0.85rem 1rem', borderRadius: 12, textDecoration: 'none',
-                                        color: isActive(link.to) ? '#fff' : '#aaa',
+                                        color: isActive(link.to) ? 'var(--color-nav-text-active)' : 'var(--color-nav-text-inactive)',
                                         background: isActive(link.to) ? 'rgba(255,87,34,0.12)' : 'transparent',
                                         fontWeight: 600, fontSize: '1rem',
                                     }}>
-                                    {link.Icon && <link.Icon size={18} color={isActive(link.to) ? 'var(--color-primary)' : '#666'} />}
+                                    {link.Icon && <link.Icon size={18} color={isActive(link.to) ? 'var(--color-primary)' : 'var(--color-nav-text-inactive)'} />}
                                     {link.label}
                                 </Link>
                             </motion.div>
@@ -405,7 +405,7 @@ export default function Navbar() {
                                 transition={{ delay: 0.15 }}
                                 style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1.25rem' }}
                             >
-                                <Link to="/login" onClick={() => setMenuOpen(false)} className="btn btn-ghost" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', fontSize: '1rem', padding: '0.75rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                <Link to="/login" onClick={() => setMenuOpen(false)} className="btn btn-ghost" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', fontSize: '1rem', padding: '0.75rem', borderRadius: '12px', border: '1px solid var(--color-border)' }}>
                                     Ingresar
                                 </Link>
                                 <Link to="/register" onClick={() => setMenuOpen(false)} className="btn btn-primary" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', fontSize: '1rem', padding: '0.75rem', borderRadius: '12px', background: 'var(--color-primary)', color: '#fff', fontWeight: 'bold' }}>

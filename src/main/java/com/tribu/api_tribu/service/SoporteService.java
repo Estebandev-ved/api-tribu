@@ -172,7 +172,7 @@ public class SoporteService {
                         "<p>Puedes ver toda la conversación e interactuar directamente desde tu perfil de usuario en el Centro de Ayuda.</p>" +
                         "<a href=\"http://localhost:3000/perfil\" style=\"display: inline-block; background-color: #7c3aed; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-top: 10px;\">Ir a mi Perfil</a>" +
                         "<hr style=\"border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;\" />" +
-                        "<p style=\"font-size: 12px; color: #9ca3af;\">Tribu E-commerce · Mocoa, Putumayo, Colombia</p>" +
+                        "<p style=\"font-size: 12px; color: #9ca3af;\">Tribu E-commerce · Colombia</p>" +
                         "</div></body></html>", 
                         conversacion.getUsuario().getNombreCompleto(), 
                         contenido)
@@ -351,7 +351,7 @@ public class SoporteService {
             sb.append(String.format("• **Estado del Ritual:** %s\n", estado));
 
             if ("PAGADO".equalsIgnoreCase(estado)) {
-                sb.append("• **Detalle:** Tus puntos ya han sido validados. Nuestro equipo de artesanos está seleccionando minuciosamente tus delicias. Despacharemos tu paquete directamente desde nuestra central en Mocoa muy pronto.");
+                sb.append("• **Detalle:** Tus puntos ya han sido validados. Nuestro equipo está preparando tus productos. Debido a la alta demanda, el despacho tardará entre 4 a 6 días hábiles en llegar a tu destino.");
             } else if ("PENDIENTE".equalsIgnoreCase(estado)) {
                 sb.append("• **Detalle:** Tu pedido está registrado en el altar, pero tus puntos aún no se han transferido. Recuerda subir tu comprobante de transferencia para asegurar tus productos antes de que expire la reserva de lote.");
             } else if ("ENVIADO".equalsIgnoreCase(estado)) {
@@ -432,8 +432,8 @@ public class SoporteService {
                 texto.contains("putumayo") || texto.contains("cobertura")) {
             
             return "🌿 **Leyes y Leyendas de la Tribu:**\n\n" +
-                    "• **Origen sagrado:** Todos nuestros combos e ingredientes selectos se preparan de forma artesanal y se despachan directamente desde Mocoa, Putumayo.\n" +
-                    "• **Tiempos del viaje:** Las entregas locales en Mocoa se realizan el mismo día. Los envíos nacionales a otros rincones tardan de 2 a 4 días hábiles vía Servientrega o Coordinadora.\n" +
+                    "• **Despachos:** Todos nuestros productos selectos se despachan directamente desde nuestra bodega central.\n" +
+                    "• **Tiempos del viaje:** Debido a la altísima demanda de nuestros productos, los envíos a nivel nacional tienen un tiempo de entrega estimado de 4 a 6 días hábiles vía Servientrega o Coordinadora.\n" +
                     "• **Ritual de pago:** Aceptamos transferencias (Nequi, Bancolombia, Daviplata), contra entrega o tus puntos acumulados en la billetera Tribu Card.\n" +
                     "• **Devoluciones:** Si el ritual no cumplió tus expectativas, tienes hasta 5 días hábiles desde la entrega para reportarlo con tu evidencia fotográfica en tu perfil de usuario.";
         }

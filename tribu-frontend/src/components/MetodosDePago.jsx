@@ -36,7 +36,7 @@ function calcShipping(total, carrierId, region = 'nacional') {
 const MetodosDePago = ({ total, totalNumber, direccionEnvio, cuponCodigo, shippingRegion = 'nacional', isDireccionValida = true }) => {
     const { items, clearCart } = useCart();
     const { user } = useAuth();
-    const { agregarNuevaNotificacion, saldoRealtime } = useNotification();
+    const { agregarNuevaNotificacion } = useNotification();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [saldoBackend, setSaldoBackend] = useState(null);

@@ -63,21 +63,24 @@ export default function ProductoCard({ producto, index = 0 }) {
                 e.currentTarget.style.boxShadow = '0 8px 32px rgba(255,87,34,0.12)'
             }}
             onMouseLeave={e => {
-                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'
+                e.currentTarget.style.borderColor = 'var(--color-border)'
                 e.currentTarget.style.boxShadow = 'none'
             }}
         >
             {/* Imagen */}
-            <div style={{ position: 'relative', aspectRatio: '1/1', background: 'var(--color-surface-2)', overflow: 'hidden' }}>
+            <div style={{ position: 'relative', width: '100%', paddingTop: '100%', background: 'var(--color-surface-2)', overflow: 'hidden' }}>
                 {producto.imagenUrl ? (
-                    <Link to={`/producto/${producto.id}`} style={{ display: 'block', width: '100%', height: '100%' }}>
-                        <OptimizedImage src={producto.imagenUrl} alt={producto.nombre}
+                    <Link to={`/producto/${producto.id}`} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'block' }}>
+                        <OptimizedImage
+                            src={producto.imagenUrl}
+                            alt={producto.nombre}
+                            eager={index < 4}
                             onMouseEnter={e => e.currentTarget.querySelector('img').style.transform = 'scale(1.07)'}
                             onMouseLeave={e => e.currentTarget.querySelector('img').style.transform = 'scale(1)'}
                         />
                     </Link>
                 ) : (
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', fontSize: '3rem' }}>🛍️</div>
+                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem' }}>🛍️</div>
                 )}
 
                 {/* Badges superiores */}

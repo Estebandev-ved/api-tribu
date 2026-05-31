@@ -6,8 +6,8 @@ import { getMiPerfil, getRecompensas, canjearRecompensa, getMisCanjes, getLogros
 import { toast } from 'react-hot-toast'
 
 const cardStyles = {
-  background: 'rgba(20,20,20,0.65)',
-  border: '1px solid rgba(255,255,255,0.06)',
+  background: 'var(--color-card-bg)',
+  border: '1px solid var(--color-card-border)',
   borderRadius: 20,
   padding: '1.25rem'
 }
@@ -67,7 +67,7 @@ export default function RecompensasPage() {
   };
 
   if (cargando) {
-    return <div style={{ minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>Cargando...</div>
+    return <div style={{ minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text)' }}>Cargando...</div>
   }
 
   return (
@@ -79,17 +79,17 @@ export default function RecompensasPage() {
             <Gift size={26} color="#FF7A1A" />
           </div>
           <div style={{ flex: 1 }}>
-            <h1 style={{ margin: 0, color: '#fff', fontSize: '1.8rem', fontWeight: 800 }}>Recompensas Tribu</h1>
+            <h1 style={{ margin: 0, color: 'var(--color-text)', fontSize: '1.8rem', fontWeight: 800 }}>Recompensas Tribu</h1>
             <p style={{ margin: '0.25rem 0 0', color: 'var(--color-text-muted)' }}>Canjea tus puntos por premios exclusivos y haz seguimiento de tus misiones.</p>
           </div>
-          <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: '0.6rem 1rem', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{ background: 'var(--color-card-bg-soft)', borderRadius: 14, padding: '0.6rem 1rem', border: '1px solid var(--color-card-border)' }}>
             <div style={{ fontSize: 11, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>Saldo Puntos</div>
-            <div style={{ fontSize: 18, fontWeight: 800, color: '#fff' }}>{formatPts(saldo)}</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--color-text)' }}>{formatPts(saldo)}</div>
           </div>
         </div>
 
         {/* Dynamic Tabs Selector */}
-        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.5rem', overflowX: 'auto', whiteSpace: 'nowrap' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem', overflowX: 'auto', whiteSpace: 'nowrap' }}>
           <button 
             onClick={() => setActiveTab('catalogo')}
             style={{
@@ -161,7 +161,7 @@ export default function RecompensasPage() {
             <div style={cardStyles}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.5rem' }}>
                 <Sparkles size={18} color="#FBBF24" />
-                <div style={{ color: '#fff', fontWeight: 700, fontSize: '1.1rem' }}>Premios Disponibles</div>
+                <div style={{ color: 'var(--color-text)', fontWeight: 700, fontSize: '1.1rem' }}>Premios Disponibles</div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: '1rem' }}>
                 {recompensas.map((r) => {
@@ -170,14 +170,14 @@ export default function RecompensasPage() {
                   const sinSaldo = saldo < r.costoPuntos
                   const disabled = sinStock || sinSaldo
                   return (
-                    <div key={r.id} style={{ background: 'rgba(10,10,10,0.65)', borderRadius: 16, padding: '1rem', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                    <div key={r.id} style={{ background: 'var(--color-card-bg-soft)', borderRadius: 16, padding: '1rem', border: '1px solid var(--color-card-border)', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                       <div style={{ height: 120, borderRadius: 12, background: 'linear-gradient(135deg, rgba(255,122,26,0.2), rgba(255,255,255,0.02))', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                         <OptimizedImage src={r.imagenUrl} alt={r.titulo} fallback={<Ticket size={34} color="#FF7A1A" />} />
                       </div>
-                      <div style={{ color: '#fff', fontWeight: 700, fontSize: '1rem' }}>{r.titulo}</div>
+                      <div style={{ color: 'var(--color-text)', fontWeight: 700, fontSize: '1rem' }}>{r.titulo}</div>
                       <div style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', minHeight: 40 }}>{r.descripcion || 'Recompensa exclusiva Tribu.'}</div>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <div style={{ fontWeight: 800, color: '#fff' }}>{formatPts(r.costoPuntos)}</div>
+                        <div style={{ fontWeight: 800, color: 'var(--color-text)' }}>{formatPts(r.costoPuntos)}</div>
                         {r.stock !== null && r.stock !== undefined && (
                           <div style={{ fontSize: 12, color: r.stock <= 3 ? '#ffb84d' : '#7dd3fc' }}>Stock {r.stock}</div>
                         )}
@@ -216,16 +216,16 @@ export default function RecompensasPage() {
               <div style={cardStyles}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem' }}>
                   <Ticket size={18} color="#7dd3fc" />
-                  <div style={{ color: '#fff', fontWeight: 700 }}>Resumen de Cuenta</div>
+                  <div style={{ color: 'var(--color-text)', fontWeight: 700 }}>Resumen de Cuenta</div>
                 </div>
                 <div style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', lineHeight: 1.5 }}>
                   Canjea tus puntos acumulados por cualquiera de los premios de nuestro catálogo. 
                   Una vez canjeado, recibirás un <strong>código único</strong> para reclamar tu premio.
                 </div>
-                <div style={{ marginTop: '1.2rem', padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ marginTop: '1.2rem', padding: '1rem', background: 'var(--color-card-bg-soft)', borderRadius: '12px', border: '1px solid var(--color-card-border)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                     <span style={{ color: 'var(--color-text-muted)' }}>Puntos totales:</span>
-                    <span style={{ color: '#fff', fontWeight: 700 }}>{formatPts(saldo)}</span>
+                    <span style={{ color: 'var(--color-text)', fontWeight: 700 }}>{formatPts(saldo)}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <span style={{ color: 'var(--color-text-muted)' }}>Premios canjeados:</span>
@@ -234,10 +234,10 @@ export default function RecompensasPage() {
                 </div>
               </div>
 
-              <div style={{ ...cardStyles, background: 'rgba(10,10,10,0.6)' }}>
+              <div style={{ ...cardStyles, background: 'var(--color-card-bg-soft)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.6rem' }}>
                   <Lock size={16} color="#FFB84D" />
-                  <div style={{ color: '#fff', fontWeight: 700 }}>Reglas de uso</div>
+                  <div style={{ color: 'var(--color-text)', fontWeight: 700 }}>Reglas de uso</div>
                 </div>
                 <ul style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', lineHeight: 1.6, margin: 0, paddingLeft: '1.1rem' }}>
                   <li>Los puntos solo se usan dentro de la plataforma Tribu.</li>
@@ -254,7 +254,7 @@ export default function RecompensasPage() {
           <div style={cardStyles}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.5rem' }}>
               <Sparkles size={18} color="#FBBF24" />
-              <div style={{ color: '#fff', fontWeight: 700, fontSize: '1.1rem' }}>Misiones y Logros Tribu</div>
+              <div style={{ color: 'var(--color-text)', fontWeight: 700, fontSize: '1.1rem' }}>Misiones y Logros Tribu</div>
             </div>
 
             <p style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem', marginBottom: '1.5rem', lineHeight: 1.5 }}>
@@ -311,9 +311,9 @@ export default function RecompensasPage() {
                     </div>
 
                     {/* Description */}
-                    <p style={{ margin: 0, color: 'var(--color-text-muted)', fontSize: '0.88rem', lineHeight: 1.45, minHeight: '38px' }}>
-                      {l.descripcion}
-                    </p>
+                      <p style={{ margin: 0, color: 'var(--color-text-muted)', fontSize: '0.88rem', lineHeight: 1.45, minHeight: '38px' }}>
+                        {l.descripcion}
+                      </p>
 
                     {/* Progress Bar and Indicator */}
                     <div style={{ marginTop: 'auto', paddingTop: '0.5rem' }}>
@@ -321,7 +321,7 @@ export default function RecompensasPage() {
                         <span style={{ color: completado ? '#10B981' : 'var(--color-text-muted)', fontWeight: completado ? 700 : 500 }}>
                           {completado ? '¡Misión Completada!' : 'Progreso de misión'}
                         </span>
-                        <span style={{ color: '#fff', fontWeight: 700 }}>
+                        <span style={{ color: 'var(--color-text)', fontWeight: 700 }}>
                           {l.id === 'saldo_10k' || l.id === 'compra_100k' 
                             ? `$${new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 }).format(l.actual)} / $${new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 }).format(l.requerido)}`
                             : `${l.actual} / ${l.requerido}`}
@@ -353,14 +353,14 @@ export default function RecompensasPage() {
           <div style={cardStyles}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.5rem' }}>
               <CheckCircle size={18} color="#00C896" />
-              <div style={{ color: '#fff', fontWeight: 700, fontSize: '1.1rem' }}>Tus Códigos y Premios Obtenidos</div>
+              <div style={{ color: 'var(--color-text)', fontWeight: 700, fontSize: '1.1rem' }}>Tus Códigos y Premios Obtenidos</div>
             </div>
 
             {canjes.length === 0 ? (
-              <div style={{ padding: '4rem 2rem', textAlign: 'center', background: 'rgba(255,255,255,0.01)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)' }}>
-                <Ticket size={48} color="rgba(255,255,255,0.2)" style={{ marginBottom: '1rem' }} />
-                <h4 style={{ color: '#ccc', margin: '0 0 0.5rem 0', fontSize: '1.2rem' }}>Aún no tienes premios canjeados</h4>
-                <p style={{ color: '#666', margin: '0 0 1.5rem 0' }}>Explora el catálogo y canjea tus primeros puntos.</p>
+              <div style={{ padding: '4rem 2rem', textAlign: 'center', background: 'var(--color-card-bg-soft)', borderRadius: '16px', border: '1px dashed var(--color-border)' }}>
+                <Ticket size={48} color="rgba(0,0,0,0.25)" style={{ marginBottom: '1rem' }} />
+                <h4 style={{ color: 'var(--color-text)', margin: '0 0 0.5rem 0', fontSize: '1.2rem' }}>Aún no tienes premios canjeados</h4>
+                <p style={{ color: 'var(--color-text-muted)', margin: '0 0 1.5rem 0' }}>Explora el catálogo y canjea tus primeros puntos.</p>
                 <button 
                   onClick={() => setActiveTab('catalogo')}
                   style={{
@@ -370,7 +370,7 @@ export default function RecompensasPage() {
                     padding: '0.65rem 1.5rem',
                     fontWeight: 800,
                     cursor: 'pointer',
-                    color: '#1A1A1A'
+                      color: '#1A1A1A'
                   }}
                 >
                   Ir al catálogo
@@ -383,8 +383,8 @@ export default function RecompensasPage() {
                     key={c.id}
                     whileHover={{ scale: 1.01 }}
                     style={{
-                      background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.4), rgba(15, 23, 42, 0.6))',
-                      border: '1px solid rgba(125, 211, 252, 0.12)',
+                      background: 'var(--color-card-bg)',
+                      border: '1px solid rgba(125, 211, 252, 0.2)',
                       borderRadius: '16px',
                       padding: '1.25rem',
                       display: 'flex',
@@ -392,7 +392,7 @@ export default function RecompensasPage() {
                       gap: '1.2rem',
                       position: 'relative',
                       overflow: 'hidden',
-                      boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+                      boxShadow: 'var(--shadow-card)',
                     }}
                   >
                     {/* Glowing effect line on the left side of the card */}
@@ -408,7 +408,7 @@ export default function RecompensasPage() {
                     }} />
 
                     {/* Voucher Image */}
-                    <div style={{ width: '70px', height: '70px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <div style={{ width: '70px', height: '70px', borderRadius: '12px', background: 'var(--color-card-bg-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid var(--color-card-border)' }}>
                       {c.recompensaImagen ? (
                         <img src={c.recompensaImagen} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }} />
                       ) : (
@@ -419,7 +419,7 @@ export default function RecompensasPage() {
                     {/* Details */}
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem', gap: '0.5rem' }}>
-                        <h4 style={{ margin: 0, color: '#fff', fontSize: '1.05rem', fontWeight: 700, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', flex: 1 }}>
+                        <h4 style={{ margin: 0, color: 'var(--color-text)', fontSize: '1.05rem', fontWeight: 700, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', flex: 1 }}>
                           {c.recompensaTitulo}
                         </h4>
                         <span style={{
@@ -442,26 +442,26 @@ export default function RecompensasPage() {
                       </div>
 
                       {/* Claim Code Section */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(0,0,0,0.3)', padding: '0.4rem 0.6rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.04)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--color-card-bg-soft)', padding: '0.4rem 0.6rem', borderRadius: '8px', border: '1px solid var(--color-card-border)' }}>
                         <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>CÓDIGO:</span>
-                        <code style={{ fontSize: '0.85rem', fontWeight: 800, color: '#7dd3fc', letterSpacing: '1px', flex: 1, fontFamily: 'monospace' }}>
+                        <code style={{ fontSize: '0.85rem', fontWeight: 800, color: '#1d4ed8', letterSpacing: '1px', flex: 1, fontFamily: 'monospace' }}>
                           {c.codigoCanje}
                         </code>
                         <button
                           onClick={() => copiarCodigo(c.codigoCanje)}
                           style={{
-                            background: 'rgba(255,255,255,0.06)',
-                            border: '1px solid rgba(255,255,255,0.1)',
+                            background: 'var(--color-card-bg-soft)',
+                            border: '1px solid var(--color-card-border)',
                             borderRadius: '4px',
-                            color: '#fff',
+                            color: 'var(--color-text)',
                             fontSize: '0.7rem',
                             fontWeight: 600,
                             padding: '0.2rem 0.4rem',
                             cursor: 'pointer',
                             transition: 'all 0.2s',
                           }}
-                          onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.12)' }}
-                          onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)' }}
+                          onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--color-surface-2)' }}
+                          onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--color-card-bg-soft)' }}
                         >
                           Copiar
                         </button>

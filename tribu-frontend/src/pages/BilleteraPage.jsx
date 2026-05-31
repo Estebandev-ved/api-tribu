@@ -202,7 +202,7 @@ const BilleteraPage = () => {
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, y: -50, scale: 0.9 }}
                             transition={{ duration: 0.5 }}
-                            style={{ background: 'rgba(20,20,20,0.8)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '3rem', textAlign: 'center', position: 'relative', overflow: 'hidden' }}
+                            style={{ background: 'var(--color-card-bg)', border: '1px solid var(--color-card-border)', borderRadius: '24px', padding: '3rem', textAlign: 'center', position: 'relative', overflow: 'hidden' }}
                         >
                             <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(255,87,34,0.15) 0%, transparent 70%)', filter: 'blur(30px)', pointerEvents: 'none' }} />
 
@@ -216,7 +216,7 @@ const BilleteraPage = () => {
                                 }}
                             >
                                 {isCreating ? (
-                                    <div style={{ width: '100%', height: '240px', background: 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01))', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                    <div style={{ width: '100%', height: '240px', background: 'var(--color-card-bg-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '20px', border: '1px solid var(--color-card-border)' }}>
                                         <Sparkles size={48} color="#FF5722" className="rotating" />
                                     </div>
                                 ) : (
@@ -229,10 +229,10 @@ const BilleteraPage = () => {
                                 )}
                             </motion.div>
 
-                            <h2 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '1rem' }}>
+                            <h2 style={{ fontSize: '1.8rem', color: 'var(--color-text)', marginBottom: '1rem' }}>
                                 {isCreating ? 'Emitiendo tu tarjeta virtual...' : 'Adquiere tu Tarjeta Virtual Tribu'}
                             </h2>
-                            <p style={{ color: '#aaa', marginBottom: '2.5rem', maxWidth: '500px', margin: '0 auto 2.5rem', lineHeight: 1.6 }}>
+                            <p style={{ color: 'var(--color-text-muted)', marginBottom: '2.5rem', maxWidth: '500px', margin: '0 auto 2.5rem', lineHeight: 1.6 }}>
                                 {isCreating
                                     ? 'Estamos configurando tus accesos de seguridad, encriptando los fondos y asignando un número único. Por favor espera.'
                                     : 'Activa tu tarjeta  ahora mismo para poder recibir reembolsos al instante por tus devoluciones, girar la ruleta por premios diarios y tener control total de tu dinero.'}
@@ -240,8 +240,8 @@ const BilleteraPage = () => {
 
                             {!isCreating && (
                                 <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', marginBottom: '2.5rem' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#888', fontSize: '0.9rem' }}><ShieldCheck size={18} color="#00C896" /> Emisión Gratuita</div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#888', fontSize: '0.9rem' }}><Zap size={18} color="#ffb84d" /> Uso Instantáneo</div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}><ShieldCheck size={18} color="#00C896" /> Emisión Gratuita</div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}><Zap size={18} color="#ffb84d" /> Uso Instantáneo</div>
                                 </div>
                             )}
 
@@ -281,8 +281,8 @@ const BilleteraPage = () => {
 
                             {/* Stats Row */}
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', width: '100%' }}>
-                                <div style={{ background: 'rgba(255, 255, 255, 0.02)', borderRadius: '14px', padding: '0.75rem 1rem', border: '1px solid rgba(255, 255, 255, 0.05)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                                    <div style={{ fontSize: '18px', fontWeight: 700, color: '#fff' }}>
+                                <div style={{ background: 'var(--color-card-bg-soft)', borderRadius: '14px', padding: '0.75rem 1rem', border: '1px solid var(--color-card-border)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                                    <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-text)' }}>
                                         +{new Intl.NumberFormat('es-CO').format(stats.ganadosHoy)}
                                     </div>
                                     <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '2px' }}>Ganados hoy</div>
@@ -290,14 +290,14 @@ const BilleteraPage = () => {
                                         <TrendingUp size={12} /> +8%
                                     </div>
                                 </div>
-                                <div style={{ background: 'rgba(255, 255, 255, 0.02)', borderRadius: '14px', padding: '0.75rem 1rem', border: '1px solid rgba(255, 255, 255, 0.05)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                                    <div style={{ fontSize: '18px', fontWeight: 700, color: '#fff' }}>
+                                <div style={{ background: 'var(--color-card-bg-soft)', borderRadius: '14px', padding: '0.75rem 1rem', border: '1px solid var(--color-card-border)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                    <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-text)' }}>
                                         {new Intl.NumberFormat('es-CO').format(stats.usadosEsteMes)}
                                     </div>
                                     <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '2px' }}>Usados este mes</div>
                                 </div>
-                                <div style={{ background: 'rgba(255, 255, 255, 0.02)', borderRadius: '14px', padding: '0.75rem 1rem', border: '1px solid rgba(255, 255, 255, 0.05)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                                    <div style={{ fontSize: '18px', fontWeight: 700, color: '#fff' }}>
+                                <div style={{ background: 'var(--color-card-bg-soft)', borderRadius: '14px', padding: '0.75rem 1rem', border: '1px solid var(--color-card-border)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                    <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-text)' }}>
                                         {stats.premiosCanjeados}
                                     </div>
                                     <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '2px' }}>Premios canjeados</div>
