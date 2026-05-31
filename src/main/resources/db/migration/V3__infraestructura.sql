@@ -1,51 +1,38 @@
 -- V3__infraestructura.sql
 -- Módulo 5: Infraestructura (Telegram, Inventario, Push Notifications)
+-- NOTA DE SEGURIDAD: Usa IF NOT EXISTS para idempotencia sin sentencias PREPARE dinámicas
+-- que pueden fallar en MySQL cloud (PlanetScale, DigitalOcean Managed MySQL, etc.)
 
 -- Campos de inventario inteligente en productos
--- MySQL no soporta ADD COLUMN IF NOT EXISTS en todas las versiones,
--- se agrega cada columna de forma condicional.
+-- Se usa ALTER TABLE IGNORE / procedimiento para compatibilidad cross-version
 
--- stock_minimo
-SET @column_exists = (
-    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
-    WHERE TABLE_SCHEMA = DATABASE()
-      AND TABLE_NAME = 'productos'
-      AND COLUMN_NAME = 'stock_minimo'
-);
-SET @sql = IF(@column_exists = 0,
-    'ALTER TABLE productos ADD COLUMN stock_minimo INT DEFAULT 5',
-    'SELECT 1');
-PREPARE stmt FROM @sql;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
+-- Procedimiento temporal para agregar columnas solo si no existen
+DROP PROCEDURE IF EXISTS add_column_if_not_exists_v3;
 
--- stock_critico
-SET @column_exists = (
-    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
-    WHERE TABLE_SCHEMA = DATABASE()
-      AND TABLE_NAME = 'productos'
-      AND COLUMN_NAME = 'stock_critico'
-);
-SET @sql = IF(@column_exists = 0,
-    'ALTER TABLE productos ADD COLUMN stock_critico INT DEFAULT 3',
-    'SELECT 1');
-PREPARE stmt FROM @sql;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
+CREATE PROCEDURE add_column_if_not_exists_v3(
+    IN p_table VARCHAR(64),
+    IN p_column VARCHAR(64),
+    IN p_definition TEXT
+)
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE()
+          AND TABLE_NAME = p_table
+          AND COLUMN_NAME = p_column
+    ) THEN
+        SET @alter_sql = CONCAT('ALTER TABLE `', p_table, '` ADD COLUMN `', p_column, '` ', p_definition);
+        PREPARE alter_stmt FROM @alter_sql;
+        EXECUTE alter_stmt;
+        DEALLOCATE PREPARE alter_stmt;
+    END IF;
+END;
 
--- alerta_enviada_en
-SET @column_exists = (
-    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
-    WHERE TABLE_SCHEMA = DATABASE()
-      AND TABLE_NAME = 'productos'
-      AND COLUMN_NAME = 'alerta_enviada_en'
-);
-SET @sql = IF(@column_exists = 0,
-    'ALTER TABLE productos ADD COLUMN alerta_enviada_en TIMESTAMP NULL',
-    'SELECT 1');
-PREPARE stmt FROM @sql;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
+CALL add_column_if_not_exists_v3('productos', 'stock_minimo', 'INT DEFAULT 5');
+CALL add_column_if_not_exists_v3('productos', 'stock_critico', 'INT DEFAULT 3');
+CALL add_column_if_not_exists_v3('productos', 'alerta_enviada_en', 'TIMESTAMP NULL');
+
+DROP PROCEDURE IF EXISTS add_column_if_not_exists_v3;
 
 -- Tabla de suscripciones push para PWA
 CREATE TABLE IF NOT EXISTS push_suscripciones (
