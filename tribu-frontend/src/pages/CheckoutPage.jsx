@@ -26,7 +26,12 @@ const colombiaData = [
             { name: 'Apartadó', region: 'regional' },
             { name: 'Caucasia', region: 'regional' },
             { name: 'Marinilla', region: 'regional' },
-            { name: 'Guarne', region: 'regional' }
+            { name: 'Guarne', region: 'regional' },
+            { name: 'Turbo', region: 'regional' },
+            { name: 'Chigorodó', region: 'regional' },
+            { name: 'El Carmen de Viboral', region: 'regional' },
+            { name: 'La Ceja', region: 'regional' },
+            { name: 'Barbosa', region: 'regional' }
         ]
     },
     {
@@ -41,7 +46,12 @@ const colombiaData = [
             { name: 'Fusagasugá', region: 'regional' },
             { name: 'Mosquera', region: 'regional' },
             { name: 'Funza', region: 'regional' },
-            { name: 'Madrid', region: 'regional' }
+            { name: 'Madrid', region: 'regional' },
+            { name: 'Cajicá', region: 'regional' },
+            { name: 'Tocancipá', region: 'regional' },
+            { name: 'Sopó', region: 'regional' },
+            { name: 'La Mesa', region: 'regional' },
+            { name: 'Villeta', region: 'regional' }
         ]
     },
     {
@@ -53,7 +63,10 @@ const colombiaData = [
             { name: 'Buga', region: 'nacional' },
             { name: 'Tuluá', region: 'nacional' },
             { name: 'Cartago', region: 'nacional' },
-            { name: 'Yumbo', region: 'principal' }
+            { name: 'Yumbo', region: 'principal' },
+            { name: 'Jamundí', region: 'principal' },
+            { name: 'Candelaria', region: 'principal' },
+            { name: 'Florida', region: 'nacional' }
         ]
     },
     {
@@ -62,7 +75,9 @@ const colombiaData = [
             { name: 'Barranquilla', region: 'principal' },
             { name: 'Soledad', region: 'principal' },
             { name: 'Sabanalarga', region: 'nacional' },
-            { name: 'Malambo', region: 'principal' }
+            { name: 'Malambo', region: 'principal' },
+            { name: 'Baranoa', region: 'nacional' },
+            { name: 'Santo Tomás', region: 'nacional' }
         ]
     },
     {
@@ -73,7 +88,9 @@ const colombiaData = [
             { name: 'Barrancabermeja', region: 'nacional' },
             { name: 'San Gil', region: 'nacional' },
             { name: 'Girón', region: 'principal' },
-            { name: 'Piedecuesta', region: 'principal' }
+            { name: 'Piedecuesta', region: 'principal' },
+            { name: 'Socorro', region: 'nacional' },
+            { name: 'Vélez', region: 'nacional' }
         ]
     },
     {
@@ -81,7 +98,8 @@ const colombiaData = [
         ciudades: [
             { name: 'Cartagena', region: 'principal' },
             { name: 'Magangué', region: 'nacional' },
-            { name: 'Turbaco', region: 'principal' }
+            { name: 'Turbaco', region: 'principal' },
+            { name: 'El Carmen de Bolívar', region: 'nacional' }
         ]
     },
     {
@@ -89,35 +107,45 @@ const colombiaData = [
         ciudades: [
             { name: 'Pereira', region: 'principal' },
             { name: 'Dosquebradas', region: 'principal' },
-            { name: 'Santa Rosa de Cabal', region: 'nacional' }
+            { name: 'Santa Rosa de Cabal', region: 'nacional' },
+            { name: 'La Virginia', region: 'nacional' }
         ]
     },
     {
         departamento: 'Caldas',
         ciudades: [
             { name: 'Manizales', region: 'principal' },
-            { name: 'Villamaría', region: 'principal' }
+            { name: 'Villamaría', region: 'principal' },
+            { name: 'La Dorada', region: 'nacional' },
+            { name: 'Chinchiná', region: 'regional' }
         ]
     },
     {
         departamento: 'Quindío',
         ciudades: [
             { name: 'Armenia', region: 'principal' },
-            { name: 'Calarcá', region: 'principal' }
+            { name: 'Calarcá', region: 'principal' },
+            { name: 'Montenegro', region: 'regional' },
+            { name: 'La Tebaida', region: 'regional' }
         ]
     },
     {
         departamento: 'Tolima',
         ciudades: [
             { name: 'Ibagué', region: 'principal' },
-            { name: 'Espinal', region: 'nacional' }
+            { name: 'Espinal', region: 'nacional' },
+            { name: 'Melgar', region: 'nacional' },
+            { name: 'Honda', region: 'nacional' },
+            { name: 'Líbano', region: 'nacional' }
         ]
     },
     {
         departamento: 'Huila',
         ciudades: [
             { name: 'Neiva', region: 'principal' },
-            { name: 'Pitalito', region: 'nacional' }
+            { name: 'Pitalito', region: 'nacional' },
+            { name: 'Garzón', region: 'nacional' },
+            { name: 'La Plata', region: 'nacional' }
         ]
     },
     {
@@ -125,14 +153,17 @@ const colombiaData = [
         ciudades: [
             { name: 'Cúcuta', region: 'principal' },
             { name: 'Ocaña', region: 'nacional' },
-            { name: 'Villa del Rosario', region: 'principal' }
+            { name: 'Villa del Rosario', region: 'principal' },
+            { name: 'Los Patios', region: 'principal' },
+            { name: 'Pamplona', region: 'nacional' }
         ]
     },
     {
         departamento: 'Meta',
         ciudades: [
             { name: 'Villavicencio', region: 'principal' },
-            { name: 'Acacías', region: 'nacional' }
+            { name: 'Acacías', region: 'nacional' },
+            { name: 'Granada', region: 'nacional' }
         ]
     },
     {
@@ -140,28 +171,33 @@ const colombiaData = [
         ciudades: [
             { name: 'Pasto', region: 'principal' },
             { name: 'Ipiales', region: 'nacional' },
-            { name: 'Tumaco', region: 'especial' }
+            { name: 'Tumaco', region: 'especial' },
+            { name: 'Túquerres', region: 'nacional' }
         ]
     },
     {
         departamento: 'Córdoba',
         ciudades: [
             { name: 'Montería', region: 'principal' },
-            { name: 'Cereté', region: 'nacional' }
+            { name: 'Cereté', region: 'nacional' },
+            { name: 'Lorica', region: 'nacional' },
+            { name: 'Sahagún', region: 'nacional' }
         ]
     },
     {
         departamento: 'Magdalena',
         ciudades: [
             { name: 'Santa Marta', region: 'principal' },
-            { name: 'Ciénaga', region: 'nacional' }
+            { name: 'Ciénaga', region: 'nacional' },
+            { name: 'Fundación', region: 'nacional' }
         ]
     },
     {
         departamento: 'Cesar',
         ciudades: [
             { name: 'Valledupar', region: 'principal' },
-            { name: 'Aguachica', region: 'nacional' }
+            { name: 'Aguachica', region: 'nacional' },
+            { name: 'Bosconia', region: 'nacional' }
         ]
     },
     {
@@ -169,14 +205,85 @@ const colombiaData = [
         ciudades: [
             { name: 'Tunja', region: 'principal' },
             { name: 'Duitama', region: 'nacional' },
-            { name: 'Sogamoso', region: 'nacional' }
+            { name: 'Sogamoso', region: 'nacional' },
+            { name: 'Chiquinquirá', region: 'nacional' },
+            { name: 'Paipa', region: 'nacional' }
         ]
     },
     {
         departamento: 'Sucre',
         ciudades: [
             { name: 'Sincelejo', region: 'principal' },
-            { name: 'Corozal', region: 'nacional' }
+            { name: 'Corozal', region: 'nacional' },
+            { name: 'Sampués', region: 'nacional' }
+        ]
+    },
+    {
+        departamento: 'Cauca',
+        ciudades: [
+            { name: 'Popayán', region: 'principal' },
+            { name: 'Santander de Quilichao', region: 'nacional' },
+            { name: 'Puerto Tejada', region: 'nacional' }
+        ]
+    },
+    {
+        departamento: 'Putumayo',
+        ciudades: [
+            { name: 'Mocoa', region: 'especial' },
+            { name: 'Puerto Asís', region: 'especial' },
+            { name: 'Orito', region: 'especial' }
+        ]
+    },
+    {
+        departamento: 'Caquetá',
+        ciudades: [
+            { name: 'Florencia', region: 'especial' },
+            { name: 'San Vicente del Caguán', region: 'especial' }
+        ]
+    },
+    {
+        departamento: 'Casanare',
+        ciudades: [
+            { name: 'Yopal', region: 'nacional' },
+            { name: 'Aguazul', region: 'nacional' }
+        ]
+    },
+    {
+        departamento: 'Arauca',
+        ciudades: [
+            { name: 'Arauca', region: 'especial' },
+            { name: 'Saravena', region: 'especial' }
+        ]
+    },
+    {
+        departamento: 'La Guajira',
+        ciudades: [
+            { name: 'Riohacha', region: 'nacional' },
+            { name: 'Maicao', region: 'nacional' }
+        ]
+    },
+    {
+        departamento: 'Guainía',
+        ciudades: [
+            { name: 'Inírida', region: 'especial' }
+        ]
+    },
+    {
+        departamento: 'Vaupés',
+        ciudades: [
+            { name: 'Mitú', region: 'especial' }
+        ]
+    },
+    {
+        departamento: 'Vichada',
+        ciudades: [
+            { name: 'Puerto Carreño', region: 'especial' }
+        ]
+    },
+    {
+        departamento: 'Guaviare',
+        ciudades: [
+            { name: 'San José del Guaviare', region: 'especial' }
         ]
     },
     {
@@ -194,17 +301,21 @@ const colombiaData = [
     {
         departamento: 'Chocó',
         ciudades: [
-            { name: 'Quibdó', region: 'especial' }
+            { name: 'Quibdó', region: 'especial' },
+            { name: 'Istmina', region: 'especial' }
         ]
     }
 ];
 
+
 const selectStyle = {
     width: '100%',
-    background: 'rgba(255, 255, 255, 0.05)',
+    // Fondo y color explícitos para que funcione en desktop (Chrome/Edge/Firefox)
+    // Los <select> nativos en Windows heredan el color del OS, no del CSS del contenedor
+    background: '#1a1a2e',
     border: '1px solid rgba(255, 255, 255, 0.1)',
-    color: 'var(--color-text)',
-    padding: '0.8rem 1.2rem',
+    color: '#ffffff',
+    padding: '0.8rem 2.5rem 0.8rem 1.2rem',
     borderRadius: '10px',
     fontSize: '0.9rem',
     outline: 'none',
@@ -212,6 +323,8 @@ const selectStyle = {
     boxSizing: 'border-box',
     cursor: 'pointer',
     appearance: 'none',
+    WebkitAppearance: 'none',
+    MozAppearance: 'none',
     backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.7)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
     backgroundRepeat: 'no-repeat',
     backgroundPosition: 'right 1rem center',

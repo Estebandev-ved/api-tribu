@@ -48,13 +48,20 @@ const MetodosDePago = ({ total, totalNumber, direccionEnvio, cuponCodigo, shippi
     const [contraentregaStep, setContraentregaStep] = useState(1);
 
     useEffect(() => {
+        // Siempre consultamos el saldo real desde el backend (solo movimientos CLEARED)
+        // para evitar contar transferencias ON_HOLD como saldo disponible
         api.get('/usuarios/perfil')
             .then(res => setSaldoBackend(res.data.saldoFavor || 0))
             .catch(() => {})
     }, []);
 
-    const saldoDisponible = saldoRealtime !== null ? saldoRealtime : (saldoBackend !== null ? saldoBackend : (user?.saldoFavor || 0));
-    const puedePagarConTribu = saldoDisponible >= totalNumber;
+    // saldoDisponible: prioriza el backend (fuente de verdad = solo CLEARED)
+    // El saldoRealtime del WS puede incluir eventos ON_HOLD, así que lo
+    // usamos solo si es mayor a 0 y el backend no ha respondido aún.
+    const saldoDisponible = saldoBackend !== null ? saldoBackend : (user?.saldoFavor || 0);
+    // El total a pagar INCLUYE el costo de envío
+    const totalConEnvio = totalNumber + costoEnvio;
+    const puedePagarConTribu = saldoDisponible >= totalConEnvio;
 
     const hasTribuPass = user?.tribuPassActiva === true;
 
@@ -95,7 +102,8 @@ const MetodosDePago = ({ total, totalNumber, direccionEnvio, cuponCodigo, shippi
                 direccionEnvio,
                 metodoPago: method,
                 transportadora: selectedCarrier,
-                costoEnvio,
+                // Enviamos el costo de envío real para que el backend lo registre
+                costoEnvio: hasTribuPass ? 0 : costoEnvio,
                 items: items.map(i => ({ productoId: i.id, cantidad: i.cantidad })),
                 cuponCodigo
             };
@@ -259,7 +267,7 @@ const MetodosDePago = ({ total, totalNumber, direccionEnvio, cuponCodigo, shippi
                         </div>
                     </div>
                     <div style={{ fontWeight: 700, fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
-                        ${(totalNumber + costoEnvio).toLocaleString('es-CO')}
+                        ${totalConEnvio.toLocaleString('es-CO')}
                     </div>
                 </motion.button>
             </div>
@@ -559,7 +567,7 @@ const MetodosDePago = ({ total, totalNumber, direccionEnvio, cuponCodigo, shippi
                                 <div style={{ fontSize: '0.68rem', color: '#777', marginTop: '1px' }}>Productos + envío incluido</div>
                             </div>
                             <div style={{ fontWeight: 900, fontSize: '1.2rem', color: '#00C896' }}>
-                                ${(totalNumber + costoEnvio).toLocaleString('es-CO')}
+                                ${totalConEnvio.toLocaleString('es-CO')}
                             </div>
                         </div>
 
@@ -684,7 +692,7 @@ const MetodosDePago = ({ total, totalNumber, direccionEnvio, cuponCodigo, shippi
                     </div>
                     {puedePagarConTribu && selectedCarrier && (
                         <div style={{ fontWeight: 700, fontSize: '0.85rem' }}>
-                            ${(totalNumber + costoEnvio).toLocaleString('es-CO')}
+                            ${totalConEnvio.toLocaleString('es-CO')}
                         </div>
                     )}
                 </motion.button>
