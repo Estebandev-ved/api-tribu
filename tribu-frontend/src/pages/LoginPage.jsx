@@ -41,8 +41,13 @@ export default function LoginPage() {
 
         const initGoogleLogin = () => {
             if (window.google) {
+                const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
+                if (!clientId) {
+                    toast.error('Falta configurar VITE_GOOGLE_CLIENT_ID en producción')
+                    return
+                }
                 window.google.accounts.id.initialize({
-                    client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || "1005886675200-a2hgpj1aab85l0r4m8m8e4h8h8h8h8h8.apps.googleusercontent.com",
+                    client_id: clientId,
                     callback: handleGoogleLoginResponse
                 });
                 window.google.accounts.id.renderButton(
