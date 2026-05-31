@@ -81,6 +81,21 @@
   --color-dropdown-bg: rgba(20, 20, 20, 0.98);
   --color-dropdown-border: rgba(255, 255, 255, 0.08);
   --shadow-nav: 0 4px 30px rgba(0, 0, 0, 0.5);
+
+  /* Adaptative Design Tokens (Dark Mode) */
+  --color-card-bg: rgba(20, 20, 20, 0.65);
+  --color-card-bg-strong: rgba(20, 20, 20, 0.85);
+  --color-card-bg-soft: rgba(255, 255, 255, 0.02);
+  --color-card-border: rgba(255, 255, 255, 0.06);
+  --color-modal-bg: rgba(0, 0, 0, 0.75);
+  --color-input-bg: rgba(0, 0, 0, 0.2);
+  --color-input-border: rgba(255, 255, 255, 0.08);
+  --color-footer-bg: #0d0d0d;
+  --color-footer-text: #a3a3a3;
+  --color-footer-muted: #555555;
+  --color-footer-border: rgba(255, 87, 34, 0.12);
+  --color-footer-divider: rgba(255, 255, 255, 0.08);
+  --color-admin-bg: #111111;
 }
 
 html {

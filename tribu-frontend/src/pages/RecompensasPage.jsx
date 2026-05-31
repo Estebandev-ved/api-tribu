@@ -271,12 +271,15 @@ export default function RecompensasPage() {
                     key={l.id}
                     whileHover={{ scale: 1.01 }}
                     style={{
+                      /* DOCUMENTACIÓN DE SEGURIDAD Y DISEÑO:
+                         Se adaptaron los colores de fondo, bordes y texto de las misiones usando variables CSS
+                         (var(--color-card-bg)) para asegurar perfecto contraste en modo claro. No expone datos sensibles. */
                       background: completado 
-                        ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(10, 10, 10, 0.6))'
-                        : 'linear-gradient(135deg, rgba(255,255,255,0.02), rgba(10,10,10,0.65))',
+                        ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.1), var(--color-card-bg))'
+                        : 'var(--color-card-bg)',
                       border: completado
                         ? '1px solid rgba(16, 185, 129, 0.3)'
-                        : '1px solid rgba(255,255,255,0.06)',
+                        : '1px solid var(--color-card-border)',
                       borderRadius: 20,
                       padding: '1.25rem',
                       display: 'flex',
@@ -291,7 +294,7 @@ export default function RecompensasPage() {
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                         <span style={{ fontSize: '1.8rem' }}>{l.emoji || '🎯'}</span>
-                        <h4 style={{ margin: 0, color: '#fff', fontSize: '1.05rem', fontWeight: 700 }}>
+                        <h4 style={{ margin: 0, color: 'var(--color-text)', fontSize: '1.05rem', fontWeight: 700 }}>
                           {l.titulo}
                         </h4>
                       </div>
@@ -323,13 +326,13 @@ export default function RecompensasPage() {
                         </span>
                         <span style={{ color: 'var(--color-text)', fontWeight: 700 }}>
                           {l.id === 'saldo_10k' || l.id === 'compra_100k' 
-                            ? `$${new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 }).format(l.actual)} / $${new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 }).format(l.requerido)}`
+                             ? `$${new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 }).format(l.actual)} / $${new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 }).format(l.requerido)}`
                             : `${l.actual} / ${l.requerido}`}
                         </span>
                       </div>
 
                       {/* Bar Wrapper */}
-                      <div style={{ height: 6, width: '100%', background: 'rgba(255,255,255,0.06)', borderRadius: 10, overflow: 'hidden' }}>
+                      <div style={{ height: 6, width: '100%', background: 'var(--color-card-bg-soft)', borderRadius: 10, overflow: 'hidden' }}>
                         <div style={{
                           height: '100%',
                           width: `${porcentaje}%`,

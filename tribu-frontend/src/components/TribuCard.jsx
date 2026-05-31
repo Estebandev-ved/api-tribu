@@ -7,48 +7,52 @@ const TIER_LABELS = {
   3: 'ORO'
 }
 
+// DOCUMENTACIÓN DE SEGURIDAD Y DISEÑO:
+// Estandarización de colores de contraste en Tribu Card. Todos los textos y balances se configuran 
+// en negro (#000000) o gris ultra-oscuro para prevenir pérdida de legibilidad en pantallas de bajo brillo.
+// No se exponen datos de sesión ni tokens del usuario en la renderización directa.
 const TIER_THEMES = {
   BRONCE: {
     gradient: 'linear-gradient(135deg, #A85A32 0%, #D4926A 40%, #8A401B 100%)',
-    textBrand: '#2A1200',
-    tierPillColor: '#2B1200',
-    chipCell: 'rgba(45,16,0,0.4)',
-    cardNumber: '#4A2205',
-    balanceLabel: '#5A2A08',
-    balanceAmount: '#1F0B00',
-    balanceUnit: '#4A2205',
-    progressText: '#5A2A08',
-    progressBarFill: '#2B1200',
-    progressBarBg: 'rgba(255,255,255,0.3)',
-    shadow: '0 20px 50px rgba(138,64,27,0.3), inset 0 0 0 1px rgba(255,255,255,0.2)'
+    textBrand: '#000000',
+    tierPillColor: '#000000',
+    chipCell: 'rgba(0,0,0,0.3)',
+    cardNumber: '#000000',
+    balanceLabel: '#000000',
+    balanceAmount: '#000000',
+    balanceUnit: '#000000',
+    progressText: '#000000',
+    progressBarFill: '#000000',
+    progressBarBg: 'rgba(0,0,0,0.15)',
+    shadow: '0 20px 50px rgba(0,0,0,0.15), inset 0 0 0 1px rgba(255,255,255,0.2)'
   },
   PLATA: {
     gradient: 'linear-gradient(135deg, #A1A8BA 0%, #E1E5EE 40%, #7F889B 100%)',
-    textBrand: '#151A26',
-    tierPillColor: '#141A26',
-    chipCell: 'rgba(20,28,45,0.35)',
-    cardNumber: '#2F3648',
-    balanceLabel: '#3E465C',
-    balanceAmount: '#0D1018',
-    balanceUnit: '#2F3648',
-    progressText: '#3E465C',
-    progressBarFill: '#141A26',
-    progressBarBg: 'rgba(255,255,255,0.4)',
-    shadow: '0 20px 50px rgba(127,136,155,0.3), inset 0 0 0 1px rgba(255,255,255,0.3)'
+    textBrand: '#000000',
+    tierPillColor: '#000000',
+    chipCell: 'rgba(0,0,0,0.3)',
+    cardNumber: '#000000',
+    balanceLabel: '#000000',
+    balanceAmount: '#000000',
+    balanceUnit: '#000000',
+    progressText: '#000000',
+    progressBarFill: '#000000',
+    progressBarBg: 'rgba(0,0,0,0.15)',
+    shadow: '0 20px 50px rgba(0,0,0,0.15), inset 0 0 0 1px rgba(255,255,255,0.3)'
   },
   ORO: {
     gradient: 'linear-gradient(135deg, #E8A820 0%, #F5C842 40%, #D4920A 100%)',
-    textBrand: '#352200',
-    tierPillColor: '#2B1A00',
-    chipCell: 'rgba(60,35,0,0.35)',
-    cardNumber: '#4B3200',
-    balanceLabel: '#5B3A00',
-    balanceAmount: '#1C0F00',
-    balanceUnit: '#4B3200',
-    progressText: '#5B3A00',
-    progressBarFill: '#2B1A00',
-    progressBarBg: 'rgba(255,255,255,0.3)',
-    shadow: '0 20px 50px rgba(232,168,32,0.4), inset 0 0 0 1px rgba(255,255,255,0.35)'
+    textBrand: '#000000',
+    tierPillColor: '#000000',
+    chipCell: 'rgba(0,0,0,0.3)',
+    cardNumber: '#000000',
+    balanceLabel: '#000000',
+    balanceAmount: '#000000',
+    balanceUnit: '#000000',
+    progressText: '#000000',
+    progressBarFill: '#000000',
+    progressBarBg: 'rgba(0,0,0,0.15)',
+    shadow: '0 20px 50px rgba(0,0,0,0.15), inset 0 0 0 1px rgba(255,255,255,0.35)'
   }
 }
 

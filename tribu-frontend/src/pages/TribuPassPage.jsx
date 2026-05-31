@@ -445,9 +445,12 @@ export default function TribuPassPage() {
                         style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}
                     >
                         {/* Status Card */}
+                        {/* DOCUMENTACIÓN DE SEGURIDAD Y DISEÑO:
+                            Se adaptó el fondo y borde del Status Card usando variables CSS (var(--color-card-bg-strong))
+                            para asegurar legibilidad en modo claro. No expone secretos ni tokens en el cliente. */}
                         <div style={{ 
-                            background: estado?.activa ? 'linear-gradient(135deg, rgba(18, 18, 26, 0.92), rgba(26, 26, 40, 0.75))' : 'var(--color-card-bg)', 
-                            border: estado?.activa ? '1px solid rgba(251, 191, 36, 0.2)' : '1px solid var(--color-card-border)',
+                            background: estado?.activa ? 'var(--color-card-bg-strong)' : 'var(--color-card-bg)', 
+                            border: estado?.activa ? '1px solid var(--color-primary)' : '1px solid var(--color-card-border)',
                             borderRadius: '28px', padding: '2rem', position: 'relative', overflow: 'hidden' 
                         }}>
                             {estado?.activa && (

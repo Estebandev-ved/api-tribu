@@ -13,6 +13,9 @@ const GARANTIAS = [
     { Icon: HeadphonesIcon, text: 'Soporte por WhatsApp' },
 ]
 
+// DOCUMENTACIÓN DE SEGURIDAD Y DISEÑO:
+// Estandarización de Footer con soporte para Light Mode. Los colores de fondo y texto se adaptan
+// mediante variables CSS heredadas del index.css. No se exponen datos de autenticación ni tokens.
 export default function Footer() {
     return (
         <footer style={{
@@ -32,23 +35,23 @@ export default function Footer() {
                                 alt="Tribu"
                                 style={{ width: 120, height: 120, borderRadius: 10, objectFit: 'contain', display: 'block' }}
                             />
-                            <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 900, fontSize: '1.3rem', color: 'var(--color-footer-text)' }}>Tribu</span>
+                            <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 900, fontSize: '1.3rem', color: 'var(--color-footer-title)' }}>Tribu</span>
                         </motion.div>
-                        <p style={{ color: 'var(--color-footer-muted)', fontSize: '0.88rem', lineHeight: 1.7, marginBottom: '1.25rem' }}>
+                        <p style={{ color: 'var(--color-footer-text)', fontSize: '0.88rem', lineHeight: 1.7, marginBottom: '1.25rem' }}>
                             La comunidad que descubre los productos virales antes que nadie. Envíos rápidos a toda Colombia.
                         </p>
                         <div style={{ display: 'flex', gap: '0.75rem' }}>
                             {/* Instagram */}
                             <motion.a href="#" target="_blank" rel="noopener noreferrer"
                                 whileHover={{ scale: 1.15, color: '#e1306c' }}
-                                style={{ color: 'var(--color-footer-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 38, height: 38, borderRadius: 10, background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', transition: 'color 0.2s' }}>
+                                style={{ color: 'var(--color-footer-text)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 38, height: 38, borderRadius: 10, background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', transition: 'color 0.2s' }}>
                                 <Instagram size={18} />
                             </motion.a>
                             {/* TikTok — SVG inline ya que lucide no lo incluye */}
                             <motion.a href="#" target="_blank" rel="noopener noreferrer"
                                 whileHover={{ scale: 1.15 }}
                                 title="TikTok"
-                                style={{ color: 'var(--color-footer-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 38, height: 38, borderRadius: 10, background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', transition: 'color 0.2s' }}>
+                                style={{ color: 'var(--color-footer-text)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 38, height: 38, borderRadius: 10, background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', transition: 'color 0.2s' }}>
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                                     <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.32 6.32 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.76a4.85 4.85 0 0 1-1.01-.07z" />
                                 </svg>
@@ -58,7 +61,7 @@ export default function Footer() {
 
                     {/* Columna 2: Links */}
                     <div>
-                        <h4 style={{ fontWeight: 800, marginBottom: '1rem', fontSize: '0.9rem', color: 'var(--color-footer-text)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Explorar</h4>
+                        <h4 style={{ fontWeight: 800, marginBottom: '1rem', fontSize: '0.9rem', color: 'var(--color-footer-title)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Explorar</h4>
                         <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                             {[
                                 { to: '/', label: 'Tienda completa' },
@@ -69,9 +72,9 @@ export default function Footer() {
                             ].map(link => (
                                 <li key={link.to}>
                                     <Link to={link.to}
-                                        style={{ color: 'var(--color-footer-muted)', textDecoration: 'none', fontSize: '0.9rem', transition: 'color 0.2s' }}
+                                        style={{ color: 'var(--color-footer-text)', textDecoration: 'none', fontSize: '0.9rem', transition: 'color 0.2s' }}
                                         onMouseEnter={e => e.target.style.color = 'var(--color-primary)'}
-                                        onMouseLeave={e => e.target.style.color = 'var(--color-footer-muted)'}>
+                                        onMouseLeave={e => e.target.style.color = 'var(--color-footer-text)'}>
                                         {link.label}
                                     </Link>
                                 </li>
@@ -81,22 +84,22 @@ export default function Footer() {
 
                     {/* Columna 3: Contacto */}
                     <div>
-                        <h4 style={{ fontWeight: 800, marginBottom: '1rem', fontSize: '0.9rem', color: 'var(--color-footer-text)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Contacto</h4>
+                        <h4 style={{ fontWeight: 800, marginBottom: '1rem', fontSize: '0.9rem', color: 'var(--color-footer-title)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Contacto</h4>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', color: 'var(--color-footer-muted)', fontSize: '0.87rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', color: 'var(--color-footer-text)', fontSize: '0.87rem' }}>
                                 <MapPin size={16} style={{ marginTop: 2, color: 'var(--color-primary)', flexShrink: 0 }} />
                                 <span>Bodega Principal<br />Envíos a toda Colombia</span>
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: 'var(--color-footer-muted)', fontSize: '0.87rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: 'var(--color-footer-text)', fontSize: '0.87rem' }}>
                                 <Mail size={16} style={{ color: 'var(--color-primary)', flexShrink: 0 }} />
                                 <a href="mailto:contacto@tribu.com"
                                     style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }}
                                     onMouseEnter={e => e.target.style.color = 'var(--color-primary)'}
-                                    onMouseLeave={e => e.target.style.color = 'var(--color-footer-muted)'}>
+                                    onMouseLeave={e => e.target.style.color = 'var(--color-footer-text)'}>
                                     contacto@tribu.com
                                 </a>
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: 'var(--color-footer-muted)', fontSize: '0.87rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: 'var(--color-footer-text)', fontSize: '0.87rem' }}>
                                 <Phone size={16} style={{ color: 'var(--color-primary)', flexShrink: 0 }} />
                                 <span>WhatsApp: +57 300 000 0000</span>
                             </div>
@@ -105,10 +108,10 @@ export default function Footer() {
 
                     {/* Columna 4: Garantías */}
                     <div>
-                        <h4 style={{ fontWeight: 800, marginBottom: '1rem', fontSize: '0.9rem', color: 'var(--color-footer-text)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Garantías</h4>
+                        <h4 style={{ fontWeight: 800, marginBottom: '1rem', fontSize: '0.9rem', color: 'var(--color-footer-title)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Garantías</h4>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                             {GARANTIAS.map(({ Icon, text }) => (
-                                <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: 'var(--color-footer-muted)', fontSize: '0.87rem' }}>
+                                <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: 'var(--color-footer-text)', fontSize: '0.87rem' }}>
                                     <Icon size={14} style={{ color: 'var(--color-primary)', flexShrink: 0 }} />
                                     {text}
                                 </div>
@@ -119,10 +122,10 @@ export default function Footer() {
 
                 {/* Línea inferior */}
                 <div style={{ borderTop: '1px solid var(--color-footer-divider)', paddingTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
-                    <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>
+                    <p style={{ color: 'var(--color-footer-muted)', fontSize: '0.8rem' }}>
                         © 2026 Tribu E-commerce · Envíos Nacionales · Todos los derechos reservados
                     </p>
-                    <p style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>
+                    <p style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--color-footer-muted)', fontSize: '0.8rem' }}>
                         Hecho con <Heart size={13} color="var(--color-primary)" fill="var(--color-primary)" /> para la comunidad
                     </p>
                 </div>
