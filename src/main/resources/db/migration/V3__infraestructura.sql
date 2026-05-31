@@ -2,10 +2,50 @@
 -- Módulo 5: Infraestructura (Telegram, Inventario, Push Notifications)
 
 -- Campos de inventario inteligente en productos
-ALTER TABLE productos
-    ADD COLUMN IF NOT EXISTS stock_minimo INT DEFAULT 5,
-    ADD COLUMN IF NOT EXISTS stock_critico INT DEFAULT 3,
-    ADD COLUMN IF NOT EXISTS alerta_enviada_en TIMESTAMP NULL;
+-- MySQL no soporta ADD COLUMN IF NOT EXISTS en todas las versiones,
+-- se agrega cada columna de forma condicional.
+
+-- stock_minimo
+SET @column_exists = (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'productos'
+      AND COLUMN_NAME = 'stock_minimo'
+);
+SET @sql = IF(@column_exists = 0,
+    'ALTER TABLE productos ADD COLUMN stock_minimo INT DEFAULT 5',
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- stock_critico
+SET @column_exists = (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'productos'
+      AND COLUMN_NAME = 'stock_critico'
+);
+SET @sql = IF(@column_exists = 0,
+    'ALTER TABLE productos ADD COLUMN stock_critico INT DEFAULT 3',
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- alerta_enviada_en
+SET @column_exists = (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'productos'
+      AND COLUMN_NAME = 'alerta_enviada_en'
+);
+SET @sql = IF(@column_exists = 0,
+    'ALTER TABLE productos ADD COLUMN alerta_enviada_en TIMESTAMP NULL',
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 -- Tabla de suscripciones push para PWA
 CREATE TABLE IF NOT EXISTS push_suscripciones (
