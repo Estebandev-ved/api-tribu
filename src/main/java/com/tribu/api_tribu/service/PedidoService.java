@@ -303,9 +303,12 @@ public class PedidoService {
         Usuario usuario = pedido.getUsuario();
         double porcentaje = cashbackTierService.getPorcentajeCashback(usuario);
 
+        double subtotal = pedido.getTotal().doubleValue() - (pedido.getCostoEnvio() != null ? pedido.getCostoEnvio().doubleValue() : 0.0);
+        if (subtotal < 0) subtotal = 0;
+
         saldoService.registrarCashbackDiferido(
                 usuario,
-                pedido.getTotal().doubleValue(),
+                subtotal,
                 porcentaje,
                 pedido.getId());
     }

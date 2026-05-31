@@ -13,6 +13,7 @@ public class ProductoResponse {
     private BigDecimal precio;
     private Integer stock;
     private String imagenUrl;
+    private String imagenesAdicionales;
     private Boolean esViral;
     private Boolean activo;
     private Long categoriaId;

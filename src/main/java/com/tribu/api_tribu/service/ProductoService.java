@@ -99,6 +99,7 @@ public class ProductoService {
         p.setPrecio(req.getPrecio());
         p.setStock(req.getStock());
         p.setImagenUrl(req.getImagenUrl());
+        p.setImagenesAdicionales(req.getImagenesAdicionales());
         p.setEsViral(req.getEsViral() != null ? req.getEsViral() : false);
         p.setActivo(req.getActivo() != null ? req.getActivo() : true);
         p.setCategoria(cat);
@@ -158,6 +159,7 @@ public class ProductoService {
                 .precio(p.getPrecio())
                 .stock(p.getStock())
                 .imagenUrl(p.getImagenUrl())
+                .imagenesAdicionales(p.getImagenesAdicionales())
                 .esViral(p.getEsViral())
                 .activo(p.getActivo())
                 .categoriaId(p.getCategoria() != null ? p.getCategoria().getId() : null)

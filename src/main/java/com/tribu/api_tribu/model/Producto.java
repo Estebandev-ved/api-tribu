@@ -54,6 +54,9 @@ public class Producto {
     @Column(name = "imagen_url")
     private String imagenUrl;
 
+    @Column(name = "imagenes_adicionales", length = 3000)
+    private String imagenesAdicionales;
+
     @Column(name = "es_viral")
     private Boolean esViral = false;
 

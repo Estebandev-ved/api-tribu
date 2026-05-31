@@ -21,6 +21,7 @@ public class ProductoRequest {
     private Integer stock;
 
     private String imagenUrl;
+    private String imagenesAdicionales;
     private Boolean esViral = false;
     private Boolean activo = true;
 

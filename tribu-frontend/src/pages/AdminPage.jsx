@@ -38,7 +38,7 @@ const estadoColor = {
 const formatCOP = (n) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n)
 
 // ─── Modal de Producto ─────────────────────────────────────────────────────────
-const PRODUCTO_VACIO = { nombre: '', descripcion: '', precio: '', stock: '', esViral: false, categoriaId: '', imagenUrl: '', costoProveedor: '', costoEmpaqueEnvio: '', comisionPasarelaFija: '' }
+const PRODUCTO_VACIO = { nombre: '', descripcion: '', precio: '', stock: '', esViral: false, categoriaId: '', imagenUrl: '', imagenesAdicionales: '', costoProveedor: '', costoEmpaqueEnvio: '', comisionPasarelaFija: '' }
 
 function ModalProducto({ prod, categorias, onClose, onSave }) {
     const [form, setForm] = useState(prod || PRODUCTO_VACIO)
@@ -147,13 +147,32 @@ function ModalProducto({ prod, categorias, onClose, onSave }) {
                     </div>
                     <div className="form-group">
                         <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <Image size={13} /> URL de imagen
+                            <Image size={13} /> URL de imagen principal
                         </label>
                         <input className="input" value={form.imagenUrl} onChange={set('imagenUrl')} placeholder="https://... o /uploads/uuid.jpg" />
                         {form.imagenUrl && (
                             <div style={{ marginTop: '0.5rem', borderRadius: '8px', overflow: 'hidden', height: 80, background: 'var(--color-surface-2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <img src={form.imagenUrl} alt="preview" style={{ height: '100%', objectFit: 'cover', width: '100%' }}
                                     onError={e => e.target.style.display = 'none'} />
+                            </div>
+                        )}
+                    </div>
+                    <div className="form-group">
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <Image size={13} /> Imágenes adicionales (Separadas por comas)
+                        </label>
+                        <input className="input" value={form.imagenesAdicionales || ''} onChange={set('imagenesAdicionales')} placeholder="https://img1.jpg, https://img2.jpg" />
+                        {form.imagenesAdicionales && (
+                            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+                                {form.imagenesAdicionales.split(',').map((url, idx) => {
+                                    const cleanUrl = url.trim();
+                                    return cleanUrl && (
+                                        <div key={idx} style={{ borderRadius: '6px', overflow: 'hidden', height: 50, width: 50, background: 'var(--color-surface-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--color-border)' }}>
+                                            <img src={cleanUrl} alt={`preview-${idx}`} style={{ height: '100%', width: '100%', objectFit: 'cover' }}
+                                                onError={e => e.target.style.display = 'none'} />
+                                        </div>
+                                    );
+                                })}
                             </div>
                         )}
                     </div>

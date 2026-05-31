@@ -132,6 +132,8 @@ public class SaldoService {
         if (montoCashback <= 0) return null;
 
         LocalDateTime unlockDate = LocalDateTime.now().plusMinutes(30);
+        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("hh:mm a");
+        String horaLiberacion = unlockDate.format(formatter);
 
         MovimientoSaldo mov = new MovimientoSaldo();
         mov.setUsuario(usuario);
@@ -141,8 +143,8 @@ public class SaldoService {
         mov.setUnlockDate(unlockDate);
         mov.setPedidoId(pedidoId);
         mov.setDescripcion(String.format(
-                "Cashback (%.0f%%) por Pedido #%d — disponible en 30 min",
-                porcentaje * 100, pedidoId));
+                "Cashback (%.0f%%) por Pedido #%d — disponible hoy a las %s",
+                porcentaje * 100, pedidoId, horaLiberacion));
 
         MovimientoSaldo guardado = movimientoRepo.save(mov);
 

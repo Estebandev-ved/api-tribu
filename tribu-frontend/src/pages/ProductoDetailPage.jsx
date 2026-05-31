@@ -16,6 +16,7 @@ export default function ProductoDetailPage() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [cantidad, setCantidad] = useState(1)
+    const [activeImage, setActiveImage] = useState(null)
 
     // Estado para el zoom tipo MercadoLibre
     const [isZooming, setIsZooming] = useState(false)
@@ -25,6 +26,12 @@ export default function ProductoDetailPage() {
     // Tarea 5: Botón de Compra Persistente (Sticky Add to Cart)
     const [showSticky, setShowSticky] = useState(false)
     const mainButtonRef = useRef(null)
+
+    useEffect(() => {
+        if (producto) {
+            setActiveImage(producto.imagenUrl)
+        }
+    }, [producto])
 
     useEffect(() => {
         if (!producto || producto.stock === 0) return
@@ -123,7 +130,7 @@ export default function ProductoDetailPage() {
 
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3rem' }}>
 
-                    {/* Columna Izquierda: Imagen con Zoom */}
+                    {/* Columna Izquierda: Imagen con Zoom y Galería */}
                     <div style={{ flex: '1 1 400px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                         <div
                             ref={imageRef}
@@ -141,9 +148,9 @@ export default function ProductoDetailPage() {
                                 cursor: 'crosshair',
                             }}
                         >
-                            <div style={{ width: '100%', height: '100%', opacity: isZooming ? 0 : 1, transition: 'opacity 0.3s' }}>
+                            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: isZooming ? 0 : 1, transition: 'opacity 0.3s' }}>
                                 <OptimizedImage
-                                    src={producto.imagenUrl}
+                                    src={activeImage || producto.imagenUrl}
                                     alt={producto.nombre}
                                     fallback="📦"
                                 />
@@ -156,7 +163,7 @@ export default function ProductoDetailPage() {
                                         position: 'absolute',
                                         top: 0, left: 0, right: 0, bottom: 0,
                                         pointerEvents: 'none',
-                                        backgroundImage: `url(${producto.imagenUrl || 'https://via.placeholder.com/600'})`,
+                                        backgroundImage: `url(${activeImage || producto.imagenUrl || 'https://via.placeholder.com/600'})`,
                                         backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
                                         backgroundSize: '250%', // Nivel de zoom
                                         backgroundRepeat: 'no-repeat'
@@ -164,6 +171,41 @@ export default function ProductoDetailPage() {
                                 />
                             )}
                         </div>
+
+                        {/* Miniaturas de Perspectivas */}
+                        {(() => {
+                            const imagesList = producto?.imagenesAdicionales 
+                                ? [producto.imagenUrl, ...producto.imagenesAdicionales.split(',').map(img => img.trim()).filter(Boolean)]
+                                : [producto?.imagenUrl].filter(Boolean);
+                            
+                            return imagesList.length > 1 && (
+                                <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap', marginTop: '0.25rem' }}>
+                                    {imagesList.map((img, idx) => (
+                                        <button
+                                            key={idx}
+                                            onClick={() => setActiveImage(img)}
+                                            onMouseEnter={() => setActiveImage(img)}
+                                            style={{
+                                                width: '64px',
+                                                height: '64px',
+                                                borderRadius: 'var(--radius-md)',
+                                                overflow: 'hidden',
+                                                border: (activeImage || producto.imagenUrl) === img ? '2px solid var(--color-primary)' : '1px solid var(--color-border)',
+                                                background: 'var(--color-surface)',
+                                                padding: 0,
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s ease',
+                                                transform: (activeImage || producto.imagenUrl) === img ? 'scale(1.05)' : 'none',
+                                                boxShadow: (activeImage || producto.imagenUrl) === img ? '0 0 8px rgba(255, 87, 34, 0.4)' : 'none'
+                                            }}
+                                        >
+                                            <img src={img} alt={`Perspective ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        </button>
+                                    ))}
+                                </div>
+                            );
+                        })()}
+
                         <p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--color-text-faint)' }}>
                             Pasa el cursor sobre la imagen para hacer zoom
                         </p>
