@@ -55,6 +55,13 @@ const MetodosDePago = ({ total, totalNumber, direccionEnvio, cuponCodigo, shippi
             .catch(() => {})
     }, []);
 
+    const hasTribuPass = user?.tribuPassActiva === true;
+
+    const costoEnvio = useMemo(() => {
+        if (hasTribuPass) return 0;
+        return selectedCarrier ? calcShipping(totalNumber, selectedCarrier, shippingRegion) : 0;
+    }, [hasTribuPass, totalNumber, selectedCarrier, shippingRegion]);
+
     // saldoDisponible: prioriza el backend (fuente de verdad = solo CLEARED)
     // El saldoRealtime del WS puede incluir eventos ON_HOLD, así que lo
     // usamos solo si es mayor a 0 y el backend no ha respondido aún.
@@ -62,13 +69,6 @@ const MetodosDePago = ({ total, totalNumber, direccionEnvio, cuponCodigo, shippi
     // El total a pagar INCLUYE el costo de envío
     const totalConEnvio = totalNumber + costoEnvio;
     const puedePagarConTribu = saldoDisponible >= totalConEnvio;
-
-    const hasTribuPass = user?.tribuPassActiva === true;
-
-    const costoEnvio = useMemo(() => {
-        if (hasTribuPass) return 0;
-        return selectedCarrier ? calcShipping(totalNumber, selectedCarrier, shippingRegion) : 0;
-    }, [hasTribuPass, totalNumber, selectedCarrier, shippingRegion]);
 
     const carrierName = selectedCarrier ? carriers.find(c => c.id === selectedCarrier)?.name : '';
 
