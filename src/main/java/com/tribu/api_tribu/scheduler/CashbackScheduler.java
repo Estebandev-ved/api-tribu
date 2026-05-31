@@ -38,7 +38,7 @@ public class CashbackScheduler {
      * Para desarrollo: también puedes disparar manualmente con
      * POST /api/admin/scheduler/liberar-cashbacks (ver AdminSchedulerController)
      */
-    @Scheduled(cron = "0 0 8 * * *", zone = "America/Bogota")
+    @Scheduled(fixedRate = 60000)
     @Transactional
     public void liberarCashbacksDiferidos() {
         LocalDateTime ahora = LocalDateTime.now();

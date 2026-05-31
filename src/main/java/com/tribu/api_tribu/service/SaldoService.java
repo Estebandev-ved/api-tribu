@@ -68,7 +68,7 @@ public class SaldoService {
     @Transactional
     public MovimientoSaldo registrarBonoReferente(Usuario referente, String nombreInvitado) {
         return crearBonoOnHold(referente, BONO_REFERENTE, TipoMovimiento.REFERRAL_BONUS, null,
-                "Bono PENDIENTE por invitar a " + nombreInvitado + " — disponible en 7 días");
+                "Bono PENDIENTE por invitar a " + nombreInvitado + " — disponible en 30 minutos");
     }
 
     /**
@@ -77,7 +77,7 @@ public class SaldoService {
     @Transactional
     public MovimientoSaldo registrarBonoNuevoUsuario(Usuario usuario, String codigoUsado) {
         return crearBonoOnHold(usuario, BONO_NUEVO_USUARIO, TipoMovimiento.WELCOME_BONUS, null,
-                "Bono PENDIENTE por usar el código de referido: " + codigoUsado + " — disponible en 7 días");
+                "Bono PENDIENTE por usar el código de referido: " + codigoUsado + " — disponible en 30 minutos");
     }
 
     /**
@@ -131,7 +131,7 @@ public class SaldoService {
         double montoCashback = montoCompra * porcentaje;
         if (montoCashback <= 0) return null;
 
-        LocalDateTime unlockDate = LocalDateTime.now().plusDays(DIAS_HOLD_CASHBACK_COMPRA);
+        LocalDateTime unlockDate = LocalDateTime.now().plusMinutes(30);
 
         MovimientoSaldo mov = new MovimientoSaldo();
         mov.setUsuario(usuario);
@@ -141,9 +141,8 @@ public class SaldoService {
         mov.setUnlockDate(unlockDate);
         mov.setPedidoId(pedidoId);
         mov.setDescripcion(String.format(
-                "Cashback (%.0f%%) por Pedido #%d — disponible el %s",
-                porcentaje * 100, pedidoId,
-                unlockDate.toLocalDate().toString()));
+                "Cashback (%.0f%%) por Pedido #%d — disponible en 30 min",
+                porcentaje * 100, pedidoId));
 
         MovimientoSaldo guardado = movimientoRepo.save(mov);
 
@@ -221,7 +220,7 @@ public class SaldoService {
 
     @Transactional
     public MovimientoSaldo crearBonoOnHold(Usuario usuario, double monto, TipoMovimiento tipo, Long pedidoId, String descripcion) {
-        LocalDateTime unlockDate = LocalDateTime.now().plusDays(DIAS_HOLD_CASHBACK_COMPRA);
+        LocalDateTime unlockDate = LocalDateTime.now().plusMinutes(30);
         MovimientoSaldo mov = new MovimientoSaldo();
         mov.setUsuario(usuario);
         mov.setMonto(monto);
