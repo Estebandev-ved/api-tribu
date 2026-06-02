@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface SecurityEventRepository extends JpaRepository<SecurityEvent, Long> {
     List<SecurityEvent> findTop100ByOrderByTimestampDesc();
+    SecurityEvent findTopByOrderByIdDesc();
 }

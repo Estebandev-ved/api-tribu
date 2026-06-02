@@ -326,7 +326,7 @@ export default function RecompensasPage() {
                         </span>
                         <span style={{ color: 'var(--color-text)', fontWeight: 700 }}>
                           {l.id === 'saldo_10k' || l.id === 'compra_100k' 
-                             ? `$${new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 }).format(l.actual)} / $${new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 }).format(l.requerido)}`
+                             ? `${new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 }).format(l.actual)} / ${new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 }).format(l.requerido)} pts`
                             : `${l.actual} / ${l.requerido}`}
                         </span>
                       </div>

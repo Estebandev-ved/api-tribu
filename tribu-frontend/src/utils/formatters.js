@@ -1,4 +1,4 @@
-export const formatCOP = (n) => `$ ${Math.round(n).toLocaleString('es-CO')}`
+export const formatCOP = (n) => `${Math.round(n).toLocaleString('es-CO')} Puntos Tribu`
 
 export const formatFecha = (fecha) => {
   const d = new Date(fecha)

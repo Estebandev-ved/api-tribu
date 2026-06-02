@@ -22,14 +22,17 @@ public class TransferenciaController {
     private final TransferenciaService transferenciaService;
     private final UsuarioRepository usuarioRepo;
     private final SaldoService saldoService;
+    private final com.tribu.api_tribu.service.QrCodeService qrCodeService;
 
     public TransferenciaController(
             TransferenciaService transferenciaService,
             UsuarioRepository usuarioRepo,
-            SaldoService saldoService) {
+            SaldoService saldoService,
+            com.tribu.api_tribu.service.QrCodeService qrCodeService) {
         this.transferenciaService = transferenciaService;
         this.usuarioRepo = usuarioRepo;
         this.saldoService = saldoService;
+        this.qrCodeService = qrCodeService;
     }
 
     @PostMapping("/enviar")
@@ -45,6 +48,48 @@ public class TransferenciaController {
         );
 
         Usuario emisor = usuarioRepo.findByEmail(email).orElseThrow();
+        double nuevoSaldo = saldoService.consultarSaldoReal(emisor.getId());
+
+        TransferenciaResponse response = new TransferenciaResponse();
+        response.setReferencia(transferencia.getReferenciaUnica());
+        response.setTipoParticipante("EMISOR");
+        response.setMonto(transferencia.getMonto());
+        response.setContraparte(transferencia.getReceptor().getNombreCompleto());
+        response.setMensaje(transferencia.getMensaje());
+        response.setEstado(transferencia.getEstado().name());
+        response.setFecha(transferencia.getFechaCompletada());
+        response.setNuevoSaldo(nuevoSaldo);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/enviar-qr")
+    public ResponseEntity<?> enviarQr(@RequestBody java.util.Map<String, Object> body) {
+        String emailEmisor = SecurityContextHolder.getContext().getAuthentication().getName();
+        
+        String emailDestinatario = (String) body.get("email");
+        double monto = Double.parseDouble(body.get("monto").toString());
+        String mensaje = (String) body.get("mensaje");
+        long timestamp = Long.parseLong(body.get("timestamp").toString());
+        String signature = (String) body.get("signature");
+        String pin = (String) body.get("pin");
+
+        // 1. Validar firma criptográfica
+        boolean esValido = qrCodeService.validarQrCobro(emailDestinatario, monto, mensaje, timestamp, signature);
+        if (!esValido) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("message", "Código QR inválido, expirado o manipulado."));
+        }
+
+        // 2. Realizar transferencia segura con locks distribuidos en Redis
+        TransferenciaP2P transferencia = transferenciaService.transferir(
+                emailEmisor,
+                emailDestinatario,
+                monto,
+                mensaje,
+                pin
+        );
+
+        Usuario emisor = usuarioRepo.findByEmail(emailEmisor).orElseThrow();
         double nuevoSaldo = saldoService.consultarSaldoReal(emisor.getId());
 
         TransferenciaResponse response = new TransferenciaResponse();

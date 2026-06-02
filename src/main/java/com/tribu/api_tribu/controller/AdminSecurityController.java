@@ -6,6 +6,8 @@ import com.tribu.api_tribu.model.Usuario;
 import com.tribu.api_tribu.repository.RegistroAccesoRepository;
 import com.tribu.api_tribu.repository.SecurityEventRepository;
 import com.tribu.api_tribu.repository.UsuarioRepository;
+import com.tribu.api_tribu.service.SecurityAuditService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +27,8 @@ public class AdminSecurityController {
     private final RegistroAccesoRepository registroAccesoRepo;
     private final SecurityEventRepository securityEventRepo;
     private final UsuarioRepository usuarioRepo;
+    private final SecurityAuditService securityAuditService;
+    private final org.redisson.api.RedissonClient redissonClient;
 
     @GetMapping("/accesos")
     public ResponseEntity<List<RegistroAcceso>> getUltimosAccesos() {
@@ -98,8 +102,23 @@ public class AdminSecurityController {
         return ResponseEntity.ok(securityEventRepo.findTop100ByOrderByTimestampDesc());
     }
 
+    @PostMapping("/audit/verify")
+    public ResponseEntity<Map<String, Object>> manualIntegrityCheck() {
+        boolean isChainValid = securityAuditService.verificarIntegridadCadena();
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", isChainValid ? "success" : "compromised");
+        response.put("message", isChainValid 
+                ? "La cadena de logs de seguridad es íntegra y legítima. No se detectaron alteraciones."
+                : "¡Alerta Crítica! Se ha detectado una violación de la integridad en los registros de auditoría.");
+        response.put("timestamp", LocalDateTime.now());
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/action/{type}")
-    public ResponseEntity<Map<String, String>> executeMitigationAction(@PathVariable String type, @RequestBody Map<String, String> payload) {
+    public ResponseEntity<Map<String, String>> executeMitigationAction(
+            @PathVariable String type, 
+            @RequestBody Map<String, String> payload,
+            HttpServletRequest request) {
         String target = payload.get("target"); // IP or Email
         
         if ("QUARANTINE".equalsIgnoreCase(type) || "FORCE_RESET".equalsIgnoreCase(type)) {
@@ -121,18 +140,49 @@ public class AdminSecurityController {
         }
 
         // Log the action to Immutable Audit Log
-        SecurityEvent event = SecurityEvent.builder()
-            .eventType("MITIGATION_ACTION_" + type.toUpperCase())
-            .severity("CRITICAL")
-            .description("Executed " + type + " on target: " + target)
-            .userEmail("admin@tribucard.com")
-            .timestamp(LocalDateTime.now())
-            .build();
-        securityEventRepo.save(event);
+        securityAuditService.registrarEventoSeguridad(
+                "MITIGATION_ACTION_" + type.toUpperCase(),
+                "CRITICAL",
+                "Executed " + type + " on target: " + target,
+                "admin@tribucard.com",
+                request.getRemoteAddr(),
+                request.getHeader("User-Agent"),
+                null
+        );
 
         Map<String, String> response = new HashMap<>();
         response.put("status", "success");
         response.put("message", "Acción " + type + " ejecutada correctamente contra " + target);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/politicas")
+    public ResponseEntity<Map<String, Object>> getSecurityPolicies() {
+        Map<String, Object> response = new HashMap<>();
+        
+        Object attempts = redissonClient.getBucket("tribu:security:pinAttemptsLimit").get();
+        Object lockoutTime = redissonClient.getBucket("tribu:security:pinLockoutTime").get();
+        Object emergencyRateLimit = redissonClient.getBucket("tribu:security:emergencyRateLimit").get();
+
+        response.put("pinAttemptsLimit", attempts != null ? Integer.parseInt(attempts.toString()) : 3);
+        response.put("pinLockoutTime", lockoutTime != null ? Integer.parseInt(lockoutTime.toString()) : 15);
+        response.put("emergencyRateLimit", emergencyRateLimit != null ? Boolean.parseBoolean(emergencyRateLimit.toString()) : false);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/politicas")
+    public ResponseEntity<Map<String, Object>> saveSecurityPolicies(@RequestBody Map<String, Object> payload) {
+        int attempts = Integer.parseInt(payload.get("pinAttemptsLimit").toString());
+        int lockoutTime = Integer.parseInt(payload.get("pinLockoutTime").toString());
+        boolean emergencyRateLimit = Boolean.parseBoolean(payload.get("emergencyRateLimit").toString());
+
+        redissonClient.getBucket("tribu:security:pinAttemptsLimit").set(attempts);
+        redissonClient.getBucket("tribu:security:pinLockoutTime").set(lockoutTime);
+        redissonClient.getBucket("tribu:security:emergencyRateLimit").set(emergencyRateLimit);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "success");
+        response.put("message", "Políticas de ciberseguridad actualizadas correctamente en Redis.");
         return ResponseEntity.ok(response);
     }
 }

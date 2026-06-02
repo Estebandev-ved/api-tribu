@@ -24,7 +24,7 @@ import { useAuth } from '../context/AuthContext'
 import { toast } from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
 
-const formatCurrency = (monto) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(monto || 0);
+const formatCurrency = (monto) => `${new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 }).format(monto || 0)} Puntos Tribu`;
 
 const trustItems = [
     { icon: <Lock size={20} />, title: 'Pago 100% Seguro', desc: 'Cifrado SSL + métodos verificados' },
@@ -74,7 +74,7 @@ const faqItems = [
 ];
 
 const testimonios = [
-    { nombre: 'María C.', ciudad: 'Bogotá', texto: 'El cashback x2 me ha permitido ahorrar más de $200K al mes. ¡Totalmente vale la pena!', estrellas: 5 },
+    { nombre: 'María C.', ciudad: 'Bogotá', texto: 'El cashback x2 me ha permitido ahorrar más de 200.000 Puntos Tribu al mes. ¡Totalmente vale la pena!', estrellas: 5 },
     { nombre: 'Carlos R.', ciudad: 'Medellín', texto: 'Los envíos gratis son lo mejor. Pedí 8 veces este mes y no pagué nada en envíos.', estrellas: 5 },
     { nombre: 'Ana L.', ciudad: 'Cali', texto: 'Las ofertas VIP son brutales. Siempre llego primero a las promociones.', estrellas: 5 },
     { nombre: 'Jorge T.', ciudades: ['Bogotá', 'Cali'], texto: 'Llevo 6 meses con Tribu Pass y no lo cambio. El ROI es incredible.', estrellas: 5 }
@@ -204,8 +204,8 @@ export default function TribuPassPage() {
         { 
             icon: <Gem color="#fbbf24" />, 
             title: 'Límite Extra', 
-            desc: '+$5.000 de límite diario en la ruleta de premios.',
-            highlight: '+$5K'
+            desc: '+5.000 Puntos Tribu de límite diario en la ruleta de premios.',
+            highlight: '+5.000 Pts'
         }
     ];
 

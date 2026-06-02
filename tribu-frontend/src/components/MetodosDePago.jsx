@@ -16,6 +16,8 @@ const carriers = [
     { id: 'envia', name: 'Envia', eta: '2-4 días hábiles', color: '#00A3E0' },
 ];
 
+const formatCOP = (n) => `${Math.round(n).toLocaleString('es-CO')} COP`;
+
 function calcShipping(total, carrierId, region = 'nacional') {
     const baseRates = {
         coordinadora:    { local: 8500, regional: 10500, principal: 13500, nacional: 16500, especial: 24500 },
@@ -231,7 +233,7 @@ const MetodosDePago = ({ total, totalNumber, direccionEnvio, cuponCodigo, shippi
                                 GRATIS <span style={{ fontSize: '0.85rem' }}>💎</span>
                             </>
                         ) : (
-                            `$${costoEnvio.toLocaleString('es-CO')}`
+                            formatCOP(costoEnvio)
                         )}
                     </span>
                 </div>
@@ -267,7 +269,7 @@ const MetodosDePago = ({ total, totalNumber, direccionEnvio, cuponCodigo, shippi
                         </div>
                     </div>
                     <div style={{ fontWeight: 700, fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
-                        ${totalConEnvio.toLocaleString('es-CO')}
+                        {formatCOP(totalConEnvio)}
                     </div>
                 </motion.button>
             </div>
@@ -318,7 +320,7 @@ const MetodosDePago = ({ total, totalNumber, direccionEnvio, cuponCodigo, shippi
                         </div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontWeight: 900, fontSize: '1.1rem', color: showContraentregaForm ? '#00C896' : '#fff' }}>$0</div>
+                        <div style={{ fontWeight: 900, fontSize: '1.1rem', color: showContraentregaForm ? '#00C896' : '#fff' }}>0 COP</div>
                         <div style={{ fontSize: '0.62rem', opacity: 0.75 }}>hoy</div>
                     </div>
                 </motion.button>
@@ -567,7 +569,7 @@ const MetodosDePago = ({ total, totalNumber, direccionEnvio, cuponCodigo, shippi
                                 <div style={{ fontSize: '0.68rem', color: '#777', marginTop: '1px' }}>Productos + envío incluido</div>
                             </div>
                             <div style={{ fontWeight: 900, fontSize: '1.2rem', color: '#00C896' }}>
-                                ${totalConEnvio.toLocaleString('es-CO')}
+                                {formatCOP(totalConEnvio)}
                             </div>
                         </div>
 
@@ -631,7 +633,7 @@ const MetodosDePago = ({ total, totalNumber, direccionEnvio, cuponCodigo, shippi
                                 ) : (
                                     <>
                                         <Check size={16} />
-                                        Confirmar pedido — $0 hoy
+                                        Confirmar pedido — 0 COP hoy
                                     </>
                                 )}
                             </motion.button>
@@ -645,7 +647,7 @@ const MetodosDePago = ({ total, totalNumber, direccionEnvio, cuponCodigo, shippi
             <div style={{ marginBottom: '1.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
                     <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.06)' }} />
-                    <span style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', fontWeight: 600, letterSpacing: '0.03em' }}>O USA TUS PUNTOS TRIBU</span>
+                    <span style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', fontWeight: 600, letterSpacing: '0.03em' }}>PUEDES USAR PUNTOS TRIBU PARA COMPRAR</span>
                     <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.06)' }} />
                 </div>
 
@@ -680,19 +682,19 @@ const MetodosDePago = ({ total, totalNumber, direccionEnvio, cuponCodigo, shippi
                         </div>
                         <div style={{ textAlign: 'left' }}>
                             <div style={{ fontWeight: 800, fontSize: '0.9rem' }}>
-                                {puedePagarConTribu ? 'Pagar con Puntos Tribu' : 'Puntos insuficientes'}
+                                {puedePagarConTribu ? 'Usar Puntos Tribu' : 'Puntos insuficientes'}
                             </div>
                             <div style={{ fontSize: '0.75rem', opacity: 0.75, marginTop: '1px' }}>
                                 {puedePagarConTribu
                                     ? `${new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 }).format(saldoDisponible)} pts disponibles`
-                                    : `Necesitas $${new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 }).format(totalNumber)} pts — tienes ${new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 }).format(saldoDisponible)} pts`
+                                    : `Necesitas ${new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 }).format(totalNumber)} pts — tienes ${new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 }).format(saldoDisponible)} pts`
                                 }
                             </div>
                         </div>
                     </div>
                     {puedePagarConTribu && selectedCarrier && (
                         <div style={{ fontWeight: 700, fontSize: '0.85rem' }}>
-                            ${totalConEnvio.toLocaleString('es-CO')}
+                            {formatCOP(totalConEnvio)}
                         </div>
                     )}
                 </motion.button>

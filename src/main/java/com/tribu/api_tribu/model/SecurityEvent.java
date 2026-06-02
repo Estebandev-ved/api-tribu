@@ -49,6 +49,12 @@ public class SecurityEvent {
     @Column(columnDefinition = "TEXT", name = "encrypted_payload")
     private String encryptedPayload; // For AES-256 encrypted sensitive data
 
+    @Column(name = "previous_hash", length = 64)
+    private String previousHash;
+
+    @Column(name = "current_hash", length = 64)
+    private String currentHash;
+
     @PrePersist
     protected void onCreate() {
         if (timestamp == null) {

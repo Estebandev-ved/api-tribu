@@ -53,6 +53,7 @@ public class PedidoService {
     private final FacturaService facturaService;
     private final CuponService cuponService;
     private final EfipayService efipayService;
+    private final LeaderboardService leaderboardService;
 
     @Value("${efipay.webhook.url}")
     private String efipayWebhookUrl;
@@ -208,6 +209,9 @@ public class PedidoService {
             // 💎 NUEVO: Registrar cashback inmediatamente si ya está PAGADO (Tribu Card)
             procesarCashback(savedPedido);
 
+            // 🏆 ACTUALIZAR LEADERBOARD EN REDIS (Para compras con saldo de Tribu Card)
+            leaderboardService.actualizarScoreRedis(usuario.getId(), savedPedido.getTotal().doubleValue());
+
             try {
                 facturaService.generarFacturaAutomatica(savedPedido.getId(), null, null);
             } catch (Exception e) {
@@ -260,6 +264,11 @@ public class PedidoService {
         // Se crea en ON_HOLD — el Scheduler lo libera en 7 días.
         if (!"ENTREGADO".equals(estadoAnterior) && "ENTREGADO".equals(nuevoEstado)) {
             procesarCashback(saved);
+            
+            // 🏆 ACTUALIZAR LEADERBOARD EN REDIS (Para compras no pagadas con Tribu Card, ej: Efipay/Contraentrega)
+            if (!"TRIBU_CARD".equalsIgnoreCase(pedido.getMetodoPago())) {
+                leaderboardService.actualizarScoreRedis(pedido.getUsuario().getId(), saved.getTotal().doubleValue());
+            }
         }
 
         if (!"PAGADO".equalsIgnoreCase(estadoAnterior) && "PAGADO".equalsIgnoreCase(nuevoEstado)) {

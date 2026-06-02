@@ -125,6 +125,9 @@ export const adminGetSecuritySessions = () => api.get('/admin/seguridad/sessions
 export const adminGetSecurityThreats = () => api.get('/admin/seguridad/threats')
 export const adminGetSecurityAudit = () => api.get('/admin/seguridad/audit')
 export const adminExecuteSecurityAction = (type, payload) => api.post(`/admin/seguridad/action/${type}`, payload)
+export const adminVerifySecurityIntegrity = () => api.post('/admin/seguridad/audit/verify')
+export const adminGetSecurityPolicies = () => api.get('/admin/seguridad/politicas')
+export const adminSaveSecurityPolicies = (payload) => api.post('/admin/seguridad/politicas', payload)
 
 // ——— Admin: Tribu Card (Ledger) ———
 export const adminGetMovimientosTribuCard = ({ q = '', estado = '', tipo = '', page = 0, size = 25 } = {}) => {
@@ -175,4 +178,12 @@ export const adminGetMensajesSoporte = (id) => api.get(`/admin/soporte/conversac
 export const adminEnviarMensajeSoporte = (id, contenido) => api.post(`/admin/soporte/conversaciones/${id}/mensajes`, { contenido })
 export const adminResolverConversacionSoporte = (id) => api.post(`/admin/soporte/conversaciones/${id}/resolver`)
 
-export default api
+// ——— Códigos QR (Dynamic HMAC P2P) ———
+export const generarQrCobro = (data) => api.post('/qr/generar', data)
+export const verificarQrCobro = (data) => api.post('/qr/escanear-verificar', data)
+export const transferirPorQr = (data) => api.post('/transferencias/enviar-qr', data)
+
+// ——— Agente Creativo IA ———
+export const generarProductoConIa = (payload) => api.post('/admin/productos/generar-ia', payload)
+
+export default api;

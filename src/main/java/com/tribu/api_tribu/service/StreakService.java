@@ -56,7 +56,7 @@ public class StreakService {
         saldoService.crearYAcreditar(usuario, bonus, TipoMovimiento.STREAK_BONUS, null,
             "🔥 ¡" + racha + " días seguidos! Bonus de racha.");
         wsService.notificarSaldoActualizado(usuario.getId(), bonus,
-            "STREAK_BONUS", "¡Racha de " + racha + " días! +$" + (int)bonus);
+            "STREAK_BONUS", "¡Racha de " + racha + " días! +" + (int)bonus + " Puntos Tribu");
     }
 
     public double calcularBonusRacha(int dias) {

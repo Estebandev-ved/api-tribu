@@ -432,7 +432,7 @@ export default function GruposPage() {
 
                 <div style={{ marginBottom: '1.5rem' }}>
                   <label style={{ color: '#888', fontSize: '0.85rem', display: 'block', marginBottom: 8 }}>
-                    Monto Objetivo / Presupuesto Total (COP)
+                    Monto Objetivo / Presupuesto Total (Puntos Tribu)
                   </label>
                   <input
                     type="number"

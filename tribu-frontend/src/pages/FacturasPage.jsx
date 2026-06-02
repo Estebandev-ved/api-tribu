@@ -13,7 +13,7 @@ import {
 } from '../api'
 import { toast } from 'react-hot-toast'
 
-const formatCurrency = (monto) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(monto || 0);
+const formatCurrency = (monto) => `${Math.round(monto || 0).toLocaleString('es-CO')} pts`
 
 export default function FacturasPage() {
     const [facturas, setFacturas] = useState([]);

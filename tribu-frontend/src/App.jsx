@@ -38,6 +38,7 @@ import HelpWidget from './components/HelpWidget'
 import CookieConsent from './components/CookieConsent'
 import AdminSecurityPage from './pages/admin/AdminSecurityPage'
 import RecompensasPage from './pages/RecompensasPage'
+import CobroQrPage from './pages/CobroQrPage'
 
 function AdminRoute({ children }) {
   const { isAdmin, isAuthenticated } = useAuth()
@@ -75,6 +76,7 @@ function AppContent() {
         <Route path="/perfil" element={<PrivateRoute><Page><ProfilePage /></Page></PrivateRoute>} />
         <Route path="/billetera" element={<PrivateRoute><Page><BilleteraPage /></Page></PrivateRoute>} />
         <Route path="/transferir" element={<PrivateRoute><Page><TransferirPage /></Page></PrivateRoute>} />
+        <Route path="/cobro-qr" element={<PrivateRoute><Page><CobroQrPage /></Page></PrivateRoute>} />
         <Route path="/leaderboard" element={<PrivateRoute><Page><LeaderboardPage /></Page></PrivateRoute>} />
         <Route path="/referidos" element={<PrivateRoute><Page><ReferidoArbolPage /></Page></PrivateRoute>} />
         <Route path="/recompensas" element={<PrivateRoute><Page><RecompensasPage /></Page></PrivateRoute>} />

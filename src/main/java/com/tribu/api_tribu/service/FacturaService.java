@@ -358,8 +358,7 @@ public class FacturaService {
     }
 
     public String formatCOP(double monto) {
-        NumberFormat formatter = NumberFormat.getCurrencyInstance(new Locale("es", "CO"));
-        return formatter.format(monto);
+        return String.format("%,.0f pts", monto);
     }
 
     public FacturaElectronica getFacturaPorPedido(Long pedidoId) {

@@ -79,7 +79,9 @@ public class SoporteService {
         SoporteConversacion conversacion = conversacionRepository.findById(conversacionId)
                 .orElseThrow(() -> new ResourceNotFoundException("ConversacionSoporte", "id", conversacionId));
 
-        if (conversacion.getEstado() == EstadoSoporte.RESUELTA) {
+        if (conversacion.getEstado() == EstadoSoporte.RESUELTA || 
+                "reiniciar".equalsIgnoreCase(contenido.trim()) || 
+                "reset".equalsIgnoreCase(contenido.trim())) {
             conversacion.setEstado(EstadoSoporte.ACTIVA_IA);
             conversacion = conversacionRepository.save(conversacion);
         }
@@ -95,8 +97,11 @@ public class SoporteService {
 
         mensajeUsuario = mensajeRepository.save(mensajeUsuario);
 
-        // 2. Analizar si requiere escalado humano
-        boolean requiereEscalado = verificarTriggersEscalado(contenido, sentiment, conversacion);
+        // 2. Analizar si requiere escalado humano (solo si NO está ya en estado ESCALADA_HUMANO)
+        boolean requiereEscalado = false;
+        if (conversacion.getEstado() != EstadoSoporte.ESCALADA_HUMANO) {
+            requiereEscalado = verificarTriggersEscalado(contenido, sentiment, conversacion);
+        }
 
         if (requiereEscalado) {
             escalarAHumano(conversacion, contenido, sentiment);
@@ -114,9 +119,25 @@ public class SoporteService {
             return mensajeRepository.save(mensajeSistema);
         }
 
-        // 3. Si no requiere escalado y está en ACTIVA_IA, responder con IA
+        // 3. Si está en ACTIVA_IA, responder con IA
         if (conversacion.getEstado() == EstadoSoporte.ACTIVA_IA) {
             String respuestaIa = generarRespuestaIA(conversacion, contenido);
+            
+            SoporteMensaje mensajeIa = SoporteMensaje.builder()
+                    .conversacion(conversacion)
+                    .remitente(RemitenteSoporte.IA)
+                    .contenido(respuestaIa)
+                    .sentiment("NEUTRAL")
+                    .confidence(0.9)
+                    .build();
+            
+            return mensajeRepository.save(mensajeIa);
+        }
+
+        // 4. Si ya está en ESCALADA_HUMANO, permitir que la IA siga respondiendo pero con una nota aclaratoria
+        if (conversacion.getEstado() == EstadoSoporte.ESCALADA_HUMANO) {
+            String respuestaIa = generarRespuestaIA(conversacion, contenido);
+            respuestaIa += "\n\n*(Nota: Tu conversación sigue en cola de espera. Un asesor humano revisará este chat muy pronto).*";
             
             SoporteMensaje mensajeIa = SoporteMensaje.builder()
                     .conversacion(conversacion)
@@ -261,14 +282,6 @@ public class SoporteService {
 
         // Trigger 2: Sentimiento negativo/frustración detectado
         if ("FRUSTRADO".equals(sentiment)) {
-            return true;
-        }
-
-        // Trigger 3: Conversación muy larga sin resolver (ej. más de 6 mensajes del usuario)
-        long mensajesUsuario = conversacion.getMensajes().stream()
-                .filter(m -> m.getRemitente() == RemitenteSoporte.USUARIO)
-                .count();
-        if (mensajesUsuario >= 6) {
             return true;
         }
 

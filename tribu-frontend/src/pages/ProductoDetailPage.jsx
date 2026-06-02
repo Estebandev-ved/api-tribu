@@ -63,8 +63,7 @@ export default function ProductoDetailPage() {
         fetchProducto()
     }, [id])
 
-    const formatCOP = (n) =>
-        new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n)
+    const formatCOP = (n) => `${Math.round(n).toLocaleString('es-CO')} pts`
 
     const handleAddToCart = () => {
         if (producto && producto.stock > 0) {

@@ -159,7 +159,7 @@ public class EmailService {
                 %s
               </div>
               
-              <p style="color:#00C896;font-size:16px;font-weight:800;margin:0 0 24px 0;text-align:center;">💰 Saldo en tu Billetera Tribu: <strong>$%.0f</strong></p>
+              <p style="color:#00C896;font-size:16px;font-weight:800;margin:0 0 24px 0;text-align:center;">💰 Saldo en tu Billetera Tribu: <strong>%.0f Puntos Tribu</strong></p>
               
               <div style="text-align:center;">
                 <a href="http://localhost:3000/carrito" style="display:inline-block;background:linear-gradient(135deg,#FF5722,#FF8A50);color:#FFFFFF;text-decoration:none;padding:15px 36px;border-radius:9999px;font-weight:800;font-size:15px;box-shadow:0 4px 15px rgba(255,87,34,0.3);transition:all 0.2s ease;">
@@ -204,7 +204,7 @@ public class EmailService {
             <!-- Card -->
             <div style="background:#1A1A1A;border:1px solid rgba(254, 231, 21, 0.25);border-radius:20px;padding:36px;margin-bottom:24px;box-shadow:0 10px 30px rgba(0,0,0,0.5);">
               <h1 style="color:#FEE715;font-size:24px;font-weight:800;margin:0 0 12px 0;">¡Última oportunidad, %s! ⏰</h1>
-              <p style="color:#999999;font-size:15px;margin:0 0 20px 0;line-height:1.6;">Como miembro distinguido del tier <strong>%s</strong>, te otorgamos <span style="color:#00C896;font-weight:800;">$%.0f de descuento adicional</span> si completas tu compra en las próximas horas.</p>
+              <p style="color:#999999;font-size:15px;margin:0 0 20px 0;line-height:1.6;">Como miembro distinguido del tier <strong>%s</strong>, te otorgamos <span style="color:#00C896;font-weight:800;">%.0f Puntos Tribu de descuento adicional</span> si completas tu compra en las próximas horas.</p>
               
               <div style="background:#222222;border:1px solid rgba(255, 255, 255, 0.04);border-radius:12px;padding:20px;margin-bottom:20px;">
                 %s
@@ -291,7 +291,7 @@ public class EmailService {
               
               <div style="background:#222222;border:1px solid rgba(255, 255, 255, 0.04);border-radius:12px;padding:20px;margin-bottom:20px;">
                 <p style="color:#F5F5F5;font-size:15px;margin:0;line-height:1.5;">📄 <strong>Factura:</strong> <span style="color:#FF5722;font-weight:700;">%s</span></p>
-                <p style="color:#F5F5F5;font-size:15px;margin:10px 0 0 0;line-height:1.5;">💰 <strong>Total:</strong> <span style="color:#00C896;font-weight:800;">$%.0f</span></p>
+                <p style="color:#F5F5F5;font-size:15px;margin:10px 0 0 0;line-height:1.5;">💰 <strong>Total:</strong> <span style="color:#00C896;font-weight:800;">%.0f Puntos Tribu</span></p>
               </div>
               
               <p style="color:#555555;font-size:13px;margin:0 0 28px 0;line-height:1.5;">El documento PDF de tu factura electrónica ha sido adjuntado a este correo electrónico.</p>

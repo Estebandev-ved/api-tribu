@@ -160,7 +160,7 @@ export default function RegisterPage() {
                                 style={{ textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 600 }}
                                 value={form.codigoPromocional} onChange={set('codigoPromocional')} />
                             <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: '0.4rem 0 0 0' }}>
-                                Si un amigo te invitó, ingresa su código para recibir <strong>$5.000 COP</strong> de saldo de bienvenida.
+                                Si un amigo te invitó, ingresa su código para recibir <strong>5.000 Puntos Tribu</strong> de saldo de bienvenida.
                             </p>
                         </div>
 

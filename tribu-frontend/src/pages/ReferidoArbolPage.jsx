@@ -339,8 +339,8 @@ export default function ReferidoArbolPage() {
                 <div style={{ position: 'relative', zIndex: 1 }}>
                   <p style={{ fontSize: '1.1rem', fontWeight: 600, color: '#888', margin: '0 0 0.5rem 0' }}>Ganancias Totales Acumuladas</p>
                   <h2 style={{ fontSize: '4.5rem', fontWeight: 950, color: '#fff', margin: 0, letterSpacing: '-3px' }}>
-                    <span style={{ fontSize: '2.5rem', verticalAlign: 'top', color: '#FF5722', marginRight: '4px' }}>$</span>
                     {stats?.totalGanancias?.toLocaleString() || 0}
+                    <span style={{ fontSize: '1.5rem', color: '#FF5722', marginLeft: '8px', letterSpacing: 'normal' }}> Pts</span>
                   </h2>
                   <div style={{ 
                     display: 'flex', alignItems: 'center', gap: '8px', marginTop: '1.5rem', 
@@ -439,7 +439,7 @@ export default function ReferidoArbolPage() {
                           <span style={{ color: '#aaa', fontWeight: 700 }}>Nivel {item.n} <span style={{color: '#555'}}>({item.p})</span></span>
                         </div>
                         <span style={{ color: item.color, fontWeight: 900, fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <ChevronRight size={14} /> ${stats?.[`gananciasNivel${item.n}`]?.toLocaleString() || 0}
+                          <ChevronRight size={14} /> {stats?.[`gananciasNivel${item.n}`]?.toLocaleString() || 0} Pts
                         </span>
                       </div>
                     ))}

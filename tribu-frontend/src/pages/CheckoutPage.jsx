@@ -6,10 +6,10 @@ import { useAuth } from '../context/AuthContext'
 import { crearPedido, validarCupon } from '../api'
 import toast from 'react-hot-toast'
 import { useNotification } from '../context/NotificationContext';
-import { MapPin, CheckCircle, ShoppingBag, Mail } from 'lucide-react'
+import { MapPin, CheckCircle, ShoppingBag, Mail, Truck } from 'lucide-react'
 import MetodosDePago from '../components/MetodosDePago';
 
-const formatCOP = (n) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n)
+const formatCOP = (n) => `${Math.round(n).toLocaleString('es-CO')} COP`
 
 const colombiaData = [
     {

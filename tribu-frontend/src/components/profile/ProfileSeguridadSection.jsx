@@ -381,7 +381,7 @@ export default function ProfileSeguridadSection() {
                   <div style={{ textAlign: 'center' }}>
                     <h4 style={{ color: 'var(--color-text)', margin: '0 0 0.5rem' }}>PIN configurado</h4>
                     <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', margin: 0 }}>
-                      Tu PIN protege las transferencias mayores a $100.000
+                      Tu PIN protege las transferencias mayores a 100.000 pts
                     </p>
                   </div>
                   <div style={{ display: 'flex', gap: '1rem' }}>
@@ -401,7 +401,7 @@ export default function ProfileSeguridadSection() {
                       <div style={{ textAlign: 'center' }}>
                         <h4 style={{ color: 'var(--color-text)', margin: '0 0 0.5rem' }}>Configurar PIN de transferencias</h4>
                         <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', margin: 0 }}>
-                          Protege tus transferencias mayores a $100.000 con un PIN de 4 dígitos
+                          Protege tus transferencias mayores a 100.000 pts con un PIN de 4 dígitos
                         </p>
                       </div>
                       <button className="btn btn-primary" style={{ fontSize: '0.85rem' }} onClick={() => setShowPinForm(true)}>

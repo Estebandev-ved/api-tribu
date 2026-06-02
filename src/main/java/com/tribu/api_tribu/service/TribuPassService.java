@@ -73,7 +73,7 @@ public class TribuPassService {
 
         double saldoDisponible = saldoService.consultarSaldoReal(usuarioId);
         if (saldoDisponible < PRECIO_PASS) {
-            throw new IllegalArgumentException("Saldo insuficiente. Necesitas $9.900 en tu Tribu Card");
+            throw new IllegalArgumentException("Saldo insuficiente. Necesitas 9.900 Puntos Tribu en tu Tribu Card");
         }
 
         MovimientoSaldo movimiento = saldoService.crearYAcreditar(
@@ -120,7 +120,7 @@ public class TribuPassService {
         usuarioRepo.save(usuario);
 
         wsService.notificarSaldoActualizado(usuarioId, -PRECIO_PASS, "TRIBU_PASS_ACTIVADO",
-                "Tribu Pass activado -$" + String.format("%.0f", PRECIO_PASS));
+                "Tribu Pass activado -" + String.format("%.0f", PRECIO_PASS) + " Puntos Tribu");
 
         enviarEmailBienvenida(usuario);
 
@@ -330,7 +330,7 @@ public class TribuPassService {
                       <li>💰 Cashback x2 en todas tus compras</li>
                       <li>🚚 Envío gratis siempre</li>
                       <li>⚡ Flash sales 30 min antes</li>
-                      <li>🎰 +$5.000 en límite de ruleta</li>
+                      <li>🎰 +5.000 Puntos Tribu en límite de ruleta</li>
                     </ul>
                   </div>
                   <a href="http://localhost:3000/tribu-pass" style="display:inline-block;background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#000;text-decoration:none;padding:14px 32px;border-radius:9999px;font-weight:700;font-size:15px;">Ver mis beneficios →</a>
@@ -370,7 +370,7 @@ public class TribuPassService {
             <body style="margin:0;padding:0;background:#0a0a0f;font-family:'Inter',Arial,sans-serif;color:#fff;">
               <div style="max-width:580px;margin:0 auto;padding:40px 20px;">
                 <h1>Tu Tribu Pass ha expirado</h1>
-                <p>No teníamos saldo suficiente para renovar tu suscripción ($9.900).</p>
+                <p>No teníamos saldo suficiente para renovar tu suscripción (9.900 Puntos Tribu).</p>
                 <p>Recarga tu Tribu Card y reactívalo cuando quieras.</p>
                 <a href="http://localhost:3000/tribu-pass" style="color:#f59e0b;">Reactivar Tribu Pass</a>
               </div>
@@ -389,7 +389,7 @@ public class TribuPassService {
             <body style="margin:0;padding:0;background:#0a0a0f;font-family:'Inter',Arial,sans-serif;color:#fff;">
               <div style="max-width:580px;margin:0 auto;padding:40px 20px;">
                 <h1>Recibo de renovación - Tribu Pass</h1>
-                <p>Monto: $9.900 COP</p>
+                <p>Monto: 9.900 Puntos Tribu</p>
                 <p>Próxima renovación: %s</p>
                 <p>¡Sigue disfrutando de todos tus beneficios!</p>
               </div>

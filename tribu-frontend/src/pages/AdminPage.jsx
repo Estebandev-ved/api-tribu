@@ -18,7 +18,8 @@ import {
     adminResolverConversacionSoporte,
     getAdminGirosRuleta,
     getAdminRuletaConfig,
-    saveAdminRuletaConfig
+    saveAdminRuletaConfig,
+    generarProductoConIa
 } from '../api'
 import toast from 'react-hot-toast'
 import {
@@ -26,7 +27,7 @@ import {
     Check, ShoppingBag, Pencil, Trash2, Image, BarChart3,
     TrendingUp, TrendingDown, User, Zap, Tag, RotateCcw, ShieldAlert,
     Activity, Sparkles, ArrowUpRight, Search, RefreshCw, WalletCards, ArrowDownRight, ArrowRightLeft,
-    MessageSquare, Bot, RotateCw, Gift, Phone, Mail
+    MessageSquare, Bot, RotateCw, Gift, Phone, Mail, Flame, ShoppingCart
 } from 'lucide-react'
 import { useAdminMonitoringWebSocket } from '../hooks/useAdminMonitoringWebSocket'
 
@@ -135,25 +136,25 @@ function ModalProducto({ prod, categorias, onClose, onSave }) {
                         </div>
                     </div>
                     <div className="form-group">
-                                            <div style={{ padding: '1.2rem', border: '1px solid rgba(255,87,34,0.15)', borderRadius: 12, background: 'rgba(255,87,34,0.02)', marginBottom: '1.5rem' }}>
-                        <h4 style={{ fontSize: '0.82rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-primary)', marginBottom: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                            <TrendingUp size={13} /> Finanzas Administrativas
-                        </h4>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem' }}>
-                            <div className="form-group" style={{ marginBottom: 0 }}>
-                                <label style={{ fontSize: '0.72rem', color: '#8b8b8b' }}>Costo Prov.</label>
-                                <input className="input" type="number" min="0" value={form.costoProveedor || ''} onChange={set('costoProveedor')} placeholder="0" style={{ padding: '6px 10px', fontSize: '0.85rem' }} />
-                            </div>
-                            <div className="form-group" style={{ marginBottom: 0 }}>
-                                <label style={{ fontSize: '0.72rem', color: '#8b8b8b' }}>Costo Envío</label>
-                                <input className="input" type="number" min="0" value={form.costoEmpaqueEnvio || ''} onChange={set('costoEmpaqueEnvio')} placeholder="0" style={{ padding: '6px 10px', fontSize: '0.85rem' }} />
-                            </div>
-                            <div className="form-group" style={{ marginBottom: 0 }}>
-                                <label style={{ fontSize: '0.72rem', color: '#8b8b8b' }}>Comisión Pas.</label>
-                                <input className="input" type="number" min="0" value={form.comisionPasarelaFija || ''} onChange={set('comisionPasarelaFija')} placeholder="0" style={{ padding: '6px 10px', fontSize: '0.85rem' }} />
+                        <div style={{ padding: '1.2rem', border: '1px solid rgba(255,87,34,0.15)', borderRadius: 12, background: 'rgba(255,87,34,0.02)', marginBottom: '1.5rem' }}>
+                            <h4 style={{ fontSize: '0.82rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-primary)', marginBottom: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                <TrendingUp size={13} /> Finanzas Administrativas
+                            </h4>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem' }}>
+                                <div className="form-group" style={{ marginBottom: 0 }}>
+                                    <label style={{ fontSize: '0.72rem', color: '#8b8b8b' }}>Costo Prov.</label>
+                                    <input className="input" type="number" min="0" value={form.costoProveedor || ''} onChange={set('costoProveedor')} placeholder="0" style={{ padding: '6px 10px', fontSize: '0.85rem' }} />
+                                </div>
+                                <div className="form-group" style={{ marginBottom: 0 }}>
+                                    <label style={{ fontSize: '0.72rem', color: '#8b8b8b' }}>Costo Envío</label>
+                                    <input className="input" type="number" min="0" value={form.costoEmpaqueEnvio || ''} onChange={set('costoEmpaqueEnvio')} placeholder="0" style={{ padding: '6px 10px', fontSize: '0.85rem' }} />
+                                </div>
+                                <div className="form-group" style={{ marginBottom: 0 }}>
+                                    <label style={{ fontSize: '0.72rem', color: '#8b8b8b' }}>Comisión Pas.</label>
+                                    <input className="input" type="number" min="0" value={form.comisionPasarelaFija || ''} onChange={set('comisionPasarelaFija')} placeholder="0" style={{ padding: '6px 10px', fontSize: '0.85rem' }} />
+                                </div>
                             </div>
                         </div>
-                    </div>
 
                         <label>Categoría</label>
                         <select className="input" value={form.categoriaId} onChange={set('categoriaId')} required>
@@ -182,7 +183,7 @@ function ModalProducto({ prod, categorias, onClose, onSave }) {
                                 {/* Vista previa minuatura en tiempo real */}
                                 <div style={{ width: 44, height: 44, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--color-border)', background: 'var(--color-surface-2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>
                                     {url.trim()
-                                        ? <img src={url.trim()} alt={`img-${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='block' }} />
+                                        ? <img src={url.trim()} alt={`img-${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block' }} />
                                         : null}
                                     <span style={{ display: url.trim() ? 'none' : 'block' }}>🖼️</span>
                                 </div>
@@ -246,6 +247,16 @@ export default function AdminPage() {
     const [productoRegalo, setProductoRegalo] = useState('')
     const [loadingConfig, setLoadingConfig] = useState(false)
     const [savingConfig, setSavingConfig] = useState(false)
+
+    // Creador IA Estados
+    const [iaNombreConcepto, setIaNombreConcepto] = useState('')
+    const [iaCategoria, setIaCategoria] = useState('')
+    const [iaCreativeLevel, setIaCreativeLevel] = useState(0.7)
+    const [iaTargetAudience, setIaTargetAudience] = useState('Jóvenes Streetwear')
+    const [iaResultado, setIaResultado] = useState(null)
+    const [iaGenerando, setIaGenerando] = useState(false)
+    const [iaPublicando, setIaPublicando] = useState(false)
+    const [iaEtapaGeneracion, setIaEtapaGeneracion] = useState('')
 
     const [viewMode, setViewMode] = useState('overview')
 
@@ -702,7 +713,91 @@ export default function AdminPage() {
         }
     }
 
+    const handleGenerarConIa = async () => {
+        if (!iaNombreConcepto.trim()) {
+            toast.error('Ingresa un concepto o nombre de producto.')
+            return
+        }
+        if (!iaCategoria) {
+            toast.error('Selecciona una categoría sugerida.')
+            return
+        }
+
+        setIaGenerando(true)
+        setIaResultado(null)
+        setIaEtapaGeneracion('🔍 Analizando el concepto comercial y público objetivo...')
+        
+        try {
+            setTimeout(() => {
+                setIaEtapaGeneracion('✍️ Redactando copywriting persuasivo y optimización SEO...')
+            }, 1200)
+            setTimeout(() => {
+                setIaEtapaGeneracion('🎨 Diseñando y descargando imagen comercial premium...')
+            }, 2400)
+            setTimeout(() => {
+                setIaEtapaGeneracion('🛡️ Verificando metadatos y firmas binarias Magic Bytes...')
+            }, 3600)
+
+            const res = await generarProductoConIa({
+                nombreConcepto: iaNombreConcepto.trim(),
+                categoria: iaCategoria,
+                creativeLevel: Number(iaCreativeLevel),
+                targetAudience: iaTargetAudience
+            })
+
+            setTimeout(() => {
+                setIaResultado(res.data)
+                setIaGenerando(false)
+                toast.success('✨ ¡Producto conceptualizado e ilustrado con éxito por la Tribu AI Agency!')
+            }, 4500)
+
+        } catch (err) {
+            console.error(err)
+            toast.error(err.response?.data?.error || err.response?.data?.message || 'Fallo de IA en el script del servidor.')
+            setIaGenerando(false)
+        }
+    }
+
+    const handlePublicarProductoIa = async () => {
+        if (!iaResultado) return
+        setIaPublicando(true)
+        try {
+            const matchedCat = categorias.find(c => c.nombre === iaCategoria)
+                || categorias[0]
+            
+            const catId = matchedCat ? matchedCat.id : (categorias[0]?.id || 1)
+
+            const payload = {
+                nombre: iaResultado.nombre,
+                descripcion: iaResultado.descripcion,
+                precio: Number(iaResultado.precioSugerido),
+                stock: 80,
+                categoriaId: Number(catId),
+                imagenUrl: iaResultado.imagenUrl,
+                imagenesAdicionales: '',
+                esViral: false,
+                activo: true,
+                costoProveedor: Number(iaResultado.costoProveedor || 0),
+                costoEmpaqueEnvio: Number(iaResultado.costoEmpaqueEnvio || 0),
+                comisionPasarelaFija: Number(iaResultado.comisionPasarelaFija || 0)
+            }
+
+            const res = await crearProducto(payload)
+            setProductos(prev => [res.data, ...prev])
+            setIaResultado(null)
+            setIaNombreConcepto('')
+            
+            toast.success('🎉 ¡Producto publicado oficialmente en la Tienda!')
+            setTab('productos')
+        } catch (err) {
+            toast.error(err.response?.data?.mensaje || err.response?.data?.message || 'Error al publicar el producto')
+        } finally {
+            setIaPublicando(false)
+        }
+    }
+
     const tabs = [
+        { id: 'creadorAi', label: 'Creador IA 🤖', icon: <Bot size={15} color="var(--color-primary)" />, count: 0 },
         { id: 'tribuCard', label: 'Tribu Card', icon: <WalletCards size={15} />, count: tribuCardResumen?.movimientos24h ?? 0 },
         { id: 'transferencias', label: 'Transferencias', icon: <ArrowRightLeft size={15} />, count: transferencias?.totalElements ?? 0 },
         { id: 'soporte', label: 'Soporte En Vivo', icon: <MessageSquare size={15} color="var(--color-accent)" />, count: soporteChats.filter(c => c.estado === 'ESCALADA_HUMANO').length },
@@ -720,8 +815,9 @@ export default function AdminPage() {
     ]
 
     const tabMeta = {
+        creadorAi: { title: 'Creador Autónomo IA', desc: 'Genera descripciones comerciales de alta conversión e imágenes del producto usando IA en segundos.' },
         tribuCard: { title: 'Tribu Card', desc: 'Ledger financiero: movimientos, estados, y trazabilidad por usuario.' },
-        transferencias: { title: 'Transferencias P2P', desc: 'Monitoreo de transferencias entre usuarios: emisor, receptor, referencia, estado y monto.' },
+        transferencias: { title: 'Transferencias P2P', desc: 'Monitorea transferencias entre usuarios: emisor, receptor, referencia, estado y monto.' },
         soporte: { title: 'Soporte En Vivo', desc: 'Monitorea y atiende chats en vivo escalados a humanos o interactúa con la IA de Tribu.' },
         productos: { title: 'Catálogo', desc: 'Crea, edita y controla inventario del catálogo.' },
         categorias: { title: 'Categorías', desc: 'Organiza el catálogo para mejorar navegación y conversión.' },
@@ -866,7 +962,7 @@ export default function AdminPage() {
             style={{
                 padding: '2.5rem 1.5rem 6rem',
                 minHeight: '100vh',
-                background: 'var(--color-admin-bg)'
+                background: 'radial-gradient(circle at 20% -10%, #222 0%, #0f0f0f 45%, #0a0a0a 100%)'
             }}
         >
             {/* Header */}
@@ -879,10 +975,10 @@ export default function AdminPage() {
                     <p style={{ color: '#8b8b8b', fontSize: '0.8rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Administrador</p>
                     <h1 className="page-title" style={{ marginBottom: '0.4rem' }}>Centro de Control</h1>
                     <p style={{ color: 'var(--color-text-muted)', marginBottom: '1.5rem' }}>
-                        Tribu · Bodega Central — Estado general del negocio en tiempo real
+                        Tribu · Medellín, Antioquia — Estado general del negocio en tiempo real
                     </p>
                 </div>
-                <div style={{ display: 'flex', gap: '0.6rem', background: 'var(--color-card-bg-soft)', borderRadius: '999px', padding: '0.35rem', border: '1px solid var(--color-card-border)' }}>
+                <div style={{ display: 'flex', gap: '0.6rem', background: 'rgba(255,255,255,0.04)', borderRadius: '999px', padding: '0.35rem' }}>
                     {[
                         { id: 'overview', label: 'Resumen' },
                         { id: 'operaciones', label: 'Operaciones' }
@@ -893,7 +989,7 @@ export default function AdminPage() {
                             style={{
                                 border: 'none',
                                 background: viewMode === mode.id ? 'linear-gradient(135deg, #f97316, #f59e0b)' : 'transparent',
-                                color: viewMode === mode.id ? '#0a0a0a' : 'var(--color-text-muted)',
+                                color: viewMode === mode.id ? '#0a0a0a' : '#aaa',
                                 padding: '0.45rem 0.9rem',
                                 borderRadius: '999px',
                                 fontWeight: 700,
@@ -913,23 +1009,23 @@ export default function AdminPage() {
                 className="admin-stats-grid"
                 style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '2rem' }}
             >
-                    {[
-                        { label: 'Ventas', value: hayVentas ? formatCOP(totalVentas || 0) : 'Sin datos', color: '#22c55e', Icon: TrendingUp, hint: hayVentas ? 'Tendencia por definir' : 'Aun no hay ventas' },
+                {[
+                    { label: 'Ventas', value: hayVentas ? formatCOP(totalVentas || 0) : 'Sin datos', color: '#22c55e', Icon: TrendingUp, hint: hayVentas ? 'Tendencia por definir' : 'Aun no hay ventas' },
                     { label: 'Pedidos', value: pedidos.length, color: '#3b82f6', Icon: Package, hint: `${pedidosPendientes} pendientes` },
                     { label: 'Stock crítico', value: stockBajo.length, color: '#ef4444', Icon: AlertTriangle, link: '/admin/inventario', hint: 'Ver inventario completo' },
                     { label: 'Usuarios', value: usuarios.length, color: '#a855f7', Icon: Users, hint: 'Clientes activos' },
                     { label: 'Devoluciones', value: devolucionesPendientes, color: '#f97316', Icon: RotateCcw, hint: 'Pendientes' },
                     { label: 'Campañas', value: 'Ver', color: '#facc15', Icon: Zap, link: '/admin/campanas', hint: 'Marketing' },
-                    ].map((s, i) => (
-                        <motion.div key={s.label} className="card" whileHover={{ scale: 1.03, borderColor: s.color + '40' }}
-                            onClick={() => s.link && (window.location.href = s.link)}
-                            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
-                            style={{ textAlign: 'left', cursor: s.link ? 'pointer' : 'default', position: 'relative', overflow: 'hidden' }}>
+                ].map((s, i) => (
+                    <motion.div key={s.label} className="card" whileHover={{ scale: 1.03, borderColor: s.color + '40' }}
+                        onClick={() => s.link && (window.location.href = s.link)}
+                        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
+                        style={{ textAlign: 'left', cursor: s.link ? 'pointer' : 'default', position: 'relative', overflow: 'hidden' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
                             <div>
                                 <p style={{ color: 'var(--color-text-muted)', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{s.label}</p>
                                 <p style={{ fontFamily: 'Sora, sans-serif', fontWeight: 800, fontSize: '1.6rem', color: s.color }}>{s.value}</p>
-                                <p style={{ color: 'var(--color-text-faint)', fontSize: '0.74rem' }}>{s.hint}</p>
+                                <p style={{ color: '#8b8b8b', fontSize: '0.74rem' }}>{s.hint}</p>
                             </div>
                             <div style={{ width: 44, height: 44, borderRadius: 12, background: `${s.color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <s.Icon size={22} color={s.color} strokeWidth={1.8} />
@@ -945,7 +1041,7 @@ export default function AdminPage() {
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
                             <div>
                                 <h3 style={{ fontWeight: 800, marginBottom: '0.25rem' }}>Flujo de pedidos</h3>
-                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>Estados actuales del pipeline</p>
+                                <p style={{ color: '#8b8b8b', fontSize: '0.85rem' }}>Estados actuales del pipeline</p>
                             </div>
                             <BarChart3 size={20} color="#f97316" />
                         </div>
@@ -955,7 +1051,7 @@ export default function AdminPage() {
                                     {orderFlow.map(item => (
                                         <div key={item.label} style={{ display: 'grid', gridTemplateColumns: '120px 1fr 60px', alignItems: 'center', gap: '0.75rem' }}>
                                             <span style={{ color: '#c4c4c4', fontSize: '0.85rem' }}>{item.label}</span>
-                                            <div style={{ height: 8, borderRadius: 999, background: 'var(--color-card-bg-soft)', overflow: 'hidden', border: '1px solid var(--color-card-border)' }}>
+                                            <div style={{ height: 8, borderRadius: 999, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
                                                 <div style={{ width: `${(item.value / maxFlow) * 100}%`, height: '100%', background: item.color, borderRadius: 999 }} />
                                             </div>
                                             <span style={{ color: '#f1f1f1', fontWeight: 700, textAlign: 'right' }}>{item.value}</span>
@@ -1039,14 +1135,14 @@ export default function AdminPage() {
                                             <div style={{ width: '100%', height: 160, display: 'flex', alignItems: 'flex-end' }}>
                                                 <div style={{ width: '100%', height, background: 'linear-gradient(180deg, rgba(34,197,94,0.9), rgba(34,197,94,0.2))', borderRadius: 10 }} />
                                             </div>
-                                            <span style={{ color: 'var(--color-text-muted)', fontSize: '0.72rem' }}>{dayNames[d.getDay()]}</span>
-                                            <span style={{ color: 'var(--color-text)', fontSize: '0.72rem', fontWeight: 700 }}>{formatCOP(value)}</span>
+                                            <span style={{ color: '#8b8b8b', fontSize: '0.72rem' }}>{dayNames[d.getDay()]}</span>
+                                            <span style={{ color: '#f1f1f1', fontSize: '0.72rem', fontWeight: 700 }}>{formatCOP(value)}</span>
                                         </div>
                                     )
                                 })}
                             </div>
                         ) : (
-                            <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--color-text-muted)' }}>
+                            <div style={{ textAlign: 'center', padding: '2rem 1rem', color: '#8b8b8b' }}>
                                 <TrendingUp size={28} color="#555" />
                                 <p style={{ marginTop: '0.6rem' }}>Sin ventas aun. La grafica se llena automaticamente.</p>
                             </div>
@@ -1057,7 +1153,7 @@ export default function AdminPage() {
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
                             <div>
                                 <h3 style={{ fontWeight: 800, marginBottom: '0.25rem' }}>Pedidos por dia</h3>
-                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>Cantidad de pedidos</p>
+                                <p style={{ color: '#8b8b8b', fontSize: '0.85rem' }}>Cantidad de pedidos</p>
                             </div>
                             <Package size={20} color="#3b82f6" />
                         </div>
@@ -1068,17 +1164,17 @@ export default function AdminPage() {
                                     const value = ordersByDay[key]
                                     return (
                                         <div key={key} style={{ display: 'grid', gridTemplateColumns: '60px 1fr 40px', alignItems: 'center', gap: '0.75rem' }}>
-                                            <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem' }}>{dayNames[d.getDay()]}</span>
-                                            <div style={{ height: 8, borderRadius: 999, background: 'var(--color-card-bg-soft)', overflow: 'hidden', border: '1px solid var(--color-card-border)' }}>
+                                            <span style={{ color: '#8b8b8b', fontSize: '0.75rem' }}>{dayNames[d.getDay()]}</span>
+                                            <div style={{ height: 8, borderRadius: 999, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
                                                 <div style={{ width: `${(value / maxPedidosDia) * 100}%`, height: '100%', background: '#3b82f6', borderRadius: 999 }} />
                                             </div>
-                                            <span style={{ color: 'var(--color-text)', fontSize: '0.75rem', fontWeight: 700, textAlign: 'right' }}>{value}</span>
+                                            <span style={{ color: '#f1f1f1', fontSize: '0.75rem', fontWeight: 700, textAlign: 'right' }}>{value}</span>
                                         </div>
                                     )
                                 })}
                             </div>
                         ) : (
-                            <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--color-text-muted)' }}>
+                            <div style={{ textAlign: 'center', padding: '2rem 1rem', color: '#8b8b8b' }}>
                                 <Package size={28} color="#555" />
                                 <p style={{ marginTop: '0.6rem' }}>Sin pedidos aun. Esta vista aparecera cuando haya ventas.</p>
                             </div>
@@ -1093,17 +1189,17 @@ export default function AdminPage() {
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
                             <div>
                                 <h3 style={{ fontWeight: 800, marginBottom: '0.25rem' }}>Inventario estratégico</h3>
-                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>Top productos por stock disponible</p>
+                                <p style={{ color: '#8b8b8b', fontSize: '0.85rem' }}>Top productos por stock disponible</p>
                             </div>
                             <button
                                 onClick={() => window.location.href = '/admin/inventario'}
-                                style={{ border: '1px solid var(--color-border)', background: 'var(--color-card-bg-soft)', color: '#f97316', padding: '0.4rem 0.8rem', borderRadius: 999, cursor: 'pointer', fontWeight: 700, fontSize: '0.75rem' }}
+                                style={{ border: 'none', background: 'rgba(255,255,255,0.04)', color: '#f97316', padding: '0.4rem 0.8rem', borderRadius: 999, cursor: 'pointer', fontWeight: 700, fontSize: '0.75rem' }}
                             >
                                 Ver inventario
                             </button>
                         </div>
                         {topProductos.length === 0 ? (
-                            <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--color-text-muted)' }}>
+                            <div style={{ textAlign: 'center', padding: '2rem 1rem', color: '#8b8b8b' }}>
                                 <Package size={26} color="#555" />
                                 <p style={{ marginTop: '0.6rem' }}>Aun no hay productos cargados.</p>
                             </div>
@@ -1112,16 +1208,16 @@ export default function AdminPage() {
                                 {topProductos.map(p => (
                                     <div key={p.id} style={{ display: 'grid', gridTemplateColumns: '1fr 80px 80px', gap: '0.75rem', alignItems: 'center' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--color-card-bg-soft)', border: '1px solid var(--color-card-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                 <Package size={16} color="#f97316" />
                                             </div>
                                             <div>
                                                 <p style={{ fontWeight: 600 }}>{p.nombre}</p>
-                                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem' }}>{p.categoriaNombre || 'Sin categoría'}</p>
+                                                <p style={{ color: '#8b8b8b', fontSize: '0.75rem' }}>{p.categoriaNombre || 'Sin categoría'}</p>
                                             </div>
                                         </div>
-                                        <span style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>Stock</span>
-                                        <span style={{ color: 'var(--color-text)', fontWeight: 700, textAlign: 'right' }}>{p.stock}</span>
+                                        <span style={{ color: '#c4c4c4', fontSize: '0.8rem' }}>Stock</span>
+                                        <span style={{ color: '#f1f1f1', fontWeight: 700, textAlign: 'right' }}>{p.stock}</span>
                                     </div>
                                 ))}
                             </div>
@@ -1132,12 +1228,12 @@ export default function AdminPage() {
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
                             <div>
                                 <h3 style={{ fontWeight: 800, marginBottom: '0.25rem' }}>Alertas críticas</h3>
-                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>Productos con bajo stock</p>
+                                <p style={{ color: '#8b8b8b', fontSize: '0.85rem' }}>Productos con bajo stock</p>
                             </div>
                             <AlertTriangle size={20} color="#ef4444" />
                         </div>
                         {stockCriticoList.length === 0 ? (
-                            <div style={{ textAlign: 'center', color: 'var(--color-text-muted)', padding: '1.5rem 0' }}>
+                            <div style={{ textAlign: 'center', color: '#8b8b8b', padding: '1.5rem 0' }}>
                                 <Check size={28} color="#22c55e" />
                                 <p style={{ marginTop: '0.5rem' }}>Todo en orden</p>
                             </div>
@@ -1147,7 +1243,7 @@ export default function AdminPage() {
                                     <div key={p.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                         <div>
                                             <p style={{ fontWeight: 600 }}>{p.nombre}</p>
-                                            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem' }}>{p.categoriaNombre || 'Sin categoría'}</p>
+                                            <p style={{ color: '#8b8b8b', fontSize: '0.75rem' }}>{p.categoriaNombre || 'Sin categoría'}</p>
                                         </div>
                                         <span style={{ color: '#ef4444', fontWeight: 800 }}>{p.stock}</span>
                                     </div>
@@ -1163,7 +1259,7 @@ export default function AdminPage() {
                 <div className="admin-ops-grid" style={{ marginBottom: '2rem' }}>
                     <aside className="card admin-ops-sidenav" style={{ padding: '1.25rem' }}>
                         <div style={{ marginBottom: '1rem' }}>
-                            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.78rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Operaciones</p>
+                            <p style={{ color: '#8b8b8b', fontSize: '0.78rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Operaciones</p>
                             <p style={{ color: 'var(--color-text-muted)', fontSize: '0.86rem' }}>Gestiona pedidos, inventario, CRM y seguridad.</p>
                         </div>
 
@@ -1185,7 +1281,7 @@ export default function AdminPage() {
                                         padding: '0.75rem 0.8rem',
                                         borderRadius: 12,
                                         border: '1px solid ' + (tab === t.id ? 'rgba(255,87,34,0.35)' : 'var(--color-border)'),
-                                        background: tab === t.id ? 'rgba(255,87,34,0.08)' : 'var(--color-card-bg-soft)',
+                                        background: tab === t.id ? 'rgba(255,87,34,0.08)' : 'rgba(255,255,255,0.02)',
                                         cursor: 'pointer',
                                         color: tab === t.id ? 'var(--color-text)' : 'var(--color-text-muted)'
                                     }}
@@ -1211,7 +1307,7 @@ export default function AdminPage() {
                         </div>
 
                         <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid var(--color-border)' }}>
-                            <p style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Atajos</p>
+                            <p style={{ fontSize: '0.78rem', color: '#8b8b8b', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Atajos</p>
                             <div style={{ display: 'grid', gap: '0.5rem' }}>
                                 <button onClick={() => window.location.href = '/admin/campanas'} className="btn btn-ghost" style={{ justifyContent: 'center' }}>
                                     <Zap size={15} /> Campañas
@@ -1230,9 +1326,9 @@ export default function AdminPage() {
                         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
                             <div>
                                 <h2 style={{ fontWeight: 900, marginBottom: '0.25rem' }}>{tabMeta[tab]?.title || 'Operaciones'}</h2>
-                                    <p style={{ color: 'var(--color-text-muted)', fontSize: '0.88rem' }}>{tabMeta[tab]?.desc || 'Herramientas operativas del negocio.'}</p>
+                                <p style={{ color: '#8b8b8b', fontSize: '0.88rem' }}>{tabMeta[tab]?.desc || 'Herramientas operativas del negocio.'}</p>
                             </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                 <motion.button
                                     whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
                                     onClick={cargarDatos}
@@ -1322,7 +1418,7 @@ export default function AdminPage() {
                                     onClick={k.onClick}
                                     style={{
                                         border: '1px solid var(--color-border)',
-                                        background: 'var(--color-card-bg-soft)',
+                                        background: 'rgba(255,255,255,0.02)',
                                         borderRadius: 14,
                                         padding: '0.9rem 1rem',
                                         cursor: 'pointer',
@@ -1355,15 +1451,15 @@ export default function AdminPage() {
                                         else if (tab === 'transferencias') setTransferenciasFilters(f => ({ ...f, q: v }))
                                         else setOpsFilters(f => ({ ...f, q: v }))
                                     }}
-                                     placeholder={tab === 'tribuCard'
-                                         ? 'Buscar por usuario/email, descripcion, #mov o #pedido...'
-                                         : tab === 'transferencias' ? 'Buscar por emisor/receptor, referencia o mensaje...'
-                                        : tab === 'pedidos' ? 'Buscar por cliente, email, guia o #...'
-                                            : tab === 'facturas' ? 'Buscar por NIT, razon social o #factura...'
-                                                : tab === 'devoluciones' ? 'Buscar por pedido, email o motivo...'
-                                                    : tab === 'usuarios' ? 'Buscar por nombre o email...'
-                                                        : tab === 'ruleta' ? 'Buscar por cliente, premio, tipo o cupón...'
-                                                            : tab === 'productos' ? 'Buscar producto o categoria...' : 'Buscar...'}
+                                    placeholder={tab === 'tribuCard'
+                                        ? 'Buscar por usuario/email, descripcion, #mov o #pedido...'
+                                        : tab === 'transferencias' ? 'Buscar por emisor/receptor, referencia o mensaje...'
+                                            : tab === 'pedidos' ? 'Buscar por cliente, email, guia o #...'
+                                                : tab === 'facturas' ? 'Buscar por NIT, razon social o #factura...'
+                                                    : tab === 'devoluciones' ? 'Buscar por pedido, email o motivo...'
+                                                        : tab === 'usuarios' ? 'Buscar por nombre o email...'
+                                                            : tab === 'ruleta' ? 'Buscar por cliente, premio, tipo o cupón...'
+                                                                : tab === 'productos' ? 'Buscar producto o categoria...' : 'Buscar...'}
                                     style={{ paddingLeft: 40 }}
                                 />
                             </div>
@@ -1577,1364 +1673,1781 @@ export default function AdminPage() {
                             </div>
                         )}
 
-            {/* ═══ TAB: PRODUCTOS ══════════════════════════════════════════════════ */}
-            {viewMode === 'operaciones' && tab === 'productos' && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                    <div className="table-wrap">
-                        <table>
-                            <thead><tr>
-                                <th>Imagen</th><th>Producto</th><th>Categoría</th>
-                                <th>Precio</th><th>Stock</th><th>Viral</th><th>Acciones</th>
-                            </tr></thead>
-                            <tbody>
-                                {productosView.length === 0 ? (
-                                    <tr><td colSpan={7} style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-muted)' }}>
-                                        Sin resultados. Ajusta filtros o crea un producto.
-                                    </td></tr>
-                                ) : productosView.map(p => (
-                                    <tr key={p.id}>
-                                        <td>
-                                            <div style={{ width: 44, height: 44, borderRadius: 8, overflow: 'hidden', background: 'var(--color-surface-2)' }}>
-                                                {p.imagenUrl
-                                                    ? <img src={p.imagenUrl} alt={p.nombre} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                    : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}><Package size={18} color="var(--color-text-faint)" /></div>
-                                                }
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div style={{ fontWeight: 600 }}>{p.nombre}</div>
-                                            {p.descripcion && <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.descripcion}</div>}
-                                        </td>
-                                        <td style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>{p.categoriaNombre || '—'}</td>
-                                        <td style={{ fontWeight: 700, color: 'var(--color-primary)' }}>{formatCOP(p.precio)}</td>
-                                        <td>
-                                            <span style={{ color: p.stock <= 5 ? '#ef4444' : p.stock <= 15 ? 'var(--color-accent-dark)' : 'var(--color-success)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                                                {p.stock <= 5 && <AlertTriangle size={13} />}{p.stock}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            {p.esViral
-                                                ? <span className="badge badge-viral" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}><Zap size={11} />Viral</span>
-                                                : <span style={{ color: 'var(--color-text-faint)', fontSize: '0.82rem' }}>—</span>
-                                            }
-                                        </td>
-                                        <td>
-                                            <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                                <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-                                                    onClick={() => setModalProd(p)}
-                                                    style={{ background: 'rgba(255,87,34,0.12)', border: '1px solid rgba(255,87,34,0.2)', borderRadius: '8px', padding: '0.35rem 0.6rem', cursor: 'pointer', color: 'var(--color-primary)' }}
-                                                    title="Editar">
-                                                    <Pencil size={14} />
-                                                </motion.button>
-                                                <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-                                                    onClick={() => handleEliminarProducto(p.id)}
-                                                    style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '8px', padding: '0.35rem 0.6rem', cursor: 'pointer', color: '#ef4444' }}
-                                                    title="Eliminar">
-                                                    <Trash2 size={14} />
-                                                </motion.button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </motion.div>
-            )}
-
-            {/* ═══ TAB: CATEGORÍAS ══════════════════════════════════════════════════ */}
-            {viewMode === 'operaciones' && tab === 'categorias' && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                    {categoriasView.length === 0 ? (
-                        <div className="empty-state">
-                            <Tag size={48} style={{ opacity: 0.3 }} />
-                            <p>Sin resultados</p>
-                        </div>
-                    ) : (
-                        <div className="table-wrap">
-                            <table>
-                                <thead><tr>
-                                    <th>#</th><th>Nombre</th><th>Descripción</th><th>Acciones</th>
-                                </tr></thead>
-                                <tbody>
-                                    {categoriasView.map((cat, i) => (
-                                        <tr key={cat.id}>
-                                            <td style={{ color: 'var(--color-text-muted)', fontWeight: 600 }}>#{cat.id}</td>
-                                            <td>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                    <Tag size={14} color="var(--color-primary)" />
-                                                    <span style={{ fontWeight: 700 }}>{cat.nombre}</span>
-                                                </div>
-                                            </td>
-                                            <td style={{ color: 'var(--color-text-muted)', fontSize: '0.88rem', maxWidth: 280 }}>
-                                                {cat.descripcion || <span style={{ opacity: 0.4 }}>Sin descripción</span>}
-                                            </td>
-                                            <td>
-                                                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                                    <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-                                                        onClick={() => abrirCatModal(cat)}
-                                                        style={{ background: 'rgba(255,87,34,0.12)', border: '1px solid rgba(255,87,34,0.2)', borderRadius: '8px', padding: '0.35rem 0.6rem', cursor: 'pointer', color: 'var(--color-primary)' }}
-                                                        title="Editar">
-                                                        <Pencil size={14} />
-                                                    </motion.button>
-                                                    <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-                                                        onClick={() => handleEliminarCat(cat.id)}
-                                                        style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '8px', padding: '0.35rem 0.6rem', cursor: 'pointer', color: '#ef4444' }}
-                                                        title="Eliminar">
-                                                        <Trash2 size={14} />
-                                                    </motion.button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </motion.div>
-            )}
-
-            {/* ═══ TAB: PEDIDOS ════════════════════════════════════════════════════ */}
-            {viewMode === 'operaciones' && tab === 'pedidos' && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                    <div className="table-wrap">
-                        <table>
-                            <thead><tr><th>#</th><th>Cliente</th><th>Total</th><th>Estado</th><th>Dirección</th><th>Guía</th><th>Cambiar estado</th></tr></thead>
-                            <tbody>
-                                {pedidosView.length === 0 ? (
-                                    <tr><td colSpan={7} style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-muted)' }}>No hay pedidos aún</td></tr>
-                                ) : pedidosView.map(p => (
-                                    <tr key={p.id}>
-                                        <td style={{ color: 'var(--color-text-muted)', fontWeight: 600 }}>#{p.id}</td>
-                                        <td>
-                                            <div style={{ fontWeight: 600 }}>{p.clienteNombre}</div>
-                                            <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>{p.clienteEmail}</div>
-                                        </td>
-                                        <td style={{ fontWeight: 700, color: 'var(--color-primary)' }}>{formatCOP(p.total)}</td>
-                                        <td><span className={`badge ${estadoColor[p.estado] || ''}`}>{p.estado}</span></td>
-                                        <td style={{ fontSize: '0.82rem', maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.direccionEnvio}</td>
-                                        <td style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>{p.guiaRastreo || '—'}</td>
-                                        <td>
-                                            <select value={p.estado}
-                                                onChange={e => {
-                                                    const guia = e.target.value === 'ENVIADO' ? prompt('Guía de rastreo (opcional):') : null
-                                                    cambiarEstado(p.id, e.target.value, guia)
-                                                }}
-                                                style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: '8px', color: 'var(--color-text)', padding: '0.3rem 0.6rem', fontSize: '0.82rem', cursor: 'pointer' }}>
-                                                {ESTADOS.map(s => <option key={s} value={s}>{s}</option>)}
-                                            </select>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </motion.div>
-            )}
-
-            {/* ═══ TAB: FACTURAS ════════════════════════════════════════════════════ */}
-            {viewMode === 'operaciones' && tab === 'facturas' && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                    <div className="table-wrap">
-                        <table>
-                            <thead><tr><th>#</th><th>Factura</th><th>Pedido</th><th>NIT</th><th>Razón Social</th><th>Total</th><th>Estado</th><th>Actualizar</th></tr></thead>
-                            <tbody>
-                                {facturasView.length === 0 ? (
-                                    <tr><td colSpan={8} style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-muted)' }}>No hay facturas aún</td></tr>
-                                ) : facturasView.map(f => (
-                                    <tr key={f.id}>
-                                        <td style={{ color: 'var(--color-text-muted)', fontWeight: 600 }}>#{f.id}</td>
-                                        <td style={{ fontWeight: 700 }}>{f.numeroFactura}</td>
-                                        <td>#{f.pedidoId}</td>
-                                        <td>{f.nit || '—'}</td>
-                                        <td style={{ maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.razonSocial || '—'}</td>
-                                        <td style={{ fontWeight: 700, color: 'var(--color-primary)' }}>{formatCOP(f.total)}</td>
-                                        <td><span className={`badge ${f.estado === 'ENVIADA' ? 'badge-entregado' : 'badge-pendiente'}`}>{f.estado}</span></td>
-                                        <td>
-                                            <button
-                                                className="btn btn-ghost"
-                                                style={{ padding: '0.35rem 0.7rem', fontSize: '0.8rem' }}
-                                                onClick={async () => {
-                                                    const nit = window.prompt('NIT/Documento:', f.nit || '')
-                                                    if (nit === null) return
-                                                    const razon = window.prompt('Razón social:', f.razonSocial || '')
-                                                    if (razon === null) return
-                                                    try {
-                                                        await adminActualizarDatosFactura(f.id, { nit, razonSocial: razon })
-                                                        toast.success('Datos fiscales actualizados')
-                                                        cargarDatos()
-                                                    } catch (err) {
-                                                        toast.error(err.response?.data?.message || 'Error al actualizar factura')
-                                                    }
-                                                }}
-                                            >
-                                                Editar
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </motion.div>
-            )}
-
-            {/* ═══ TAB: DEVOLUCIONES ═══════════════════════════════════════════════ */}
-            {viewMode === 'operaciones' && tab === 'devoluciones' && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                    {statsDevoluciones && (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
-                            <div className="card" style={{ padding: '1.5rem', borderLeft: '4px solid #4facfe' }}>
-                                <div style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase' }}>Total</div>
-                                <div style={{ fontSize: '2rem', fontWeight: 800 }}>{statsDevoluciones.total}</div>
-                            </div>
-                            <div className="card" style={{ padding: '1.5rem', borderLeft: '4px solid #ff9800' }}>
-                                <div style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase' }}>Pendientes</div>
-                                <div style={{ fontSize: '2rem', fontWeight: 800, color: '#ff9800' }}>{statsDevoluciones.pendientes}</div>
-                            </div>
-                            <div className="card" style={{ padding: '1.5rem', borderLeft: '4px solid #00C896' }}>
-                                <div style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase' }}>Aprobadas</div>
-                                <div style={{ fontSize: '2rem', fontWeight: 800, color: '#00C896' }}>{statsDevoluciones.aprobadas}</div>
-                            </div>
-                            <div className="card" style={{ padding: '1.5rem', borderLeft: '4px solid #ec4899' }}>
-                                <div style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase' }}>Motivo Frecuente</div>
-                                <div style={{ fontSize: '1.2rem', fontWeight: 800, marginTop: '0.5rem', color: '#ec4899', textTransform: 'capitalize' }}>
-                                    {Object.entries(statsDevoluciones.motivos || {}).sort((a, b) => b[1] - a[1])[0]
-                                        ? Object.entries(statsDevoluciones.motivos).sort((a, b) => b[1] - a[1])[0][0].replace('_', ' ')
-                                        : 'N/A'}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    <div className="table-wrap">
-                        <table>
-                            <thead><tr><th>#</th><th>Pedido</th><th>Cliente</th><th>Motivo</th><th>Fecha</th><th>Estado</th><th>Acción</th></tr></thead>
-                            <tbody>
-                                {devolucionesView.length === 0 ? (
-                                    <tr><td colSpan={7} style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-muted)' }}>No hay solicitudes de devolución</td></tr>
-                                ) : devolucionesView.map(d => (
-                                    <tr key={d.id}>
-                                        <td style={{ color: 'var(--color-text-muted)', fontWeight: 600 }}>#{d.id}</td>
-                                        <td style={{ fontWeight: 700 }}>{d.orderNumber}</td>
-                                        <td>{d.email}</td>
-                                        <td style={{ maxWidth: 200 }}>
-                                            <div style={{ marginBottom: d.evidenciaUrl ? '0.5rem' : '0' }}>
-                                                {d.reason === 'defecto' && 'Llegó defectuoso/roto'}
-                                                {d.reason === 'equivocado' && 'Producto diferente'}
-                                                {d.reason === 'no_gusta' && 'No cumplió expectativas'}
-                                                {d.reason === 'otro' && 'Otro motivo'}
-                                                {!['defecto', 'equivocado', 'no_gusta', 'otro'].includes(d.reason) && d.reason}
-                                            </div>
-                                            {d.evidenciaUrl && (
-                                                <a href={`http://localhost:8080${d.evidenciaUrl}`} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.75rem', color: 'var(--color-primary)', textDecoration: 'none', background: 'rgba(255, 152, 0, 0.1)', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
-                                                    <Image size={12} /> Ver Evidencia
-                                                </a>
-                                            )}
-                                        </td>
-                                        <td style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
-                                            {new Date(d.fechaSolicitud).toLocaleDateString('es-CO')}
-                                        </td>
-                                        <td>
-                                            <span style={{
-                                                padding: '0.25rem 0.6rem',
-                                                borderRadius: '99px',
-                                                fontSize: '0.75rem',
-                                                fontWeight: 700,
-                                                background: d.estado === 'PENDIENTE' ? 'rgba(255, 152, 0, 0.15)' :
-                                                    d.estado === 'APROBADA' ? 'rgba(0, 200, 150, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-                                                color: d.estado === 'PENDIENTE' ? '#ff9800' :
-                                                    d.estado === 'APROBADA' ? '#00C896' : '#ef4444'
-                                            }}>
-                                                {d.estado}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                                                <select value={d.estado}
-                                                    onChange={e => cambiarEstadoDevolucion(d.id, e.target.value)}
-                                                    style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: '8px', color: 'var(--color-text)', padding: '0.3rem 0.6rem', fontSize: '0.82rem', cursor: 'pointer' }}>
-                                                    <option value="PENDIENTE">PENDIENTE</option>
-                                                    <option value="APROBADA">APROBADA</option>
-                                                    <option value="RECHAZADA">RECHAZADA</option>
-                                                    <option value="COMPLETADA">COMPLETADA</option>
-                                                </select>
-                                                {d.estado === 'APROBADA' && (
-                                                    <button
-                                                        onClick={() => handleReembolsoDevolucion(d.id)}
-                                                        style={{
-                                                            padding: '0.3rem 0.5rem',
-                                                            background: 'linear-gradient(135deg, #7c3aed, #ec4899)',
-                                                            color: 'white', border: 'none', borderRadius: '4px',
-                                                            fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer'
-                                                        }}>
-                                                        💰 Reembolsar
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </motion.div>
-            )}
-
-            {/* ═══ TAB: USUARIOS ═══════════════════════════════════════════════════ */}
-            {viewMode === 'operaciones' && tab === 'usuarios' && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                    <div className="table-wrap">
-                        <table>
-                            <thead><tr><th>Nombre</th><th>Email</th><th>Ciudad</th><th>Teléfono</th><th>Rol</th><th>Saldo a Favor</th><th>Acciones</th></tr></thead>
-                            <tbody>
-                                {usuariosView.map(u => (
-                                    <tr key={u.id}>
-                                        <td style={{ fontWeight: 600 }}>{u.nombreCompleto}</td>
-                                        <td style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>{u.email}</td>
-                                        <td style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>{u.ciudad || '—'}</td>
-                                        <td style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>{u.telefono || '—'}</td>
-                                        <td><span className={`badge ${u.rol === 'ADMIN' ? 'badge-admin' : 'badge-cliente'}`}>{u.rol}</span></td>
-                                        <td style={{ fontWeight: 800, color: u.saldoFavor > 0 ? '#4facfe' : 'var(--color-text-muted)' }}>
-                                            {(u.saldoFavor || 0).toLocaleString('es-CO')} pts
-                                        </td>
-                                        <td>
-                                            <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                                {u.rol !== 'ADMIN' && (
-                                                    <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                                                        onClick={() => handlePromover(u.id)}
-                                                        className="btn btn-ghost" style={{ fontSize: '0.78rem', padding: '0.3rem 0.7rem', color: 'var(--color-primary)', borderColor: 'rgba(255,87,34,0.3)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                                                        <TrendingUp size={13} /> Hacer ADMIN
-                                                    </motion.button>
-                                                )}
-                                                {u.rol === 'ADMIN' && (
-                                                    <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                                                        onClick={() => handleAsignarCliente(u.id)}
-                                                        className="btn btn-ghost" style={{ fontSize: '0.78rem', padding: '0.3rem 0.7rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                                                        <TrendingDown size={13} /> A cliente
-                                                    </motion.button>
-                                                )}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </motion.div>
-            )}
-
-            {/* ═══ TAB: RULETA ════════════════════════════════════════════════════ */}
-            {viewMode === 'operaciones' && tab === 'ruleta' && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                    {/* 🎁 Configuración del Regalo Mayor */}
-                    <div className="card" style={{ padding: '2rem', background: 'linear-gradient(135deg, rgba(255,87,34,0.08) 0%, var(--color-card-bg-soft) 100%)', border: '1px solid rgba(255,87,34,0.2)', borderRadius: '16px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-                            <div style={{ background: 'rgba(255,87,34,0.15)', padding: '0.5rem', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <Gift size={24} color="var(--color-primary)" />
-                            </div>
-                            <div>
-                                <h3 style={{ fontWeight: 800, fontSize: '1.2rem', margin: 0 }}>Configuración de Premio Mayor</h3>
-                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', margin: 0 }}>Personaliza el producto físico sorpresa que los usuarios pueden ganar con el segmento "¡Regalo! 🎁".</p>
-                            </div>
-                        </div>
-
-                        <form onSubmit={async (e) => {
-                            e.preventDefault();
-                            if (!productoRegalo.trim()) {
-                                toast.error('El nombre del regalo no puede estar vacío');
-                                return;
-                            }
-                            setSavingConfig(true);
-                            try {
-                                const { data } = await saveAdminRuletaConfig({ productoRegalo: productoRegalo.trim() });
-                                setProductoRegalo(data.productoRegalo);
-                                toast.success('¡Premio mayor actualizado con éxito! 🎉');
-                            } catch (err) {
-                                toast.error(err.response?.data?.mensaje || 'Error al guardar la configuración');
-                            } finally {
-                                setSavingConfig(false);
-                            }
-                        }} style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-end', marginTop: '1.5rem' }}>
-                            <div className="form-group" style={{ flex: 1, minWidth: '280px', marginBottom: 0 }}>
-                                <label style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem' }}>Nombre / Descripción del Producto de Regalo</label>
-                                <input
-                                    className="input"
-                                    type="text"
-                                    value={productoRegalo}
-                                    onChange={(e) => setProductoRegalo(e.target.value)}
-                                    placeholder="Ej: Parlante Bluetooth JBL Go 3, Smartwatch Xiaomi, etc."
-                                    required
-                                    style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: '10px' }}
-                                />
-                            </div>
-                            <motion.button
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                                type="submit"
-                                className="btn btn-primary"
-                                style={{ padding: '0.85rem 1.8rem', fontWeight: 800, height: '44px', display: 'flex', alignItems: 'center', gap: '0.5rem', borderRadius: '10px' }}
-                                disabled={savingConfig}
-                            >
-                                {savingConfig ? '⏳ Guardando...' : 'Guardar Configuración'}
-                            </motion.button>
-                        </form>
-                    </div>
-
-                    {/* 📊 Historial de giros */}
-                    <div className="card" style={{ padding: '2rem' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
-                            <div>
-                                <h3 style={{ fontWeight: 800, fontSize: '1.2rem', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                    <RotateCw size={18} color="var(--color-primary)" /> Historial Completo de Giros
-                                </h3>
-                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', margin: 0 }}>Verifica quién giró, qué premio obtuvo, y comunícate con ellos.</p>
-                            </div>
-                            <button
-                                onClick={async () => {
-                                    setLoading(true);
-                                    try {
-                                        const { data } = await getAdminGirosRuleta();
-                                        setGirosRuleta(data || []);
-                                        toast.success('Historial actualizado 🔄');
-                                    } catch {
-                                        toast.error('Error al actualizar historial');
-                                    } finally {
-                                        setLoading(false);
-                                    }
-                                }}
-                                className="btn btn-ghost"
-                                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}
-                            >
-                                <RefreshCw size={14} /> Actualizar
-                            </button>
-                        </div>
-
-                        <div className="table-wrap">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Usuario / Ganador</th>
-                                        <th>Contacto y Canje</th>
-                                        <th>Tipo de Giro</th>
-                                        <th>Premio Obtenido</th>
-                                        <th>Código de Cupón</th>
-                                        <th>Fecha / Hora</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {girosView.map(g => {
-                                        const u = g.usuario || {};
-                                        // Crear enlace a WhatsApp si hay teléfono
-                                        const telLimpio = u.telefono ? u.telefono.replace(/\D/g, '') : '';
-                                        const waLink = telLimpio ? `https://wa.me/${telLimpio.startsWith('57') ? telLimpio : '57' + telLimpio}?text=¡Hola%20${encodeURIComponent(u.nombreCompleto || '')}!%20Te%20contactamos%20de%20Tribu%20por%20tu%20premio%20en%20la%20ruleta%20🎁` : null;
-
-                                        return (
-                                            <tr key={g.id} style={{
-                                                background: g.tipoPremio === 'PRODUCTO' ? 'rgba(255, 87, 34, 0.04)' : 'transparent',
-                                                borderLeft: g.tipoPremio === 'PRODUCTO' ? '4px solid var(--color-primary)' : 'none'
-                                            }}>
-                                                <td>
-                                                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                        <span style={{ fontWeight: 700, fontSize: '0.92rem' }}>{u.nombreCompleto || 'Invitado'}</span>
-                                                        <span style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>{u.email || '—'}</span>
-                                                        {u.ciudad && <span style={{ color: 'var(--color-primary)', fontSize: '0.75rem', fontWeight: 600, marginTop: '2px' }}>📍 {u.ciudad}</span>}
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
-                                                        {u.telefono ? (
-                                                            <>
-                                                                <a
-                                                                    href={`tel:${u.telefono}`}
-                                                                    title="Llamar por teléfono"
-                                                                    style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '0.35rem', color: 'var(--color-text)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
-                                                                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,87,34,0.1)'}
-                                                                    onMouseLeave={e => e.currentTarget.style.background = 'var(--color-surface-2)'}
-                                                                >
-                                                                    <Phone size={13} />
-                                                                </a>
-                                                                {waLink && (
-                                                                    <a
-                                                                        href={waLink}
-                                                                        target="_blank"
-                                                                        rel="noopener noreferrer"
-                                                                        title="Enviar WhatsApp"
-                                                                        style={{ background: '#25D366', borderRadius: '8px', padding: '0.35rem 0.5rem', color: 'white', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.75rem', fontWeight: 800, textDecoration: 'none', transition: 'transform 0.2s' }}
-                                                                        onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
-                                                                        onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-                                                                    >
-                                                                        💬 WhatsApp
-                                                                    </a>
-                                                                )}
-                                                            </>
-                                                        ) : (
-                                                            <span style={{ color: 'var(--color-text-faint)', fontSize: '0.8rem' }}>Sin teléfono</span>
-                                                        )}
-                                                        {u.email && (
-                                                            <a
-                                                                href={`mailto:${u.email}?subject=Premio%20Ganado%20en%20la%20Ruleta%20Tribu&body=Hola%20${encodeURIComponent(u.nombreCompleto || '')},%20felicitaciones%20por%20tu%20premio...`}
-                                                                title="Enviar correo"
-                                                                style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '0.35rem', color: 'var(--color-text)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
-                                                            >
-                                                                <Mail size={13} />
-                                                            </a>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <span style={{
-                                                        fontSize: '0.75rem',
-                                                        fontWeight: 700,
-                                                        padding: '0.25rem 0.6rem',
-                                                        borderRadius: '99px',
-                                                        background: g.tipoGiro === 'PUNTOS' ? 'rgba(79, 172, 254, 0.15)' : 'var(--color-card-bg-soft)',
-                                                        color: g.tipoGiro === 'PUNTOS' ? '#4facfe' : 'var(--color-text-muted)',
-                                                        border: g.tipoGiro === 'PUNTOS' ? '1px solid rgba(79, 172, 254, 0.3)' : '1px solid var(--color-card-border)'
-                                                    }}>
-                                                        {g.tipoGiro}
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                                        <span style={{
-                                                            fontWeight: 800,
-                                                            fontSize: '0.88rem',
-                                                            color: g.tipoPremio === 'PRODUCTO' ? '#ff9800' :
-                                                                g.tipoPremio === 'DESCUENTO' || g.tipoPremio === 'ENVIO_GRATIS' ? '#00C896' : 'var(--color-text)'
-                                                        }}>
-                                                            {g.labelPremio}
-                                                        </span>
-                                                        {g.tipoPremio === 'PRODUCTO' && (
-                                                            <span style={{ animation: 'pulse 2s infinite', fontSize: '0.65rem', background: '#ff9800', color: 'white', padding: '1px 5px', borderRadius: '4px', fontWeight: 900 }}>RECLAMABLE</span>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    {g.codigoPremio ? (
-                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                                                            <code style={{ background: 'var(--color-surface-2)', padding: '0.2rem 0.5rem', borderRadius: '6px', fontSize: '0.82rem', fontFamily: 'monospace', color: 'var(--color-accent)', border: '1px solid var(--color-border)' }}>{g.codigoPremio}</code>
-                                                            <button
-                                                                onClick={() => {
-                                                                    navigator.clipboard.writeText(g.codigoPremio);
-                                                                    toast.success('Cupón copiado 📋');
-                                                                }}
-                                                                className="btn btn-ghost"
-                                                                style={{ padding: '0.2rem', minWidth: 'auto', border: 'none', background: 'none' }}
-                                                                title="Copiar cupón"
-                                                            >
-                                                                📋
-                                                            </button>
-                                                        </div>
-                                                    ) : (
-                                                        <span style={{ color: 'var(--color-text-faint)', fontSize: '0.8rem' }}>—</span>
-                                                    )}
-                                                </td>
-                                                <td style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
-                                                    {new Date(g.fecha).toLocaleString('es-CO')}
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                    {girosView.length === 0 && (
-                                        <tr>
-                                            <td colSpan="6" style={{ textAlign: 'center', padding: '3rem', color: 'var(--color-text-muted)' }}>
-                                                <RotateCw size={36} style={{ marginBottom: '0.5rem', color: 'var(--color-text-faint)' }} />
-                                                <p style={{ margin: 0 }}>No hay giros registrados con los filtros de búsqueda.</p>
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </motion.div>
-            )}
-
-            {/* ═══ TAB: CRM ════════════════════════════════════════════════════════ */}
-            {viewMode === 'operaciones' && tab === 'crm' && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        {notasView.map((n, i) => (
-                            <motion.div key={n.id} className="card"
-                                initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                                    <div>
-                                        <span style={{ fontWeight: 700, color: 'var(--color-primary)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-                                            <User size={14} /> {n.clienteNombre}
-                                        </span>
-                                        <span style={{ color: 'var(--color-text-muted)', fontSize: '0.82rem' }}> ({n.clienteEmail})</span>
-                                    </div>
-                                    <div style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                        <Pencil size={12} /> {n.adminNombre} · {new Date(n.fechaCreacion).toLocaleDateString('es-CO')}
-                                    </div>
-                                </div>
-                                <p style={{ lineHeight: 1.6 }}>{n.contenido}</p>
-                            </motion.div>
-                        ))}
-                        {notasView.length === 0 && <div className="empty-state"><FileText size={48} /><p>No hay notas con esos filtros</p></div>}
-                    </div>
-                </motion.div>
-            )}
-
-            {/* ═══ TAB: TRANSFERENCIAS P2P ═══════════════════════════════════════ */}
-            {viewMode === 'operaciones' && tab === 'transferencias' && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                    {!transferencias.totalElements && (transferencias.items || []).length === 0 && !transferenciasLoading ? (
-                        <div className="empty-state">
-                            <ArrowRightLeft size={48} />
-                            <p style={{ maxWidth: 520, margin: '0 auto' }}>
-                                Aqui puedes monitorear todas las transferencias P2P entre usuarios (emisor, receptor, referencia, estado).
-                            </p>
-                            <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-                                onClick={() => cargarTransferencias({ page: 0 })}
-                                className="btn btn-primary" style={{ marginTop: '1rem' }}>
-                                <ArrowRightLeft size={16} /> Cargar transferencias
-                            </motion.button>
-                        </div>
-                    ) : (
-                        <>
-                            <div className="table-wrap">
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Fecha</th>
-                                            <th>Emisor</th>
-                                            <th>Receptor</th>
-                                            <th>Estado</th>
-                                            <th>Monto</th>
-                                            <th>Referencia</th>
-                                            <th>Mensaje</th>
-                                            <th>Movs</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {transferenciasLoading ? (
-                                            <tr><td colSpan={8} style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>Cargando...</td></tr>
-                                        ) : transferenciasView.length === 0 ? (
-                                            <tr><td colSpan={8} style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>Sin transferencias con esos filtros</td></tr>
-                                        ) : transferenciasView.map(t => {
-                                            const montoColor = '#3b82f6'
-                                            return (
-                                                <tr key={t.id}>
-                                                    <td style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
-                                                        {t.fechaCreacion ? new Date(t.fechaCreacion).toLocaleString('es-CO') : '—'}
-                                                    </td>
-                                                    <td>
-                                                        <div style={{ fontWeight: 700 }}>{t.emisorNombre || '—'}</div>
-                                                        <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>{t.emisorEmail || '—'}</div>
-                                                    </td>
-                                                    <td>
-                                                        <div style={{ fontWeight: 700 }}>{t.receptorNombre || '—'}</div>
-                                                        <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>{t.receptorEmail || '—'}</div>
-                                                    </td>
-                                                    <td>
-                                                        <span className="badge" style={{
-                                                            background: t.estado === 'COMPLETADA' ? 'rgba(0,200,150,0.12)'
-                                                                : t.estado === 'PENDIENTE' ? 'rgba(59,130,246,0.12)'
-                                                                    : 'rgba(239,68,68,0.12)',
-                                                            color: t.estado === 'COMPLETADA' ? '#00C896'
-                                                                : t.estado === 'PENDIENTE' ? '#3b82f6'
-                                                                    : '#ef4444',
-                                                            border: '1px solid var(--color-card-border)'
-                                                        }}>
-                                                            {t.estado}
-                                                        </span>
-                                                    </td>
-                                                    <td style={{ fontWeight: 900, color: montoColor, whiteSpace: 'nowrap' }}>
-                                                        {formatCOP(Number(t.monto || 0))}
-                                                    </td>
-                                                    <td style={{ fontFamily: 'monospace', fontSize: '0.82rem' }}>{t.referenciaUnica || '—'}</td>
-                                                    <td style={{ maxWidth: 360 }}>
-                                                        <div style={{ fontSize: '0.85rem' }}>{t.mensaje || '—'}</div>
-                                                    </td>
-                                                    <td style={{ fontFamily: 'monospace', color: 'var(--color-text-muted)' }}>
-                                                        {t.movimientoEmisorId ? `E#${t.movimientoEmisorId}` : 'E—'} · {t.movimientoReceptorId ? `R#${t.movimientoReceptorId}` : 'R—'}
-                                                    </td>
-                                                </tr>
-                                            )
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginTop: '1rem', flexWrap: 'wrap' }}>
-                                <span style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>
-                                    {transferencias.totalElements ? `${transferencias.totalElements} transferencias` : '—'}
-                                </span>
-                                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                    <button
-                                        className="btn btn-ghost"
-                                        disabled={transferenciasLoading || (transferencias.page || 0) <= 0}
-                                        onClick={() => cargarTransferencias({ page: Math.max(0, (transferencias.page || 0) - 1) })}
-                                    >
-                                        Anterior
-                                    </button>
-                                    <button
-                                        className="btn btn-ghost"
-                                        disabled={transferenciasLoading || ((transferencias.page || 0) + 1) >= (transferencias.totalPages || 0)}
-                                        onClick={() => cargarTransferencias({ page: (transferencias.page || 0) + 1 })}
-                                    >
-                                        Siguiente
-                                    </button>
-                                </div>
-                            </div>
-                        </>
-                    )}
-                </motion.div>
-            )}
-
-            {/* ═══ TAB: TRIBU CARD (LEDGER) ═══════════════════════════════════════ */}
-            {viewMode === 'operaciones' && tab === 'tribuCard' && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                    {!tribuCardResumen && tribuCardMovs.items.length === 0 && !tribuCardLoading ? (
-                        <div className="empty-state">
-                            <WalletCards size={48} />
-                            <p style={{ maxWidth: 520, margin: '0 auto' }}>
-                                Aqui puedes vigilar en tiempo real el libro mayor (movimientos) de la Tribu Card de todos los usuarios.
-                            </p>
-                            <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-                                onClick={() => cargarTribuCard({ page: 0 })}
-                                className="btn btn-primary" style={{ marginTop: '1rem' }}>
-                                <WalletCards size={16} /> Cargar movimientos
-                            </motion.button>
-                        </div>
-                    ) : (
-                        <>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem', marginBottom: '1rem' }}>
-                                {[{
-                                    label: 'Movimientos (24h)',
-                                    value: tribuCardResumen?.movimientos24h ?? '—',
-                                    color: '#3b82f6'
-                                }, {
-                                    label: 'Pendientes de liberar',
-                                    value: tribuCardResumen?.pendientesDeLiberar ?? '—',
-                                    color: '#f59e0b'
-                                }, {
-                                    label: 'Cashback (CLEARED)',
-                                    value: formatCOP(tribuCardResumen?.clearedCashback ?? 0),
-                                    color: '#22c55e'
-                                }, {
-                                    label: 'Compras (CLEARED)',
-                                    value: formatCOP(Math.abs(tribuCardResumen?.clearedCompra ?? 0)),
-                                    color: '#ef4444'
-                                }].map(s => (
-                                    <div key={s.label} className="card" style={{ padding: '1rem', borderColor: `${s.color}33` }}>
-                                        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.76rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{s.label}</p>
-                                        <p style={{ fontFamily: 'Sora, sans-serif', fontWeight: 900, fontSize: '1.4rem', color: s.color }}>{s.value}</p>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <div className="table-wrap">
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Fecha</th>
-                                            <th>Usuario</th>
-                                            <th>Tipo</th>
-                                            <th>Estado</th>
-                                            <th>Monto</th>
-                                            <th>Pedido</th>
-                                            <th>Descripcion</th>
-                                            <th>Unlock</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {tribuCardLoading ? (
-                                            <tr><td colSpan={8} style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>Cargando...</td></tr>
-                                        ) : (tribuCardMovs.items || []).length === 0 ? (
-                                            <tr><td colSpan={8} style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>Sin movimientos con esos filtros</td></tr>
-                                        ) : (tribuCardMovs.items || []).map(m => {
-                                            const isNeg = Number(m.monto || 0) < 0
-                                            const montoColor = isNeg ? '#ef4444' : '#22c55e'
-                                            const ms = m?.fecha ? new Date(m.fecha).getTime() : 0
-                                            const isNew = tribuCardHighlightAfterMs > 0 && Number.isFinite(ms) && ms > tribuCardHighlightAfterMs
-                                            return (
-                                                <tr key={m.id} style={isNew ? { background: 'rgba(34,197,94,0.06)' } : undefined}>
-                                                    <td style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
-                                                        {m.fecha ? new Date(m.fecha).toLocaleString('es-CO') : '—'}
-                                                    </td>
-                                                    <td>
-                                                        <div style={{ fontWeight: 700 }}>{m.usuarioNombre || '—'}</div>
-                                                        <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>{m.usuarioEmail || '—'}</div>
-                                                    </td>
-                                                    <td style={{ fontFamily: 'monospace', fontSize: '0.82rem' }}>{m.tipo}</td>
-                                                    <td>
-                                                        <span className="badge" style={{
-                                                            background: m.estado === 'CLEARED' ? 'rgba(0,200,150,0.12)'
-                                                                : m.estado === 'ON_HOLD' ? 'rgba(254,231,21,0.12)'
-                                                                    : m.estado === 'PENDING' ? 'rgba(59,130,246,0.12)'
-                                                                        : 'rgba(239,68,68,0.12)',
-                                                            color: m.estado === 'CLEARED' ? '#00C896'
-                                                                : m.estado === 'ON_HOLD' ? '#F5D800'
-                                                                    : m.estado === 'PENDING' ? '#3b82f6'
-                                                                        : '#ef4444',
-                                                            border: '1px solid var(--color-card-border)'
-                                                        }}>
-                                                            {m.estado}
-                                                        </span>
-                                                    </td>
-                                                    <td style={{ fontWeight: 900, color: montoColor, whiteSpace: 'nowrap' }}>
-                                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-                                                            {isNeg ? <ArrowDownRight size={14} /> : <ArrowUpRight size={14} />}
-                                                            {formatCOP(Math.abs(Number(m.monto || 0)))}
-                                                        </span>
-                                                    </td>
-                                                    <td style={{ fontFamily: 'monospace', color: 'var(--color-text-muted)' }}>
-                                                        {m.pedidoId ? `#${m.pedidoId}` : '—'}
-                                                    </td>
-                                                    <td style={{ maxWidth: 360 }}>
-                                                        <div style={{ fontSize: '0.85rem' }}>{m.descripcion || '—'}</div>
-                                                        <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>Mov #{m.id} · U#{m.usuarioId} · {m.usuarioCiudad || '—'}</div>
-                                                    </td>
-                                                    <td style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
-                                                        {m.unlockDate ? new Date(m.unlockDate).toLocaleString('es-CO') : '—'}
-                                                    </td>
-                                                </tr>
-                                            )
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginTop: '1rem', flexWrap: 'wrap' }}>
-                                <span style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>
-                                    {tribuCardMovs.totalElements ? `${tribuCardMovs.totalElements} movimientos` : '—'}
-                                </span>
-                                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                    <button
-                                        className="btn btn-ghost"
-                                        disabled={tribuCardLoading || tribuCardMovs.page <= 0}
-                                        onClick={() => cargarTribuCard({ page: Math.max(0, (tribuCardMovs.page || 0) - 1) })}
-                                    >
-                                        Anterior
-                                    </button>
-                                    <button
-                                        className="btn btn-ghost"
-                                        disabled={tribuCardLoading || (tribuCardMovs.page + 1) >= (tribuCardMovs.totalPages || 0)}
-                                        onClick={() => cargarTribuCard({ page: (tribuCardMovs.page || 0) + 1 })}
-                                    >
-                                        Siguiente
-                                    </button>
-                                </div>
-                            </div>
-                        </>
-                    )}
-                </motion.div>
-            )}
-
-            {/* ═══ TAB: STOCK CRÍTICO ══════════════════════════════════════════════ */}
-            {viewMode === 'operaciones' && tab === 'stock' && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                    {stockBajoView.length === 0 ? (
-                        <div className="empty-state"><Check size={48} style={{ color: 'var(--color-success)' }} /><p>¡Todo el stock está OK!</p></div>
-                    ) : (
-                        <div className="table-wrap">
-                            <table>
-                                <thead><tr><th>Producto</th><th>Categoría</th><th>Stock</th><th>Precio</th><th>Acción</th></tr></thead>
-                            <tbody>
-                                    {stockBajoView.map(p => (
-                                        <tr key={p.id}>
-                                            <td style={{ fontWeight: 600 }}>{p.nombre}</td>
-                                            <td style={{ color: 'var(--color-text-muted)' }}>{p.categoriaNombre}</td>
-                                            <td><span style={{ color: '#ef4444', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}><AlertTriangle size={13} />{p.stock}</span></td>
-                                            <td style={{ color: 'var(--color-primary)', fontWeight: 700 }}>{formatCOP(p.precio)}</td>
-                                            <td>
-                                                <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                                                    onClick={() => setModalProd(p)}
-                                                    className="btn btn-ghost" style={{ fontSize: '0.8rem', padding: '0.3rem 0.8rem' }}>
-                                                    <Pencil size={13} /> Editar stock
-                                                </motion.button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </motion.div>
-            )}
-
-            {/* ═══ TAB: SEGURIDAD ══════════════════════════════════════════════ */}
-            {viewMode === 'operaciones' && tab === 'seguridad' && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                    <h2 style={{ fontWeight: 700, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <ShieldAlert size={24} color="#ef4444" />
-                        Centro de Monitoreo & Ciberseguridad
-                    </h2>
-                    {accesos.length === 0 ? (
-                        <div className="empty-state">
-                            <ShieldAlert size={48} style={{ color: '#ef4444', opacity: 0.5 }} />
-                            <p>No hay registros de acceso todavía.</p>
-                        </div>
-                    ) : (
-                        <div className="table-wrap">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Fecha / Hora</th>
-                                        <th>Usuario (Email)</th>
-                                        <th>Dirección IP</th>
-                                        <th>Estado</th>
-                                        <th>Detalle / Error</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {accesos.map((a, i) => (
-                                        <tr key={a.id || i} style={{ background: !a.exitoso ? 'rgba(239, 68, 68, 0.05)' : 'transparent' }}>
-                                            <td style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
-                                                {new Date(a.fecha).toLocaleString('es-CO')}
-                                            </td>
-                                            <td style={{ fontWeight: 600 }}>{a.email}</td>
-                                            <td style={{ fontFamily: 'monospace', fontWeight: 600, color: 'var(--color-primary)' }}>{a.ipAddress}</td>
-                                            <td>
-                                                <span style={{
-                                                    padding: '0.2rem 0.5rem',
-                                                    borderRadius: '4px',
-                                                    fontSize: '0.75rem',
-                                                    fontWeight: 'bold',
-                                                    background: a.exitoso ? 'rgba(0, 200, 150, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-                                                    color: a.exitoso ? '#00C896' : '#ef4444'
-                                                }}>
-                                                    {a.exitoso ? 'EXITOSO' : 'FALLIDO'}
-                                                </span>
-                                            </td>
-                                            <td style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', maxWidth: '300px' }}>
-                                                {a.motivoFallo || '—'}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </motion.div>
-            )}
-
-            {/* ═══ TAB: SOPORTE EN VIVO ══════════════════════════════════════════════ */}
-            {viewMode === 'operaciones' && tab === 'soporte' && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ height: 'calc(100vh - 240px)', minHeight: '600px' }}>
-                        <div style={{
-                            display: 'flex',
-                            gap: '1.5rem',
-                            height: '100%',
-                            background: 'var(--color-card-bg)',
-                            backdropFilter: 'blur(16px)',
-                            border: '1px solid var(--color-card-border)',
-                            borderRadius: '16px',
-                            padding: '1rem',
-                            overflow: 'hidden'
-                        }}>
-                        {/* Panel Izquierdo: Lista de Chats */}
-                        <div style={{
-                            width: '340px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '1rem',
-                            borderRight: '1px solid var(--color-card-border)',
-                            paddingRight: '1rem',
-                            height: '100%'
-                        }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                <h3 style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--color-text)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                    <MessageSquare size={18} color="var(--color-primary)" />
-                                    Cola de Soporte
-                                </h3>
-                                <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
-                                    Chats activos y escalados en tiempo real
-                                </p>
-                            </div>
-
-                            <div style={{ position: 'relative' }}>
-                                <input
-                                    type="text"
-                                    placeholder="Buscar por usuario o pedido..."
-                                    value={soporteFiltroQ}
-                                    onChange={e => setSoporteFiltroQ(e.target.value)}
-                                    style={{
-                                        width: '100%',
-                                        padding: '0.6rem 2.2rem 0.6rem 1rem',
-                                        background: 'var(--color-card-bg-soft)',
-                                        border: '1px solid var(--color-card-border)',
-                                        borderRadius: '8px',
-                                        color: 'var(--color-text)',
-                                        fontSize: '0.85rem'
-                                    }}
-                                />
-                                <Search size={15} style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
-                            </div>
-
-                            {/* Listado de Conversaciones */}
-                            <div style={{
-                                flex: 1,
-                                overflowY: 'auto',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '0.75rem',
-                                paddingRight: '0.25rem'
-                            }}>
-                                {soporteChats.filter(chat => {
-                                    const username = chat.usuarioNombreCompleto || '';
-                                    const useremail = chat.usuarioEmail || '';
-                                    const pedidoStr = chat.pedidoId ? `pedido #${chat.pedidoId}` : '';
-                                    const statusStr = chat.estado || '';
-                                    return [username, useremail, pedidoStr, statusStr].some(v => v.toLowerCase().includes(soporteFiltroQ.toLowerCase()));
-                                }).length === 0 ? (
-                                    <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
-                                        No se encontraron conversaciones.
-                                    </div>
-                                ) : (
-                                    soporteChats.filter(chat => {
-                                        const username = chat.usuarioNombreCompleto || '';
-                                        const useremail = chat.usuarioEmail || '';
-                                        const pedidoStr = chat.pedidoId ? `pedido #${chat.pedidoId}` : '';
-                                        const statusStr = chat.estado || '';
-                                        return [username, useremail, pedidoStr, statusStr].some(v => v.toLowerCase().includes(soporteFiltroQ.toLowerCase()));
-                                    }).map(chat => {
-                                        const esActivo = soporteChatActivo?.id === chat.id;
-                                        return (
-                                            <motion.div
-                                                key={chat.id}
-                                                whileHover={{ scale: 1.02, background: 'rgba(255, 255, 255, 0.05)' }}
-                                                onClick={() => handleSelectConversacion(chat)}
-                                                style={{
-                                                    padding: '0.85rem',
-                                                    borderRadius: '10px',
-                                                    background: esActivo ? 'rgba(124, 58, 237, 0.12)' : 'var(--color-card-bg-soft)',
-                                                    border: esActivo ? '1px solid var(--color-primary)' : '1px solid var(--color-card-border)',
-                                                    cursor: 'pointer',
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
-                                                    gap: '0.5rem',
-                                                    transition: 'all 0.2s ease',
-                                                    boxShadow: esActivo ? '0 0 15px rgba(124, 58, 237, 0.15)' : 'none'
-                                                }}
-                                            >
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                    <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--color-text)' }}>
-                                                        {chat.usuarioNombreCompleto || 'Usuario sin Nombre'}
-                                                    </span>
-                                                    <span style={{
-                                                        padding: '0.15rem 0.4rem',
-                                                        borderRadius: '4px',
-                                                        fontSize: '0.7rem',
-                                                        fontWeight: 'bold',
-                                                        display: 'inline-flex',
-                                                        alignItems: 'center',
-                                                        gap: '0.2rem',
-                                                        background: chat.estado === 'ACTIVA_IA' ? 'rgba(167, 139, 250, 0.15)' : chat.estado === 'ESCALADA_HUMANO' ? 'rgba(249, 115, 22, 0.18)' : 'rgba(16, 185, 129, 0.15)',
-                                                        color: chat.estado === 'ACTIVA_IA' ? '#c084fc' : chat.estado === 'ESCALADA_HUMANO' ? '#fb923c' : '#34d399',
-                                                        border: `1px solid ${chat.estado === 'ACTIVA_IA' ? 'rgba(167, 139, 250, 0.3)' : chat.estado === 'ESCALADA_HUMANO' ? 'rgba(249, 115, 22, 0.4)' : 'rgba(16, 185, 129, 0.3)'}`
-                                                    }}>
-                                                        {chat.estado === 'ACTIVA_IA' ? '🤖 IA' : chat.estado === 'ESCALADA_HUMANO' ? '🚨 Agente' : '✔️ Cerrado'}
-                                                    </span>
-                                                </div>
-                                                <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                                    {chat.usuarioEmail}
-                                                </div>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.2rem' }}>
-                                                    {chat.pedidoId ? (
-                                                    <span style={{ fontSize: '0.75rem', background: 'var(--color-card-bg-soft)', border: '1px solid var(--color-card-border)', padding: '0.15rem 0.4rem', borderRadius: '4px', color: 'var(--color-primary)', fontWeight: 600 }}>
-                                                        📦 Pedido #{chat.pedidoId}
-                                                    </span>
-                                                    ) : (
-                                                        <span style={{ fontSize: '0.75rem', color: 'var(--color-text-faint)' }}>Sin pedido vinculado</span>
-                                                    )}
-                                                    <span style={{ fontSize: '0.7rem', color: 'var(--color-text-faint)' }}>
-                                                        {chat.fechaActualizacion ? new Date(chat.fechaActualizacion).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }) : ''}
-                                                    </span>
-                                                </div>
-                                            </motion.div>
-                                        );
-                                    })
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Panel Derecho: Mensajes */}
-                        <div style={{
-                            flex: 1,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            height: '100%',
-                            justifyContent: 'space-between'
-                        }}>
-                            {!soporteChatActivo ? (
+                        {/* ═══ TAB: CREADOR IA 🤖 ══════════════════════════════════════════════ */}
+                        {viewMode === 'operaciones' && tab === 'creadorAi' && (
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', alignItems: 'start' }}>
+                                {/* Panel de Parámetros */}
                                 <div style={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    flex: 1,
-                                    color: 'var(--color-text-muted)',
-                                    textAlign: 'center',
+                                    background: 'rgba(255, 255, 255, 0.03)',
+                                    backdropFilter: 'blur(16px)',
+                                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                                    borderRadius: '24px',
                                     padding: '2rem',
-                                    gap: '1rem'
+                                    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.3)'
                                 }}>
-                                    <motion.div
-                                        animate={{ y: [0, -8, 0] }}
-                                        transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
+                                    <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#FFF', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        <Bot size={20} color="var(--color-primary)" />
+                                        Agente Creativo Autónomo
+                                    </h3>
+                                    <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
+                                        Conceptualiza, redacta descripciones y diseña imágenes comerciales optimizadas de forma instantánea usando inteligencia artificial.
+                                    </p>
+
+                                    <div className="form-group">
+                                        <label style={{ color: '#DDD', fontWeight: 600 }}>Concepto o Nombre del Producto</label>
+                                        <input
+                                            className="input"
+                                            value={iaNombreConcepto}
+                                            onChange={e => setIaNombreConcepto(e.target.value)}
+                                            placeholder="Ej: Gorra Premium Edición Colección, Termo Inteligente"
+                                            disabled={iaGenerando}
+                                        />
+                                    </div>
+
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                        <div className="form-group">
+                                            <label style={{ color: '#DDD', fontWeight: 600 }}>Categoría Sugerida</label>
+                                            <select
+                                                className="input"
+                                                value={iaCategoria}
+                                                onChange={e => setIaCategoria(e.target.value)}
+                                                disabled={iaGenerando}
+                                            >
+                                                <option value="">Selecciona una...</option>
+                                                {categorias.map(c => <option key={c.id} value={c.nombre}>{c.nombre}</option>)}
+                                            </select>
+                                        </div>
+
+                                        <div className="form-group">
+                                            <label style={{ color: '#DDD', fontWeight: 600 }}>Público Objetivo</label>
+                                            <select
+                                                className="input"
+                                                value={iaTargetAudience}
+                                                onChange={e => setIaTargetAudience(e.target.value)}
+                                                disabled={iaGenerando}
+                                            >
+                                                <option value="Jóvenes Streetwear">Jóvenes (Streetwear)</option>
+                                                <option value="Emprendedores Ejecutivos">Emprendedores / Profesionales</option>
+                                                <option value="Deportistas de Alto Rendimiento">Deportistas</option>
+                                                <option value="Tecnología y Gadgets">Tech / Geek</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div className="form-group" style={{ marginTop: '0.5rem', marginBottom: '1.5rem' }}>
+                                        <div style={{ display: 'flex', justify: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                                            <label style={{ color: '#DDD', fontWeight: 600, marginBottom: 0 }}>Nivel de Creatividad / Temperatura</label>
+                                            <span style={{ color: 'var(--color-primary)', fontWeight: 800, fontSize: '0.9rem' }}>{iaCreativeLevel}</span>
+                                        </div>
+                                        <input
+                                            type="range"
+                                            min="0.1"
+                                            max="1.0"
+                                            step="0.1"
+                                            value={iaCreativeLevel}
+                                            onChange={e => setIaCreativeLevel(Number(e.target.value))}
+                                            disabled={iaGenerando}
+                                            style={{ width: '100%', accentColor: 'var(--color-primary)' }}
+                                        />
+                                        <div style={{ display: 'flex', justify: 'space-between', fontSize: '0.72rem', color: 'var(--color-text-faint)', marginTop: '4px' }}>
+                                            <span>Conservador / Factual</span>
+                                            <span>Altamente Creativo</span>
+                                        </div>
+                                    </div>
+
+                                    <motion.button
+                                        whileHover={{ scale: iaGenerando ? 1 : 1.02 }}
+                                        whileTap={{ scale: iaGenerando ? 1 : 0.98 }}
+                                        onClick={handleGenerarConIa}
+                                        className="btn btn-primary"
                                         style={{
-                                            background: 'linear-gradient(135deg, var(--color-primary), var(--color-accent))',
-                                            padding: '1.25rem',
-                                            borderRadius: '50%',
+                                            width: '100%',
+                                            justifyContent: 'center',
+                                            padding: '0.85rem',
+                                            fontSize: '1rem',
+                                            fontWeight: 800,
+                                            background: iaGenerando ? 'rgba(255, 255, 255, 0.05)' : 'linear-gradient(135deg, #f97316, #f59e0b)',
+                                            color: iaGenerando ? '#FFF' : '#0a0a0a',
+                                            border: iaGenerando ? '1px solid rgba(255,255,255,0.1)' : 'none'
+                                        }}
+                                        disabled={iaGenerando}
+                                    >
+                                        {iaGenerando ? (
+                                            <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <RefreshCw className="animate-spin" size={16} />
+                                                Creando...
+                                            </span>
+                                        ) : (
+                                            <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <Sparkles size={16} />
+                                                Generar con IA
+                                            </span>
+                                        )}
+                                    </motion.button>
+
+                                    {iaGenerando && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            style={{
+                                                marginTop: '1.25rem',
+                                                padding: '1rem',
+                                                background: 'rgba(255, 87, 34, 0.05)',
+                                                border: '1px dashed rgba(255, 87, 34, 0.25)',
+                                                borderRadius: '12px',
+                                                textAlign: 'center'
+                                            }}
+                                        >
+                                            <p style={{ fontSize: '0.85rem', color: '#FFF', fontWeight: 600 }}>{iaEtapaGeneracion}</p>
+                                        </motion.div>
+                                    )}
+                                </div>
+
+                                {/* Previsualización del Producto AI */}
+                                <div style={{ minHeight: '400px' }}>
+                                    {!iaResultado && !iaGenerando && (
+                                        <div style={{
+                                            border: '2px dashed rgba(255, 255, 255, 0.08)',
+                                            borderRadius: '24px',
+                                            height: '100%',
+                                            minHeight: '480px',
                                             display: 'flex',
+                                            flexDirection: 'column',
                                             alignItems: 'center',
                                             justifyContent: 'center',
-                                            boxShadow: '0 8px 24px rgba(124, 58, 237, 0.3)'
-                                        }}
-                                    >
-                                    <MessageSquare size={38} color="var(--color-text)" />
-                                </motion.div>
-                                <h4 style={{ fontWeight: 800, color: 'var(--color-text)', fontSize: '1.2rem', marginTop: '0.5rem' }}>Consola de Atención al Cliente</h4>
-                                    <p style={{ maxWidth: '380px', fontSize: '0.85rem', lineHeight: 1.5 }}>
-                                        Selecciona una conversación del listado lateral para ver el historial completo, interactuar con el cliente o tomar el control del asistente virtual.
-                                    </p>
-                                </div>
-                            ) : (
-                                <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
-                                    {/* Cabecera del Chat Activo */}
-                                    <div style={{
-                                        padding: '0.75rem 1rem',
-                                        background: 'var(--color-card-bg-soft)',
-                                        borderBottom: '1px solid var(--color-card-border)',
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
-                                        alignItems: 'center',
-                                        gap: '1rem'
-                                    }}>
-                                        <div>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                <h4 style={{ fontWeight: 800, color: 'var(--color-text)', fontSize: '1rem' }}>
-                                                    {soporteChatActivo.usuarioNombreCompleto || 'Cliente'}
-                                                </h4>
-                                                <span style={{
-                                                    fontSize: '0.7rem',
-                                                    padding: '0.1rem 0.35rem',
-                                                    background: 'var(--color-card-bg-soft)',
-                                                    border: '1px solid var(--color-card-border)',
-                                                    borderRadius: '4px',
-                                                    color: 'var(--color-primary)'
-                                                }}>ID #{soporteChatActivo.id}</span>
-                                            </div>
-                                            <span style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>
-                                                {soporteChatActivo.usuarioEmail}
-                                            </span>
-                                        </div>
-
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                            {soporteChatActivo.estado !== 'RESUELTA' && (
-                                                <motion.button
-                                                    whileHover={{ scale: 1.03 }}
-                                                    whileTap={{ scale: 0.97 }}
-                                                    onClick={handleResolverConversacion}
-                                                    className="btn btn-ghost"
-                                                    style={{
-                                                        fontSize: '0.8rem',
-                                                        padding: '0.4rem 0.8rem',
-                                                        border: '1px solid rgba(16, 185, 129, 0.4)',
-                                                        color: '#34d399',
-                                                        borderRadius: '8px',
-                                                        display: 'inline-flex',
-                                                        alignItems: 'center',
-                                                        gap: '0.3rem'
-                                                    }}
-                                                >
-                                                    <Check size={14} />
-                                                    Resolver Ticket
-                                                </motion.button>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {/* Subcabecera: Información Detallada del Pedido Vinculado */}
-                                    {soporteChatActivo.pedidoId && (
-                                        <div style={{
-                                        background: 'rgba(124, 58, 237, 0.08)',
-                                        borderBottom: '1px solid rgba(124, 58, 237, 0.16)',
-                                        padding: '0.6rem 1rem',
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
-                                        alignItems: 'center',
-                                        fontSize: '0.82rem'
-                                    }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#c084fc' }}>
-                                                <ShoppingBag size={14} />
-                                                <strong>Contexto de Transacción: Pedido #{soporteChatActivo.pedidoId}</strong>
-                                            </div>
-                                            {pedidos.find(p => p.id === soporteChatActivo.pedidoId) && (
-                                                <div style={{ display: 'flex', gap: '1rem', color: 'var(--color-text-muted)' }}>
-                                                    <span>Monto: <strong style={{ color: 'var(--color-text)' }}>{formatCOP(pedidos.find(p => p.id === soporteChatActivo.pedidoId).total)}</strong></span>
-                                                    <span>Estado: <strong style={{
-                                                        color: pedidos.find(p => p.id === soporteChatActivo.pedidoId).estado === 'ENTREGADO' ? '#34d399' : '#fb923c'
-                                                    }}>{pedidos.find(p => p.id === soporteChatActivo.pedidoId).estado}</strong></span>
-                                                </div>
-                                            )}
+                                            padding: '2rem',
+                                            textAlign: 'center',
+                                            background: 'rgba(255, 255, 255, 0.01)'
+                                        }}>
+                                            <Sparkles size={48} style={{ color: 'var(--color-primary)', opacity: 0.3, marginBottom: '1rem' }} />
+                                            <h4 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#FFF', marginBottom: '0.35rem' }}>Listo para Conceptualizar</h4>
+                                            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.82rem', maxWidth: '300px' }}>
+                                                Ingresa un concepto a la izquierda para que el Agente Creativo diseñe la propuesta visual y comercial del producto.
+                                            </p>
                                         </div>
                                     )}
 
-                                    {/* Zona de Mensajes */}
-                                    <div style={{
-                                        flex: 1,
-                                        overflowY: 'auto',
-                                        padding: '1rem',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        gap: '0.75rem',
-                                        maxHeight: '400px',
-                                        minHeight: '280px',
-                                        background: 'var(--color-card-bg-soft)'
-                                    }}>
-                                        {soporteCargandoChat ? (
-                                            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-                                                <div className="spinner" style={{ borderTopColor: 'var(--color-primary)' }}></div>
-                                            </div>
-                                        ) : soporteMensajes.length === 0 ? (
-                                            <div style={{ textAlign: 'center', color: 'var(--color-text-faint)', fontSize: '0.85rem', marginTop: '2rem' }}>
-                                                No hay mensajes en esta conversación.
-                                            </div>
-                                        ) : (
-                                            soporteMensajes.map((msg, i) => {
-                                                const esUsuario = msg.remitente === 'USUARIO';
-                                                const esIA = msg.remitente === 'IA';
-                                                const esAdmin = msg.remitente === 'ADMIN';
+                                    {iaGenerando && !iaResultado && (
+                                        <div style={{
+                                            border: '2px dashed rgba(255, 87, 34, 0.15)',
+                                            borderRadius: '24px',
+                                            height: '100%',
+                                            minHeight: '480px',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            padding: '2rem',
+                                            textAlign: 'center',
+                                            background: 'rgba(255, 87, 34, 0.02)'
+                                        }}>
+                                            <RefreshCw className="animate-spin" size={48} style={{ color: 'var(--color-primary)', marginBottom: '1.5rem' }} />
+                                            <h4 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#FFF', marginBottom: '0.35rem' }}>Escribiendo Código Creativo</h4>
+                                            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.82rem', maxWidth: '300px' }}>
+                                                El Agente de IA está creando los desgloses financieros, redactando la descripción comercial y buscando imágenes premium en vivo.
+                                            </p>
+                                        </div>
+                                    )}
 
-                                                let alignment = 'flex-start';
-                                                let bubbleBg = 'var(--color-card-bg-soft)';
-                                                let bubbleColor = 'var(--color-text)';
-                                                let bubbleBorder = '1px solid var(--color-card-border)';
-                                                let label = 'Cliente';
-
-                                                if (esUsuario) {
-                                                    alignment = 'flex-start';
-                                                    bubbleBg = 'var(--color-card-bg-soft)';
-                                                } else if (esIA) {
-                                                    alignment = 'flex-end';
-                                                    bubbleBg = 'linear-gradient(135deg, rgba(124, 58, 237, 0.25), rgba(79, 70, 229, 0.25))';
-                                                    bubbleBorder = '1px solid rgba(124, 58, 237, 0.35)';
-                                                    label = 'Asistente Virtual 🤖';
-                                                } else if (esAdmin) {
-                                                    alignment = 'flex-end';
-                                                    bubbleBg = 'linear-gradient(135deg, rgba(249, 115, 22, 0.25), rgba(234, 88, 12, 0.25))';
-                                                    bubbleBorder = '1px solid rgba(249, 115, 22, 0.4)';
-                                                    label = 'Soporte Humano 🧑‍💻';
-                                                } else {
-                                                    // Sistema
-                                                    alignment = 'center';
-                                                    bubbleBg = 'var(--color-card-bg-soft)';
-                                                    bubbleColor = 'var(--color-text-muted)';
-                                                    label = 'Sistema';
-                                                }
-
-                                                return (
-                                                    <div key={msg.id || i} style={{ display: 'flex', flexDirection: 'column', alignItems: alignment === 'flex-start' ? 'flex-start' : alignment === 'flex-end' ? 'flex-end' : 'center', width: '100%' }}>
-                                                        <div style={{
-                                                            maxWidth: '75%',
-                                                            padding: '0.75rem 1rem',
-                                                            borderRadius: esUsuario ? '12px 12px 12px 4px' : esIA || esAdmin ? '12px 12px 4px 12px' : '8px',
-                                                            background: bubbleBg,
-                                                            border: bubbleBorder,
-                                                            color: bubbleColor,
-                                                            fontSize: '0.85rem',
-                                                            lineHeight: 1.4,
-                                                            wordBreak: 'break-word',
-                                                            whiteSpace: 'pre-wrap',
-                                                            boxShadow: '0 4px 10px rgba(0,0,0,0.1)'
-                                                        }}>
-                                                            {msg.contenido}
-                                                        </div>
-                                                        <div style={{
-                                                            fontSize: '0.7rem',
-                                                            color: 'var(--color-text-faint)',
-                                                            marginTop: '0.2rem',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            gap: '0.4rem'
-                                                        }}>
-                                                            <span style={{ fontWeight: 600 }}>{label}</span>
-                                                            <span>•</span>
-                                                            <span>{msg.fechaCreacion ? new Date(msg.fechaCreacion).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }) : ''}</span>
-                                                            {msg.sentiment && msg.sentiment !== 'NEUTRAL' && (
-                                                                <>
-                                                                    <span>•</span>
-                                                                    <span style={{ color: msg.sentiment === 'FRUSTRADO' ? '#ef4444' : '#34d399', textTransform: 'lowercase', fontSize: '0.65rem' }}>{msg.sentiment}</span>
-                                                                </>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })
-                                        )}
-                                        <div ref={soporteMessagesEndRef} />
-                                    </div>
-
-                                    {/* Formulario de Entrada */}
-                                    <div style={{
-                                        padding: '0.75rem 1rem 0 1rem',
-                                        borderTop: '1px solid var(--color-card-border)'
-                                    }}>
-                                        {soporteChatActivo.estado === 'RESUELTA' ? (
+                                    {iaResultado && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 15 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}
+                                        >
+                                            {/* Sección A: Previsualización Exacta del Catálogo Storefront */}
                                             <div style={{
-                                                width: '100%',
-                                                padding: '0.75rem',
-                                                background: 'rgba(16, 185, 129, 0.1)',
-                                                border: '1px solid rgba(16, 185, 129, 0.2)',
-                                                borderRadius: '8px',
-                                                color: '#34d399',
-                                                textAlign: 'center',
-                                                fontSize: '0.85rem',
-                                                fontWeight: 600
+                                                background: 'rgba(255, 255, 255, 0.02)',
+                                                border: '1px solid rgba(255, 255, 255, 0.08)',
+                                                borderRadius: '24px',
+                                                padding: '1.5rem',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
                                             }}>
-                                                Este ticket ya fue resuelto. Envía un mensaje si deseas reabrirlo.
-                                            </div>
-                                        ) : null}
+                                                <div style={{ alignSelf: 'flex-start', display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#FFF', fontSize: '0.82rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>
+                                                    <ShoppingBag size={14} color="var(--color-primary)" />
+                                                    Vista Web Storefront (Catálogo en Vivo)
+                                                </div>
 
-                                        {soporteChatActivo.estado !== 'RESUELTA' && (
-                                            <form onSubmit={handleEnviarMensajeAdmin} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                                                <input
-                                                    type="text"
-                                                    placeholder="Escribe una respuesta para el cliente..."
-                                                    value={soporteNuevoMensaje}
-                                                    onChange={e => setSoporteNuevoMensaje(e.target.value)}
-                                                    disabled={soporteEnviando}
+                                                {/* Tarjeta de Producto Idéntica a la Real de la Web */}
+                                                <div
                                                     style={{
-                                                        flex: 1,
-                                                        padding: '0.75rem 1rem',
-                                                        background: 'var(--color-card-bg-soft)',
-                                                        border: '1px solid var(--color-card-border)',
-                                                        borderRadius: '8px',
-                                                        color: 'var(--color-text)',
-                                                        fontSize: '0.88rem'
-                                                    }}
-                                                />
-                                                <motion.button
-                                                    type="submit"
-                                                    whileHover={{ scale: 1.05 }}
-                                                    whileTap={{ scale: 0.95 }}
-                                                    disabled={soporteEnviando || !soporteNuevoMensaje.trim()}
-                                                    className="btn btn-primary"
-                                                    style={{
-                                                        padding: '0.75rem 1.25rem',
-                                                        borderRadius: '8px',
-                                                        fontWeight: 800,
-                                                        display: 'inline-flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        minWidth: '90px'
+                                                        width: '280px',
+                                                        background: 'var(--color-surface)',
+                                                        border: '1px solid var(--color-border)',
+                                                        borderRadius: 'var(--radius-lg)',
+                                                        overflow: 'hidden',
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                                                        alignSelf: 'center'
                                                     }}
                                                 >
-                                                    {soporteEnviando ? 'Enviando...' : 'Enviar'}
-                                                </motion.button>
-                                            </form>
+                                                    {/* Contenedor Imagen Cuadrada */}
+                                                    <div style={{ position: 'relative', width: '100%', paddingTop: '100%', background: 'var(--color-surface-2)', overflow: 'hidden' }}>
+                                                        <img
+                                                            src={iaResultado.imagenUrl}
+                                                            alt={iaResultado.nombre}
+                                                            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                                                        />
+
+                                                        {/* Badges superiores */}
+                                                        <div style={{ position: 'absolute', top: 10, left: 10, display: 'flex', flexDirection: 'column', gap: 5 }}>
+                                                            <span className="badge badge-viral" style={{ display: 'flex', alignItems: 'center', gap: '3px', fontSize: '0.62rem', fontWeight: 900, background: 'linear-gradient(135deg, #FF5722, #FF9800)', color: '#FFF', padding: '3px 8px', borderRadius: '4px' }}>
+                                                                <Flame size={9} /> IA VIRAL
+                                                            </span>
+                                                        </div>
+
+                                                        {/* Counter de personas viendo */}
+                                                        <div
+                                                            style={{
+                                                                position: 'absolute', bottom: 10, left: 10,
+                                                                background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)',
+                                                                borderRadius: '9999px', padding: '3px 10px',
+                                                                display: 'flex', alignItems: 'center', gap: 5,
+                                                                fontSize: '0.72rem', fontWeight: 700, color: '#fff',
+                                                            }}
+                                                        >
+                                                            <span style={{ color: '#FF5722' }}>🔥</span> 42 viendo ahora
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Información de Producto */}
+                                                    <div style={{ padding: '1rem', flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem', textAlign: 'left' }}>
+                                                        <p style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: 600, margin: 0 }}>
+                                                            {iaCategoria || 'Sin categoría'}
+                                                        </p>
+                                                        <h3 style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--color-text)', lineHeight: 1.35, margin: 0 }}>
+                                                            {iaResultado.nombre}
+                                                        </h3>
+
+                                                        {/* Barra de escasez (Scarcity Bar) */}
+                                                        <div className="scarcity-bar" style={{ marginTop: '0.25rem' }}>
+                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                                                                <span style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', fontWeight: 600 }}>
+                                                                    Disponibilidad
+                                                                </span>
+                                                                <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#FF5722' }}>
+                                                                    75% vendido
+                                                                </span>
+                                                            </div>
+                                                            <div className="stock-bar-track" style={{ height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden' }}>
+                                                                <div className="stock-bar-fill" style={{ width: '75%', height: '100%', background: 'var(--color-primary)', borderRadius: '3px' }} />
+                                                            </div>
+                                                            <p style={{ fontSize: '0.68rem', color: 'var(--color-error)', fontWeight: 700, marginTop: 4, display: 'flex', alignItems: 'center', marginBlock: '4px 0', gap: '3px' }}>
+                                                                <span className="pulse-dot" style={{ width: '6px', height: '6px', background: 'red', borderRadius: '50%', display: 'inline-block', animation: 'pulse 1.5s infinite' }}></span>
+                                                                ⚡ ¡Solo quedan 8 unidades!
+                                                            </p>
+                                                        </div>
+
+                                                        {/* Precio y CTA */}
+                                                        <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '0.5rem' }}>
+                                                            <div>
+                                                                <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 900, fontSize: '1.25rem', color: 'var(--color-text)' }}>
+                                                                    {formatCOP(iaResultado.precioSugerido)}
+                                                                </span>
+                                                            </div>
+                                                            <button
+                                                                className="btn btn-primary"
+                                                                style={{
+                                                                    padding: '0.45rem 1rem',
+                                                                    fontSize: '0.82rem',
+                                                                    fontWeight: 800,
+                                                                    background: 'var(--color-primary)',
+                                                                    boxShadow: 'var(--shadow-orange)',
+                                                                    border: 'none',
+                                                                    borderRadius: '8px',
+                                                                    color: '#000',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    gap: '4px'
+                                                                }}
+                                                                disabled
+                                                            >
+                                                                <ShoppingCart size={14} /> Añadir
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Sección B: Detalles de Administración y Finanzas (Backoffice) */}
+                                            <div style={{
+                                                background: 'rgba(255, 255, 255, 0.03)',
+                                                backdropFilter: 'blur(16px)',
+                                                border: '1px solid rgba(255, 255, 255, 0.08)',
+                                                borderRadius: '24px',
+                                                padding: '1.5rem',
+                                                boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.3)'
+                                            }}>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                                                    <h5 style={{ fontSize: '0.8rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-primary)', margin: 0 }}>
+                                                        Estructura Financiera del Agente
+                                                    </h5>
+                                                    <span style={{ fontSize: '0.68rem', color: '#BBB', background: 'rgba(255,255,255,0.06)', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
+                                                        🤖 {iaResultado.aiModelUsed}
+                                                    </span>
+                                                </div>
+
+                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem', fontSize: '0.78rem', color: '#AAA', marginBottom: '1rem' }}>
+                                                    <div>
+                                                        <div style={{ color: '#888', fontSize: '0.7rem' }}>Costo Prov.</div>
+                                                        <div style={{ fontWeight: 800, color: '#FFF' }}>{iaResultado.costoProveedor?.toLocaleString()} pts</div>
+                                                    </div>
+                                                    <div>
+                                                        <div style={{ color: '#888', fontSize: '0.7rem' }}>Envío & Empaque</div>
+                                                        <div style={{ fontWeight: 800, color: '#FFF' }}>{iaResultado.costoEmpaqueEnvio?.toLocaleString()} pts</div>
+                                                    </div>
+                                                    <div>
+                                                        <div style={{ color: '#888', fontSize: '0.7rem' }}>Comisión Pasarela</div>
+                                                        <div style={{ fontWeight: 800, color: '#FFF' }}>{iaResultado.comisionPasarelaFija?.toLocaleString()} pts</div>
+                                                    </div>
+                                                </div>
+
+                                                <div style={{
+                                                    height: 1,
+                                                    background: 'rgba(255, 255, 255, 0.08)',
+                                                    marginBottom: '0.75rem'
+                                                }} />
+
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', marginBottom: '1.25rem' }}>
+                                                    <span style={{ fontWeight: 800, color: '#FFF' }}>Margen de Utilidad Neto Sugerido</span>
+                                                    <span style={{ fontWeight: 950, color: '#00C896', fontSize: '0.95rem' }}>
+                                                        {(((iaResultado.precioSugerido - iaResultado.costoProveedor - iaResultado.costoEmpaqueEnvio - iaResultado.comisionPasarelaFija) / iaResultado.precioSugerido) * 100).toFixed(1)}%
+                                                    </span>
+                                                </div>
+
+                                                {/* Palabras Clave y Descripción */}
+                                                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+                                                    {iaResultado.searchKeywords?.split(',').map((kw, idx) => (
+                                                        <span key={idx} style={{
+                                                            fontSize: '0.65rem',
+                                                            background: 'rgba(255,255,255,0.06)',
+                                                            color: '#CCC',
+                                                            padding: '0.2rem 0.5rem',
+                                                            borderRadius: '6px',
+                                                            textTransform: 'uppercase',
+                                                            fontWeight: 700
+                                                        }}>
+                                                            🏷️ {kw.trim()}
+                                                        </span>
+                                                    ))}
+                                                </div>
+
+                                                <div style={{
+                                                    maxHeight: '100px',
+                                                    overflowY: 'auto',
+                                                    padding: '0.75rem',
+                                                    background: 'rgba(0,0,0,0.2)',
+                                                    borderRadius: '12px',
+                                                    border: '1px solid rgba(255,255,255,0.04)',
+                                                    fontSize: '0.78rem',
+                                                    color: '#BBB',
+                                                    lineHeight: '1.4',
+                                                    whiteSpace: 'pre-line',
+                                                    marginBottom: '1.5rem',
+                                                    textAlign: 'left'
+                                                }}>
+                                                    {iaResultado.descripcion}
+                                                </div>
+
+                                                {/* Botones de acción */}
+                                                <div style={{ display: 'flex', gap: '1rem' }}>
+                                                    <motion.button
+                                                        whileHover={{ scale: 1.02 }}
+                                                        whileTap={{ scale: 0.98 }}
+                                                        onClick={() => setIaResultado(null)}
+                                                        className="btn btn-ghost"
+                                                        style={{ flex: 1, justifyContent: 'center' }}
+                                                        disabled={iaPublicando}
+                                                    >
+                                                        Descartar
+                                                    </motion.button>
+
+                                                    <motion.button
+                                                        whileHover={{ scale: 1.02 }}
+                                                        whileTap={{ scale: 0.98 }}
+                                                        onClick={handlePublicarProductoIa}
+                                                        className="btn btn-primary"
+                                                        style={{
+                                                            flex: 2,
+                                                            justifyContent: 'center',
+                                                            background: 'linear-gradient(135deg, #00c896, #009688)',
+                                                            color: '#FFF',
+                                                            fontWeight: 900
+                                                        }}
+                                                        disabled={iaPublicando}
+                                                    >
+                                                        {iaPublicando ? 'Publicando...' : 'Publicar en la Tienda 🚀'}
+                                                    </motion.button>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {/* ═══ TAB: PRODUCTOS ══════════════════════════════════════════════════ */}
+                        {viewMode === 'operaciones' && tab === 'productos' && (
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                                <div className="table-wrap">
+                                    <table>
+                                        <thead><tr>
+                                            <th>Imagen</th><th>Producto</th><th>Categoría</th>
+                                            <th>Precio</th><th>Stock</th><th>Viral</th><th>Acciones</th>
+                                        </tr></thead>
+                                        <tbody>
+                                            {productosView.length === 0 ? (
+                                                <tr><td colSpan={7} style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-muted)' }}>
+                                                    Sin resultados. Ajusta filtros o crea un producto.
+                                                </td></tr>
+                                            ) : productosView.map(p => (
+                                                <tr key={p.id}>
+                                                    <td>
+                                                        <div style={{ width: 44, height: 44, borderRadius: 8, overflow: 'hidden', background: 'var(--color-surface-2)' }}>
+                                                            {p.imagenUrl
+                                                                ? <img src={p.imagenUrl} alt={p.nombre} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                                : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}><Package size={18} color="var(--color-text-faint)" /></div>
+                                                            }
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div style={{ fontWeight: 600 }}>{p.nombre}</div>
+                                                        {p.descripcion && <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.descripcion}</div>}
+                                                    </td>
+                                                    <td style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>{p.categoriaNombre || '—'}</td>
+                                                    <td style={{ fontWeight: 700, color: 'var(--color-primary)' }}>{formatCOP(p.precio)}</td>
+                                                    <td>
+                                                        <span style={{ color: p.stock <= 5 ? '#ef4444' : p.stock <= 15 ? 'var(--color-accent-dark)' : 'var(--color-success)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                                                            {p.stock <= 5 && <AlertTriangle size={13} />}{p.stock}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        {p.esViral
+                                                            ? <span className="badge badge-viral" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}><Zap size={11} />Viral</span>
+                                                            : <span style={{ color: 'var(--color-text-faint)', fontSize: '0.82rem' }}>—</span>
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                                                                onClick={() => setModalProd(p)}
+                                                                style={{ background: 'rgba(255,87,34,0.12)', border: '1px solid rgba(255,87,34,0.2)', borderRadius: '8px', padding: '0.35rem 0.6rem', cursor: 'pointer', color: 'var(--color-primary)' }}
+                                                                title="Editar">
+                                                                <Pencil size={14} />
+                                                            </motion.button>
+                                                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                                                                onClick={() => handleEliminarProducto(p.id)}
+                                                                style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '8px', padding: '0.35rem 0.6rem', cursor: 'pointer', color: '#ef4444' }}
+                                                                title="Eliminar">
+                                                                <Trash2 size={14} />
+                                                            </motion.button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {/* ═══ TAB: CATEGORÍAS ══════════════════════════════════════════════════ */}
+                        {viewMode === 'operaciones' && tab === 'categorias' && (
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                                {categoriasView.length === 0 ? (
+                                    <div className="empty-state">
+                                        <Tag size={48} style={{ opacity: 0.3 }} />
+                                        <p>Sin resultados</p>
+                                    </div>
+                                ) : (
+                                    <div className="table-wrap">
+                                        <table>
+                                            <thead><tr>
+                                                <th>#</th><th>Nombre</th><th>Descripción</th><th>Acciones</th>
+                                            </tr></thead>
+                                            <tbody>
+                                                {categoriasView.map((cat, i) => (
+                                                    <tr key={cat.id}>
+                                                        <td style={{ color: 'var(--color-text-muted)', fontWeight: 600 }}>#{cat.id}</td>
+                                                        <td>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                                <Tag size={14} color="var(--color-primary)" />
+                                                                <span style={{ fontWeight: 700 }}>{cat.nombre}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td style={{ color: 'var(--color-text-muted)', fontSize: '0.88rem', maxWidth: 280 }}>
+                                                            {cat.descripcion || <span style={{ opacity: 0.4 }}>Sin descripción</span>}
+                                                        </td>
+                                                        <td>
+                                                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                                                <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                                                                    onClick={() => abrirCatModal(cat)}
+                                                                    style={{ background: 'rgba(255,87,34,0.12)', border: '1px solid rgba(255,87,34,0.2)', borderRadius: '8px', padding: '0.35rem 0.6rem', cursor: 'pointer', color: 'var(--color-primary)' }}
+                                                                    title="Editar">
+                                                                    <Pencil size={14} />
+                                                                </motion.button>
+                                                                <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                                                                    onClick={() => handleEliminarCat(cat.id)}
+                                                                    style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '8px', padding: '0.35rem 0.6rem', cursor: 'pointer', color: '#ef4444' }}
+                                                                    title="Eliminar">
+                                                                    <Trash2 size={14} />
+                                                                </motion.button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+                            </motion.div>
+                        )}
+
+                        {/* ═══ TAB: PEDIDOS ════════════════════════════════════════════════════ */}
+                        {viewMode === 'operaciones' && tab === 'pedidos' && (
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                                <div className="table-wrap">
+                                    <table>
+                                        <thead><tr><th>#</th><th>Cliente</th><th>Total</th><th>Estado</th><th>Dirección</th><th>Guía</th><th>Cambiar estado</th></tr></thead>
+                                        <tbody>
+                                            {pedidosView.length === 0 ? (
+                                                <tr><td colSpan={7} style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-muted)' }}>No hay pedidos aún</td></tr>
+                                            ) : pedidosView.map(p => (
+                                                <tr key={p.id}>
+                                                    <td style={{ color: 'var(--color-text-muted)', fontWeight: 600 }}>#{p.id}</td>
+                                                    <td>
+                                                        <div style={{ fontWeight: 600 }}>{p.clienteNombre}</div>
+                                                        <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>{p.clienteEmail}</div>
+                                                    </td>
+                                                    <td style={{ fontWeight: 700, color: 'var(--color-primary)' }}>{formatCOP(p.total)}</td>
+                                                    <td><span className={`badge ${estadoColor[p.estado] || ''}`}>{p.estado}</span></td>
+                                                    <td style={{ fontSize: '0.82rem', maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.direccionEnvio}</td>
+                                                    <td style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>{p.guiaRastreo || '—'}</td>
+                                                    <td>
+                                                        <select value={p.estado}
+                                                            onChange={e => {
+                                                                const guia = e.target.value === 'ENVIADO' ? prompt('Guía de rastreo (opcional):') : null
+                                                                cambiarEstado(p.id, e.target.value, guia)
+                                                            }}
+                                                            style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: '8px', color: 'var(--color-text)', padding: '0.3rem 0.6rem', fontSize: '0.82rem', cursor: 'pointer' }}>
+                                                            {ESTADOS.map(s => <option key={s} value={s}>{s}</option>)}
+                                                        </select>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {/* ═══ TAB: FACTURAS ════════════════════════════════════════════════════ */}
+                        {viewMode === 'operaciones' && tab === 'facturas' && (
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                                <div className="table-wrap">
+                                    <table>
+                                        <thead><tr><th>#</th><th>Factura</th><th>Pedido</th><th>NIT</th><th>Razón Social</th><th>Total</th><th>Estado</th><th>Actualizar</th></tr></thead>
+                                        <tbody>
+                                            {facturasView.length === 0 ? (
+                                                <tr><td colSpan={8} style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-muted)' }}>No hay facturas aún</td></tr>
+                                            ) : facturasView.map(f => (
+                                                <tr key={f.id}>
+                                                    <td style={{ color: 'var(--color-text-muted)', fontWeight: 600 }}>#{f.id}</td>
+                                                    <td style={{ fontWeight: 700 }}>{f.numeroFactura}</td>
+                                                    <td>#{f.pedidoId}</td>
+                                                    <td>{f.nit || '—'}</td>
+                                                    <td style={{ maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.razonSocial || '—'}</td>
+                                                    <td style={{ fontWeight: 700, color: 'var(--color-primary)' }}>{formatCOP(f.total)}</td>
+                                                    <td><span className={`badge ${f.estado === 'ENVIADA' ? 'badge-entregado' : 'badge-pendiente'}`}>{f.estado}</span></td>
+                                                    <td>
+                                                        <button
+                                                            className="btn btn-ghost"
+                                                            style={{ padding: '0.35rem 0.7rem', fontSize: '0.8rem' }}
+                                                            onClick={async () => {
+                                                                const nit = window.prompt('NIT/Documento:', f.nit || '')
+                                                                if (nit === null) return
+                                                                const razon = window.prompt('Razón social:', f.razonSocial || '')
+                                                                if (razon === null) return
+                                                                try {
+                                                                    await adminActualizarDatosFactura(f.id, { nit, razonSocial: razon })
+                                                                    toast.success('Datos fiscales actualizados')
+                                                                    cargarDatos()
+                                                                } catch (err) {
+                                                                    toast.error(err.response?.data?.message || 'Error al actualizar factura')
+                                                                }
+                                                            }}
+                                                        >
+                                                            Editar
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {/* ═══ TAB: DEVOLUCIONES ═══════════════════════════════════════════════ */}
+                        {viewMode === 'operaciones' && tab === 'devoluciones' && (
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                                {statsDevoluciones && (
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+                                        <div className="card" style={{ padding: '1.5rem', borderLeft: '4px solid #4facfe' }}>
+                                            <div style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase' }}>Total</div>
+                                            <div style={{ fontSize: '2rem', fontWeight: 800 }}>{statsDevoluciones.total}</div>
+                                        </div>
+                                        <div className="card" style={{ padding: '1.5rem', borderLeft: '4px solid #ff9800' }}>
+                                            <div style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase' }}>Pendientes</div>
+                                            <div style={{ fontSize: '2rem', fontWeight: 800, color: '#ff9800' }}>{statsDevoluciones.pendientes}</div>
+                                        </div>
+                                        <div className="card" style={{ padding: '1.5rem', borderLeft: '4px solid #00C896' }}>
+                                            <div style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase' }}>Aprobadas</div>
+                                            <div style={{ fontSize: '2rem', fontWeight: 800, color: '#00C896' }}>{statsDevoluciones.aprobadas}</div>
+                                        </div>
+                                        <div className="card" style={{ padding: '1.5rem', borderLeft: '4px solid #ec4899' }}>
+                                            <div style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase' }}>Motivo Frecuente</div>
+                                            <div style={{ fontSize: '1.2rem', fontWeight: 800, marginTop: '0.5rem', color: '#ec4899', textTransform: 'capitalize' }}>
+                                                {Object.entries(statsDevoluciones.motivos || {}).sort((a, b) => b[1] - a[1])[0]
+                                                    ? Object.entries(statsDevoluciones.motivos).sort((a, b) => b[1] - a[1])[0][0].replace('_', ' ')
+                                                    : 'N/A'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="table-wrap">
+                                    <table>
+                                        <thead><tr><th>#</th><th>Pedido</th><th>Cliente</th><th>Motivo</th><th>Fecha</th><th>Estado</th><th>Acción</th></tr></thead>
+                                        <tbody>
+                                            {devolucionesView.length === 0 ? (
+                                                <tr><td colSpan={7} style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-muted)' }}>No hay solicitudes de devolución</td></tr>
+                                            ) : devolucionesView.map(d => (
+                                                <tr key={d.id}>
+                                                    <td style={{ color: 'var(--color-text-muted)', fontWeight: 600 }}>#{d.id}</td>
+                                                    <td style={{ fontWeight: 700 }}>{d.orderNumber}</td>
+                                                    <td>{d.email}</td>
+                                                    <td style={{ maxWidth: 200 }}>
+                                                        <div style={{ marginBottom: d.evidenciaUrl ? '0.5rem' : '0' }}>
+                                                            {d.reason === 'defecto' && 'Llegó defectuoso/roto'}
+                                                            {d.reason === 'equivocado' && 'Producto diferente'}
+                                                            {d.reason === 'no_gusta' && 'No cumplió expectativas'}
+                                                            {d.reason === 'otro' && 'Otro motivo'}
+                                                            {!['defecto', 'equivocado', 'no_gusta', 'otro'].includes(d.reason) && d.reason}
+                                                        </div>
+                                                        {d.evidenciaUrl && (
+                                                            <a href={`http://localhost:8080${d.evidenciaUrl}`} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.75rem', color: 'var(--color-primary)', textDecoration: 'none', background: 'rgba(255, 152, 0, 0.1)', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
+                                                                <Image size={12} /> Ver Evidencia
+                                                            </a>
+                                                        )}
+                                                    </td>
+                                                    <td style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
+                                                        {new Date(d.fechaSolicitud).toLocaleDateString('es-CO')}
+                                                    </td>
+                                                    <td>
+                                                        <span style={{
+                                                            padding: '0.25rem 0.6rem',
+                                                            borderRadius: '99px',
+                                                            fontSize: '0.75rem',
+                                                            fontWeight: 700,
+                                                            background: d.estado === 'PENDIENTE' ? 'rgba(255, 152, 0, 0.15)' :
+                                                                d.estado === 'APROBADA' ? 'rgba(0, 200, 150, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                                                            color: d.estado === 'PENDIENTE' ? '#ff9800' :
+                                                                d.estado === 'APROBADA' ? '#00C896' : '#ef4444'
+                                                        }}>
+                                                            {d.estado}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                                                            <select value={d.estado}
+                                                                onChange={e => cambiarEstadoDevolucion(d.id, e.target.value)}
+                                                                style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: '8px', color: 'var(--color-text)', padding: '0.3rem 0.6rem', fontSize: '0.82rem', cursor: 'pointer' }}>
+                                                                <option value="PENDIENTE">PENDIENTE</option>
+                                                                <option value="APROBADA">APROBADA</option>
+                                                                <option value="RECHAZADA">RECHAZADA</option>
+                                                                <option value="COMPLETADA">COMPLETADA</option>
+                                                            </select>
+                                                            {d.estado === 'APROBADA' && (
+                                                                <button
+                                                                    onClick={() => handleReembolsoDevolucion(d.id)}
+                                                                    style={{
+                                                                        padding: '0.3rem 0.5rem',
+                                                                        background: 'linear-gradient(135deg, #7c3aed, #ec4899)',
+                                                                        color: 'white', border: 'none', borderRadius: '4px',
+                                                                        fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer'
+                                                                    }}>
+                                                                    💰 Reembolsar
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {/* ═══ TAB: USUARIOS ═══════════════════════════════════════════════════ */}
+                        {viewMode === 'operaciones' && tab === 'usuarios' && (
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                                <div className="table-wrap">
+                                    <table>
+                                        <thead><tr><th>Nombre</th><th>Email</th><th>Ciudad</th><th>Teléfono</th><th>Rol</th><th>Saldo a Favor</th><th>Acciones</th></tr></thead>
+                                        <tbody>
+                                            {usuariosView.map(u => (
+                                                <tr key={u.id}>
+                                                    <td style={{ fontWeight: 600 }}>{u.nombreCompleto}</td>
+                                                    <td style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>{u.email}</td>
+                                                    <td style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>{u.ciudad || '—'}</td>
+                                                    <td style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>{u.telefono || '—'}</td>
+                                                    <td><span className={`badge ${u.rol === 'ADMIN' ? 'badge-admin' : 'badge-cliente'}`}>{u.rol}</span></td>
+                                                    <td style={{ fontWeight: 800, color: u.saldoFavor > 0 ? '#4facfe' : 'var(--color-text-muted)' }}>
+                                                        {(u.saldoFavor || 0).toLocaleString('es-CO')} pts
+                                                    </td>
+                                                    <td>
+                                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                                            {u.rol !== 'ADMIN' && (
+                                                                <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                                                                    onClick={() => handlePromover(u.id)}
+                                                                    className="btn btn-ghost" style={{ fontSize: '0.78rem', padding: '0.3rem 0.7rem', color: 'var(--color-primary)', borderColor: 'rgba(255,87,34,0.3)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                                                                    <TrendingUp size={13} /> Hacer ADMIN
+                                                                </motion.button>
+                                                            )}
+                                                            {u.rol === 'ADMIN' && (
+                                                                <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                                                                    onClick={() => handleAsignarCliente(u.id)}
+                                                                    className="btn btn-ghost" style={{ fontSize: '0.78rem', padding: '0.3rem 0.7rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                                                                    <TrendingDown size={13} /> A cliente
+                                                                </motion.button>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {/* ═══ TAB: RULETA ════════════════════════════════════════════════════ */}
+                        {viewMode === 'operaciones' && tab === 'ruleta' && (
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                                {/* 🎁 Configuración del Regalo Mayor */}
+                                <div className="card" style={{ padding: '2rem', background: 'linear-gradient(135deg, rgba(255,87,34,0.05) 0%, rgba(255,255,255,0.02) 100%)', border: '1px solid rgba(255,87,34,0.15)', borderRadius: '16px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+                                        <div style={{ background: 'rgba(255,87,34,0.15)', padding: '0.5rem', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <Gift size={24} color="var(--color-primary)" />
+                                        </div>
+                                        <div>
+                                            <h3 style={{ fontWeight: 800, fontSize: '1.2rem', margin: 0 }}>Configuración de Premio Mayor</h3>
+                                            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', margin: 0 }}>Personaliza el producto físico sorpresa que los usuarios pueden ganar con el segmento "¡Regalo! 🎁".</p>
+                                        </div>
+                                    </div>
+
+                                    <form onSubmit={async (e) => {
+                                        e.preventDefault();
+                                        if (!productoRegalo.trim()) {
+                                            toast.error('El nombre del regalo no puede estar vacío');
+                                            return;
+                                        }
+                                        setSavingConfig(true);
+                                        try {
+                                            const { data } = await saveAdminRuletaConfig({ productoRegalo: productoRegalo.trim() });
+                                            setProductoRegalo(data.productoRegalo);
+                                            toast.success('¡Premio mayor actualizado con éxito! 🎉');
+                                        } catch (err) {
+                                            toast.error(err.response?.data?.mensaje || 'Error al guardar la configuración');
+                                        } finally {
+                                            setSavingConfig(false);
+                                        }
+                                    }} style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-end', marginTop: '1.5rem' }}>
+                                        <div className="form-group" style={{ flex: 1, minWidth: '280px', marginBottom: 0 }}>
+                                            <label style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem' }}>Nombre / Descripción del Producto de Regalo</label>
+                                            <input
+                                                className="input"
+                                                type="text"
+                                                value={productoRegalo}
+                                                onChange={(e) => setProductoRegalo(e.target.value)}
+                                                placeholder="Ej: Parlante Bluetooth JBL Go 3, Smartwatch Xiaomi, etc."
+                                                required
+                                                style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: '10px' }}
+                                            />
+                                        </div>
+                                        <motion.button
+                                            whileHover={{ scale: 1.02 }}
+                                            whileTap={{ scale: 0.98 }}
+                                            type="submit"
+                                            className="btn btn-primary"
+                                            style={{ padding: '0.85rem 1.8rem', fontWeight: 800, height: '44px', display: 'flex', alignItems: 'center', gap: '0.5rem', borderRadius: '10px' }}
+                                            disabled={savingConfig}
+                                        >
+                                            {savingConfig ? '⏳ Guardando...' : 'Guardar Configuración'}
+                                        </motion.button>
+                                    </form>
+                                </div>
+
+                                {/* 📊 Historial de giros */}
+                                <div className="card" style={{ padding: '2rem' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                                        <div>
+                                            <h3 style={{ fontWeight: 800, fontSize: '1.2rem', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <RotateCw size={18} color="var(--color-primary)" /> Historial Completo de Giros
+                                            </h3>
+                                            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', margin: 0 }}>Verifica quién giró, qué premio obtuvo, y comunícate con ellos.</p>
+                                        </div>
+                                        <button
+                                            onClick={async () => {
+                                                setLoading(true);
+                                                try {
+                                                    const { data } = await getAdminGirosRuleta();
+                                                    setGirosRuleta(data || []);
+                                                    toast.success('Historial actualizado 🔄');
+                                                } catch {
+                                                    toast.error('Error al actualizar historial');
+                                                } finally {
+                                                    setLoading(false);
+                                                }
+                                            }}
+                                            className="btn btn-ghost"
+                                            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}
+                                        >
+                                            <RefreshCw size={14} /> Actualizar
+                                        </button>
+                                    </div>
+
+                                    <div className="table-wrap">
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th>Usuario / Ganador</th>
+                                                    <th>Contacto y Canje</th>
+                                                    <th>Tipo de Giro</th>
+                                                    <th>Premio Obtenido</th>
+                                                    <th>Código de Cupón</th>
+                                                    <th>Fecha / Hora</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {girosView.map(g => {
+                                                    const u = g.usuario || {};
+                                                    // Crear enlace a WhatsApp si hay teléfono
+                                                    const telLimpio = u.telefono ? u.telefono.replace(/\D/g, '') : '';
+                                                    const waLink = telLimpio ? `https://wa.me/${telLimpio.startsWith('57') ? telLimpio : '57' + telLimpio}?text=¡Hola%20${encodeURIComponent(u.nombreCompleto || '')}!%20Te%20contactamos%20de%20Tribu%20por%20tu%20premio%20en%20la%20ruleta%20🎁` : null;
+
+                                                    return (
+                                                        <tr key={g.id} style={{
+                                                            background: g.tipoPremio === 'PRODUCTO' ? 'rgba(255, 87, 34, 0.04)' : 'transparent',
+                                                            borderLeft: g.tipoPremio === 'PRODUCTO' ? '4px solid var(--color-primary)' : 'none'
+                                                        }}>
+                                                            <td>
+                                                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                                    <span style={{ fontWeight: 700, fontSize: '0.92rem' }}>{u.nombreCompleto || 'Invitado'}</span>
+                                                                    <span style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>{u.email || '—'}</span>
+                                                                    {u.ciudad && <span style={{ color: 'var(--color-primary)', fontSize: '0.75rem', fontWeight: 600, marginTop: '2px' }}>📍 {u.ciudad}</span>}
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                                                                    {u.telefono ? (
+                                                                        <>
+                                                                            <a
+                                                                                href={`tel:${u.telefono}`}
+                                                                                title="Llamar por teléfono"
+                                                                                style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '0.35rem', color: 'var(--color-text)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
+                                                                                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,87,34,0.1)'}
+                                                                                onMouseLeave={e => e.currentTarget.style.background = 'var(--color-surface-2)'}
+                                                                            >
+                                                                                <Phone size={13} />
+                                                                            </a>
+                                                                            {waLink && (
+                                                                                <a
+                                                                                    href={waLink}
+                                                                                    target="_blank"
+                                                                                    rel="noopener noreferrer"
+                                                                                    title="Enviar WhatsApp"
+                                                                                    style={{ background: '#25D366', borderRadius: '8px', padding: '0.35rem 0.5rem', color: 'white', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.75rem', fontWeight: 800, textDecoration: 'none', transition: 'transform 0.2s' }}
+                                                                                    onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                                                                                    onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                                                                                >
+                                                                                    💬 WhatsApp
+                                                                                </a>
+                                                                            )}
+                                                                        </>
+                                                                    ) : (
+                                                                        <span style={{ color: 'var(--color-text-faint)', fontSize: '0.8rem' }}>Sin teléfono</span>
+                                                                    )}
+                                                                    {u.email && (
+                                                                        <a
+                                                                            href={`mailto:${u.email}?subject=Premio%20Ganado%20en%20la%20Ruleta%20Tribu&body=Hola%20${encodeURIComponent(u.nombreCompleto || '')},%20felicitaciones%20por%20tu%20premio...`}
+                                                                            title="Enviar correo"
+                                                                            style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '0.35rem', color: 'var(--color-text)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                                                                        >
+                                                                            <Mail size={13} />
+                                                                        </a>
+                                                                    )}
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <span style={{
+                                                                    fontSize: '0.75rem',
+                                                                    fontWeight: 700,
+                                                                    padding: '0.25rem 0.6rem',
+                                                                    borderRadius: '99px',
+                                                                    background: g.tipoGiro === 'PUNTOS' ? 'rgba(79, 172, 254, 0.15)' : 'rgba(255, 255, 255, 0.06)',
+                                                                    color: g.tipoGiro === 'PUNTOS' ? '#4facfe' : 'var(--color-text-muted)',
+                                                                    border: g.tipoGiro === 'PUNTOS' ? '1px solid rgba(79, 172, 254, 0.3)' : '1px solid rgba(255,255,255,0.05)'
+                                                                }}>
+                                                                    {g.tipoGiro}
+                                                                </span>
+                                                            </td>
+                                                            <td>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                                                    <span style={{
+                                                                        fontWeight: 800,
+                                                                        fontSize: '0.88rem',
+                                                                        color: g.tipoPremio === 'PRODUCTO' ? '#ff9800' :
+                                                                            g.tipoPremio === 'DESCUENTO' || g.tipoPremio === 'ENVIO_GRATIS' ? '#00C896' : 'var(--color-text)'
+                                                                    }}>
+                                                                        {g.labelPremio}
+                                                                    </span>
+                                                                    {g.tipoPremio === 'PRODUCTO' && (
+                                                                        <span style={{ animation: 'pulse 2s infinite', fontSize: '0.65rem', background: '#ff9800', color: 'white', padding: '1px 5px', borderRadius: '4px', fontWeight: 900 }}>RECLAMABLE</span>
+                                                                    )}
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                {g.codigoPremio ? (
+                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                                                        <code style={{ background: 'var(--color-surface-2)', padding: '0.2rem 0.5rem', borderRadius: '6px', fontSize: '0.82rem', fontFamily: 'monospace', color: 'var(--color-accent)', border: '1px solid var(--color-border)' }}>{g.codigoPremio}</code>
+                                                                        <button
+                                                                            onClick={() => {
+                                                                                navigator.clipboard.writeText(g.codigoPremio);
+                                                                                toast.success('Cupón copiado 📋');
+                                                                            }}
+                                                                            className="btn btn-ghost"
+                                                                            style={{ padding: '0.2rem', minWidth: 'auto', border: 'none', background: 'none' }}
+                                                                            title="Copiar cupón"
+                                                                        >
+                                                                            📋
+                                                                        </button>
+                                                                    </div>
+                                                                ) : (
+                                                                    <span style={{ color: 'var(--color-text-faint)', fontSize: '0.8rem' }}>—</span>
+                                                                )}
+                                                            </td>
+                                                            <td style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
+                                                                {new Date(g.fecha).toLocaleString('es-CO')}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                                {girosView.length === 0 && (
+                                                    <tr>
+                                                        <td colSpan="6" style={{ textAlign: 'center', padding: '3rem', color: 'var(--color-text-muted)' }}>
+                                                            <RotateCw size={36} style={{ marginBottom: '0.5rem', color: 'var(--color-text-faint)' }} />
+                                                            <p style={{ margin: 0 }}>No hay giros registrados con los filtros de búsqueda.</p>
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {/* ═══ TAB: CRM ════════════════════════════════════════════════════════ */}
+                        {viewMode === 'operaciones' && tab === 'crm' && (
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                    {notasView.map((n, i) => (
+                                        <motion.div key={n.id} className="card"
+                                            initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                                                <div>
+                                                    <span style={{ fontWeight: 700, color: 'var(--color-primary)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                                                        <User size={14} /> {n.clienteNombre}
+                                                    </span>
+                                                    <span style={{ color: 'var(--color-text-muted)', fontSize: '0.82rem' }}> ({n.clienteEmail})</span>
+                                                </div>
+                                                <div style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                                    <Pencil size={12} /> {n.adminNombre} · {new Date(n.fechaCreacion).toLocaleDateString('es-CO')}
+                                                </div>
+                                            </div>
+                                            <p style={{ lineHeight: 1.6 }}>{n.contenido}</p>
+                                        </motion.div>
+                                    ))}
+                                    {notasView.length === 0 && <div className="empty-state"><FileText size={48} /><p>No hay notas con esos filtros</p></div>}
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {/* ═══ TAB: TRANSFERENCIAS P2P ═══════════════════════════════════════ */}
+                        {viewMode === 'operaciones' && tab === 'transferencias' && (
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                                {!transferencias.totalElements && (transferencias.items || []).length === 0 && !transferenciasLoading ? (
+                                    <div className="empty-state">
+                                        <ArrowRightLeft size={48} />
+                                        <p style={{ maxWidth: 520, margin: '0 auto' }}>
+                                            Aqui puedes monitorear todas las transferencias P2P entre usuarios (emisor, receptor, referencia, estado).
+                                        </p>
+                                        <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+                                            onClick={() => cargarTransferencias({ page: 0 })}
+                                            className="btn btn-primary" style={{ marginTop: '1rem' }}>
+                                            <ArrowRightLeft size={16} /> Cargar transferencias
+                                        </motion.button>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div className="table-wrap">
+                                            <table>
+                                                <thead>
+                                                    <tr>
+                                                        <th>Fecha</th>
+                                                        <th>Emisor</th>
+                                                        <th>Receptor</th>
+                                                        <th>Estado</th>
+                                                        <th>Monto</th>
+                                                        <th>Referencia</th>
+                                                        <th>Mensaje</th>
+                                                        <th>Movs</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {transferenciasLoading ? (
+                                                        <tr><td colSpan={8} style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>Cargando...</td></tr>
+                                                    ) : transferenciasView.length === 0 ? (
+                                                        <tr><td colSpan={8} style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>Sin transferencias con esos filtros</td></tr>
+                                                    ) : transferenciasView.map(t => {
+                                                        const montoColor = '#3b82f6'
+                                                        return (
+                                                            <tr key={t.id}>
+                                                                <td style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
+                                                                    {t.fechaCreacion ? new Date(t.fechaCreacion).toLocaleString('es-CO') : '—'}
+                                                                </td>
+                                                                <td>
+                                                                    <div style={{ fontWeight: 700 }}>{t.emisorNombre || '—'}</div>
+                                                                    <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>{t.emisorEmail || '—'}</div>
+                                                                </td>
+                                                                <td>
+                                                                    <div style={{ fontWeight: 700 }}>{t.receptorNombre || '—'}</div>
+                                                                    <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>{t.receptorEmail || '—'}</div>
+                                                                </td>
+                                                                <td>
+                                                                    <span className="badge" style={{
+                                                                        background: t.estado === 'COMPLETADA' ? 'rgba(0,200,150,0.12)'
+                                                                            : t.estado === 'PENDIENTE' ? 'rgba(59,130,246,0.12)'
+                                                                                : 'rgba(239,68,68,0.12)',
+                                                                        color: t.estado === 'COMPLETADA' ? '#00C896'
+                                                                            : t.estado === 'PENDIENTE' ? '#3b82f6'
+                                                                                : '#ef4444',
+                                                                        border: '1px solid rgba(255,255,255,0.06)'
+                                                                    }}>
+                                                                        {t.estado}
+                                                                    </span>
+                                                                </td>
+                                                                <td style={{ fontWeight: 900, color: montoColor, whiteSpace: 'nowrap' }}>
+                                                                    {formatCOP(Number(t.monto || 0))}
+                                                                </td>
+                                                                <td style={{ fontFamily: 'monospace', fontSize: '0.82rem' }}>{t.referenciaUnica || '—'}</td>
+                                                                <td style={{ maxWidth: 360 }}>
+                                                                    <div style={{ fontSize: '0.85rem' }}>{t.mensaje || '—'}</div>
+                                                                </td>
+                                                                <td style={{ fontFamily: 'monospace', color: 'var(--color-text-muted)' }}>
+                                                                    {t.movimientoEmisorId ? `E#${t.movimientoEmisorId}` : 'E—'} · {t.movimientoReceptorId ? `R#${t.movimientoReceptorId}` : 'R—'}
+                                                                </td>
+                                                            </tr>
+                                                        )
+                                                    })}
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginTop: '1rem', flexWrap: 'wrap' }}>
+                                            <span style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>
+                                                {transferencias.totalElements ? `${transferencias.totalElements} transferencias` : '—'}
+                                            </span>
+                                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                                <button
+                                                    className="btn btn-ghost"
+                                                    disabled={transferenciasLoading || (transferencias.page || 0) <= 0}
+                                                    onClick={() => cargarTransferencias({ page: Math.max(0, (transferencias.page || 0) - 1) })}
+                                                >
+                                                    Anterior
+                                                </button>
+                                                <button
+                                                    className="btn btn-ghost"
+                                                    disabled={transferenciasLoading || ((transferencias.page || 0) + 1) >= (transferencias.totalPages || 0)}
+                                                    onClick={() => cargarTransferencias({ page: (transferencias.page || 0) + 1 })}
+                                                >
+                                                    Siguiente
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+                            </motion.div>
+                        )}
+
+                        {/* ═══ TAB: TRIBU CARD (LEDGER) ═══════════════════════════════════════ */}
+                        {viewMode === 'operaciones' && tab === 'tribuCard' && (
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                                {!tribuCardResumen && tribuCardMovs.items.length === 0 && !tribuCardLoading ? (
+                                    <div className="empty-state">
+                                        <WalletCards size={48} />
+                                        <p style={{ maxWidth: 520, margin: '0 auto' }}>
+                                            Aqui puedes vigilar en tiempo real el libro mayor (movimientos) de la Tribu Card de todos los usuarios.
+                                        </p>
+                                        <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+                                            onClick={() => cargarTribuCard({ page: 0 })}
+                                            className="btn btn-primary" style={{ marginTop: '1rem' }}>
+                                            <WalletCards size={16} /> Cargar movimientos
+                                        </motion.button>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem', marginBottom: '1rem' }}>
+                                            {[{
+                                                label: 'Movimientos (24h)',
+                                                value: tribuCardResumen?.movimientos24h ?? '—',
+                                                color: '#3b82f6'
+                                            }, {
+                                                label: 'Pendientes de liberar',
+                                                value: tribuCardResumen?.pendientesDeLiberar ?? '—',
+                                                color: '#f59e0b'
+                                            }, {
+                                                label: 'Cashback (CLEARED)',
+                                                value: formatCOP(tribuCardResumen?.clearedCashback ?? 0),
+                                                color: '#22c55e'
+                                            }, {
+                                                label: 'Compras (CLEARED)',
+                                                value: formatCOP(Math.abs(tribuCardResumen?.clearedCompra ?? 0)),
+                                                color: '#ef4444'
+                                            }].map(s => (
+                                                <div key={s.label} className="card" style={{ padding: '1rem', borderColor: `${s.color}33` }}>
+                                                    <p style={{ color: 'var(--color-text-muted)', fontSize: '0.76rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{s.label}</p>
+                                                    <p style={{ fontFamily: 'Sora, sans-serif', fontWeight: 900, fontSize: '1.4rem', color: s.color }}>{s.value}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <div className="table-wrap">
+                                            <table>
+                                                <thead>
+                                                    <tr>
+                                                        <th>Fecha</th>
+                                                        <th>Usuario</th>
+                                                        <th>Tipo</th>
+                                                        <th>Estado</th>
+                                                        <th>Monto</th>
+                                                        <th>Pedido</th>
+                                                        <th>Descripcion</th>
+                                                        <th>Unlock</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {tribuCardLoading ? (
+                                                        <tr><td colSpan={8} style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>Cargando...</td></tr>
+                                                    ) : (tribuCardMovs.items || []).length === 0 ? (
+                                                        <tr><td colSpan={8} style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>Sin movimientos con esos filtros</td></tr>
+                                                    ) : (tribuCardMovs.items || []).map(m => {
+                                                        const isNeg = Number(m.monto || 0) < 0
+                                                        const montoColor = isNeg ? '#ef4444' : '#22c55e'
+                                                        const ms = m?.fecha ? new Date(m.fecha).getTime() : 0
+                                                        const isNew = tribuCardHighlightAfterMs > 0 && Number.isFinite(ms) && ms > tribuCardHighlightAfterMs
+                                                        return (
+                                                            <tr key={m.id} style={isNew ? { background: 'rgba(34,197,94,0.06)' } : undefined}>
+                                                                <td style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
+                                                                    {m.fecha ? new Date(m.fecha).toLocaleString('es-CO') : '—'}
+                                                                </td>
+                                                                <td>
+                                                                    <div style={{ fontWeight: 700 }}>{m.usuarioNombre || '—'}</div>
+                                                                    <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>{m.usuarioEmail || '—'}</div>
+                                                                </td>
+                                                                <td style={{ fontFamily: 'monospace', fontSize: '0.82rem' }}>{m.tipo}</td>
+                                                                <td>
+                                                                    <span className="badge" style={{
+                                                                        background: m.estado === 'CLEARED' ? 'rgba(0,200,150,0.12)'
+                                                                            : m.estado === 'ON_HOLD' ? 'rgba(254,231,21,0.12)'
+                                                                                : m.estado === 'PENDING' ? 'rgba(59,130,246,0.12)'
+                                                                                    : 'rgba(239,68,68,0.12)',
+                                                                        color: m.estado === 'CLEARED' ? '#00C896'
+                                                                            : m.estado === 'ON_HOLD' ? '#F5D800'
+                                                                                : m.estado === 'PENDING' ? '#3b82f6'
+                                                                                    : '#ef4444',
+                                                                        border: '1px solid rgba(255,255,255,0.06)'
+                                                                    }}>
+                                                                        {m.estado}
+                                                                    </span>
+                                                                </td>
+                                                                <td style={{ fontWeight: 900, color: montoColor, whiteSpace: 'nowrap' }}>
+                                                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                                                                        {isNeg ? <ArrowDownRight size={14} /> : <ArrowUpRight size={14} />}
+                                                                        {formatCOP(Math.abs(Number(m.monto || 0)))}
+                                                                    </span>
+                                                                </td>
+                                                                <td style={{ fontFamily: 'monospace', color: 'var(--color-text-muted)' }}>
+                                                                    {m.pedidoId ? `#${m.pedidoId}` : '—'}
+                                                                </td>
+                                                                <td style={{ maxWidth: 360 }}>
+                                                                    <div style={{ fontSize: '0.85rem' }}>{m.descripcion || '—'}</div>
+                                                                    <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>Mov #{m.id} · U#{m.usuarioId} · {m.usuarioCiudad || '—'}</div>
+                                                                </td>
+                                                                <td style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
+                                                                    {m.unlockDate ? new Date(m.unlockDate).toLocaleString('es-CO') : '—'}
+                                                                </td>
+                                                            </tr>
+                                                        )
+                                                    })}
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginTop: '1rem', flexWrap: 'wrap' }}>
+                                            <span style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>
+                                                {tribuCardMovs.totalElements ? `${tribuCardMovs.totalElements} movimientos` : '—'}
+                                            </span>
+                                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                                <button
+                                                    className="btn btn-ghost"
+                                                    disabled={tribuCardLoading || tribuCardMovs.page <= 0}
+                                                    onClick={() => cargarTribuCard({ page: Math.max(0, (tribuCardMovs.page || 0) - 1) })}
+                                                >
+                                                    Anterior
+                                                </button>
+                                                <button
+                                                    className="btn btn-ghost"
+                                                    disabled={tribuCardLoading || (tribuCardMovs.page + 1) >= (tribuCardMovs.totalPages || 0)}
+                                                    onClick={() => cargarTribuCard({ page: (tribuCardMovs.page || 0) + 1 })}
+                                                >
+                                                    Siguiente
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+                            </motion.div>
+                        )}
+
+                        {/* ═══ TAB: STOCK CRÍTICO ══════════════════════════════════════════════ */}
+                        {viewMode === 'operaciones' && tab === 'stock' && (
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                                {stockBajoView.length === 0 ? (
+                                    <div className="empty-state"><Check size={48} style={{ color: 'var(--color-success)' }} /><p>¡Todo el stock está OK!</p></div>
+                                ) : (
+                                    <div className="table-wrap">
+                                        <table>
+                                            <thead><tr><th>Producto</th><th>Categoría</th><th>Stock</th><th>Precio</th><th>Acción</th></tr></thead>
+                                            <tbody>
+                                                {stockBajoView.map(p => (
+                                                    <tr key={p.id}>
+                                                        <td style={{ fontWeight: 600 }}>{p.nombre}</td>
+                                                        <td style={{ color: 'var(--color-text-muted)' }}>{p.categoriaNombre}</td>
+                                                        <td><span style={{ color: '#ef4444', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}><AlertTriangle size={13} />{p.stock}</span></td>
+                                                        <td style={{ color: 'var(--color-primary)', fontWeight: 700 }}>{formatCOP(p.precio)}</td>
+                                                        <td>
+                                                            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                                                                onClick={() => setModalProd(p)}
+                                                                className="btn btn-ghost" style={{ fontSize: '0.8rem', padding: '0.3rem 0.8rem' }}>
+                                                                <Pencil size={13} /> Editar stock
+                                                            </motion.button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+                            </motion.div>
+                        )}
+
+                        {/* ═══ TAB: SEGURIDAD ══════════════════════════════════════════════ */}
+                        {viewMode === 'operaciones' && tab === 'seguridad' && (
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                                <h2 style={{ fontWeight: 700, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <ShieldAlert size={24} color="#ef4444" />
+                                    Centro de Monitoreo & Ciberseguridad
+                                </h2>
+                                {accesos.length === 0 ? (
+                                    <div className="empty-state">
+                                        <ShieldAlert size={48} style={{ color: '#ef4444', opacity: 0.5 }} />
+                                        <p>No hay registros de acceso todavía.</p>
+                                    </div>
+                                ) : (
+                                    <div className="table-wrap">
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th>Fecha / Hora</th>
+                                                    <th>Usuario (Email)</th>
+                                                    <th>Dirección IP</th>
+                                                    <th>Estado</th>
+                                                    <th>Detalle / Error</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {accesos.map((a, i) => (
+                                                    <tr key={a.id || i} style={{ background: !a.exitoso ? 'rgba(239, 68, 68, 0.05)' : 'transparent' }}>
+                                                        <td style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
+                                                            {new Date(a.fecha).toLocaleString('es-CO')}
+                                                        </td>
+                                                        <td style={{ fontWeight: 600 }}>{a.email}</td>
+                                                        <td style={{ fontFamily: 'monospace', fontWeight: 600, color: 'var(--color-primary)' }}>{a.ipAddress}</td>
+                                                        <td>
+                                                            <span style={{
+                                                                padding: '0.2rem 0.5rem',
+                                                                borderRadius: '4px',
+                                                                fontSize: '0.75rem',
+                                                                fontWeight: 'bold',
+                                                                background: a.exitoso ? 'rgba(0, 200, 150, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                                                                color: a.exitoso ? '#00C896' : '#ef4444'
+                                                            }}>
+                                                                {a.exitoso ? 'EXITOSO' : 'FALLIDO'}
+                                                            </span>
+                                                        </td>
+                                                        <td style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', maxWidth: '300px' }}>
+                                                            {a.motivoFallo || '—'}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+                            </motion.div>
+                        )}
+
+                        {/* ═══ TAB: SOPORTE EN VIVO ══════════════════════════════════════════════ */}
+                        {viewMode === 'operaciones' && tab === 'soporte' && (
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ height: 'calc(100vh - 240px)', minHeight: '600px' }}>
+                                <div style={{
+                                    display: 'flex',
+                                    gap: '1.5rem',
+                                    height: '100%',
+                                    background: 'rgba(255, 255, 255, 0.02)',
+                                    backdropFilter: 'blur(16px)',
+                                    border: '1px solid rgba(255, 255, 255, 0.06)',
+                                    borderRadius: '16px',
+                                    padding: '1rem',
+                                    overflow: 'hidden'
+                                }}>
+                                    {/* Panel Izquierdo: Lista de Chats */}
+                                    <div style={{
+                                        width: '340px',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '1rem',
+                                        borderRight: '1px solid rgba(255, 255, 255, 0.08)',
+                                        paddingRight: '1rem',
+                                        height: '100%'
+                                    }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                            <h3 style={{ fontWeight: 800, fontSize: '1.1rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <MessageSquare size={18} color="var(--color-primary)" />
+                                                Cola de Soporte
+                                            </h3>
+                                            <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
+                                                Chats activos y escalados en tiempo real
+                                            </p>
+                                        </div>
+
+                                        <div style={{ position: 'relative' }}>
+                                            <input
+                                                type="text"
+                                                placeholder="Buscar por usuario o pedido..."
+                                                value={soporteFiltroQ}
+                                                onChange={e => setSoporteFiltroQ(e.target.value)}
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '0.6rem 2.2rem 0.6rem 1rem',
+                                                    background: 'rgba(0, 0, 0, 0.25)',
+                                                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                                                    borderRadius: '8px',
+                                                    color: '#fff',
+                                                    fontSize: '0.85rem'
+                                                }}
+                                            />
+                                            <Search size={15} style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
+                                        </div>
+
+                                        {/* Listado de Conversaciones */}
+                                        <div style={{
+                                            flex: 1,
+                                            overflowY: 'auto',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: '0.75rem',
+                                            paddingRight: '0.25rem'
+                                        }}>
+                                            {soporteChats.filter(chat => {
+                                                const username = chat.usuarioNombreCompleto || '';
+                                                const useremail = chat.usuarioEmail || '';
+                                                const pedidoStr = chat.pedidoId ? `pedido #${chat.pedidoId}` : '';
+                                                const statusStr = chat.estado || '';
+                                                return [username, useremail, pedidoStr, statusStr].some(v => v.toLowerCase().includes(soporteFiltroQ.toLowerCase()));
+                                            }).length === 0 ? (
+                                                <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
+                                                    No se encontraron conversaciones.
+                                                </div>
+                                            ) : (
+                                                soporteChats.filter(chat => {
+                                                    const username = chat.usuarioNombreCompleto || '';
+                                                    const useremail = chat.usuarioEmail || '';
+                                                    const pedidoStr = chat.pedidoId ? `pedido #${chat.pedidoId}` : '';
+                                                    const statusStr = chat.estado || '';
+                                                    return [username, useremail, pedidoStr, statusStr].some(v => v.toLowerCase().includes(soporteFiltroQ.toLowerCase()));
+                                                }).map(chat => {
+                                                    const esActivo = soporteChatActivo?.id === chat.id;
+                                                    return (
+                                                        <motion.div
+                                                            key={chat.id}
+                                                            whileHover={{ scale: 1.02, background: 'rgba(255, 255, 255, 0.05)' }}
+                                                            onClick={() => handleSelectConversacion(chat)}
+                                                            style={{
+                                                                padding: '0.85rem',
+                                                                borderRadius: '10px',
+                                                                background: esActivo ? 'rgba(124, 58, 237, 0.12)' : 'rgba(255, 255, 255, 0.02)',
+                                                                border: esActivo ? '1px solid var(--color-primary)' : '1px solid rgba(255, 255, 255, 0.04)',
+                                                                cursor: 'pointer',
+                                                                display: 'flex',
+                                                                flexDirection: 'column',
+                                                                gap: '0.5rem',
+                                                                transition: 'all 0.2s ease',
+                                                                boxShadow: esActivo ? '0 0 15px rgba(124, 58, 237, 0.15)' : 'none'
+                                                            }}
+                                                        >
+                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                                <span style={{ fontWeight: 700, fontSize: '0.9rem', color: '#fff' }}>
+                                                                    {chat.usuarioNombreCompleto || 'Usuario sin Nombre'}
+                                                                </span>
+                                                                <span style={{
+                                                                    padding: '0.15rem 0.4rem',
+                                                                    borderRadius: '4px',
+                                                                    fontSize: '0.7rem',
+                                                                    fontWeight: 'bold',
+                                                                    display: 'inline-flex',
+                                                                    alignItems: 'center',
+                                                                    gap: '0.2rem',
+                                                                    background: chat.estado === 'ACTIVA_IA' ? 'rgba(167, 139, 250, 0.15)' : chat.estado === 'ESCALADA_HUMANO' ? 'rgba(249, 115, 22, 0.18)' : 'rgba(16, 185, 129, 0.15)',
+                                                                    color: chat.estado === 'ACTIVA_IA' ? '#c084fc' : chat.estado === 'ESCALADA_HUMANO' ? '#fb923c' : '#34d399',
+                                                                    border: `1px solid ${chat.estado === 'ACTIVA_IA' ? 'rgba(167, 139, 250, 0.3)' : chat.estado === 'ESCALADA_HUMANO' ? 'rgba(249, 115, 22, 0.4)' : 'rgba(16, 185, 129, 0.3)'}`
+                                                                }}>
+                                                                    {chat.estado === 'ACTIVA_IA' ? '🤖 IA' : chat.estado === 'ESCALADA_HUMANO' ? '🚨 Agente' : '✔️ Cerrado'}
+                                                                </span>
+                                                            </div>
+                                                            <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                                {chat.usuarioEmail}
+                                                            </div>
+                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.2rem' }}>
+                                                                {chat.pedidoId ? (
+                                                                    <span style={{ fontSize: '0.75rem', background: 'rgba(255,255,255,0.05)', padding: '0.15rem 0.4rem', borderRadius: '4px', color: 'var(--color-primary)', fontWeight: 600 }}>
+                                                                        📦 Pedido #{chat.pedidoId}
+                                                                    </span>
+                                                                ) : (
+                                                                    <span style={{ fontSize: '0.75rem', color: 'var(--color-text-faint)' }}>Sin pedido vinculado</span>
+                                                                )}
+                                                                <span style={{ fontSize: '0.7rem', color: 'var(--color-text-faint)' }}>
+                                                                    {chat.fechaActualizacion ? new Date(chat.fechaActualizacion).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }) : ''}
+                                                                </span>
+                                                            </div>
+                                                        </motion.div>
+                                                    );
+                                                })
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Panel Derecho: Mensajes */}
+                                    <div style={{
+                                        flex: 1,
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        height: '100%',
+                                        justifyContent: 'space-between'
+                                    }}>
+                                        {!soporteChatActivo ? (
+                                            <div style={{
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                flex: 1,
+                                                color: 'var(--color-text-muted)',
+                                                textAlign: 'center',
+                                                padding: '2rem',
+                                                gap: '1rem'
+                                            }}>
+                                                <motion.div
+                                                    animate={{ y: [0, -8, 0] }}
+                                                    transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
+                                                    style={{
+                                                        background: 'linear-gradient(135deg, var(--color-primary), var(--color-accent))',
+                                                        padding: '1.25rem',
+                                                        borderRadius: '50%',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        boxShadow: '0 8px 24px rgba(124, 58, 237, 0.3)'
+                                                    }}
+                                                >
+                                                    <MessageSquare size={38} color="#fff" />
+                                                </motion.div>
+                                                <h4 style={{ fontWeight: 800, color: '#fff', fontSize: '1.2rem', marginTop: '0.5rem' }}>Consola de Atención al Cliente</h4>
+                                                <p style={{ maxWidth: '380px', fontSize: '0.85rem', lineHeight: 1.5 }}>
+                                                    Selecciona una conversación del listado lateral para ver el historial completo, interactuar con el cliente o tomar el control del asistente virtual.
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
+                                                {/* Cabecera del Chat Activo */}
+                                                <div style={{
+                                                    padding: '0.75rem 1rem',
+                                                    background: 'rgba(255,255,255,0.01)',
+                                                    borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                                                    display: 'flex',
+                                                    justifyContent: 'space-between',
+                                                    alignItems: 'center',
+                                                    gap: '1rem'
+                                                }}>
+                                                    <div>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                            <h4 style={{ fontWeight: 800, color: '#fff', fontSize: '1rem' }}>
+                                                                {soporteChatActivo.usuarioNombreCompleto || 'Cliente'}
+                                                            </h4>
+                                                            <span style={{
+                                                                fontSize: '0.7rem',
+                                                                padding: '0.1rem 0.35rem',
+                                                                background: 'rgba(255,255,255,0.08)',
+                                                                borderRadius: '4px',
+                                                                color: 'var(--color-primary)'
+                                                            }}>ID #{soporteChatActivo.id}</span>
+                                                        </div>
+                                                        <span style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>
+                                                            {soporteChatActivo.usuarioEmail}
+                                                        </span>
+                                                    </div>
+
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                                        {soporteChatActivo.estado !== 'RESUELTA' && (
+                                                            <motion.button
+                                                                whileHover={{ scale: 1.03 }}
+                                                                whileTap={{ scale: 0.97 }}
+                                                                onClick={handleResolverConversacion}
+                                                                className="btn btn-ghost"
+                                                                style={{
+                                                                    fontSize: '0.8rem',
+                                                                    padding: '0.4rem 0.8rem',
+                                                                    border: '1px solid rgba(16, 185, 129, 0.4)',
+                                                                    color: '#34d399',
+                                                                    borderRadius: '8px',
+                                                                    display: 'inline-flex',
+                                                                    alignItems: 'center',
+                                                                    gap: '0.3rem'
+                                                                }}
+                                                            >
+                                                                <Check size={14} />
+                                                                Resolver Ticket
+                                                            </motion.button>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {/* Subcabecera: Información Detallada del Pedido Vinculado */}
+                                                {soporteChatActivo.pedidoId && (
+                                                    <div style={{
+                                                        background: 'rgba(124, 58, 237, 0.04)',
+                                                        borderBottom: '1px solid rgba(124, 58, 237, 0.1)',
+                                                        padding: '0.6rem 1rem',
+                                                        display: 'flex',
+                                                        justifyContent: 'space-between',
+                                                        alignItems: 'center',
+                                                        fontSize: '0.82rem'
+                                                    }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#c084fc' }}>
+                                                            <ShoppingBag size={14} />
+                                                            <strong>Contexto de Transacción: Pedido #{soporteChatActivo.pedidoId}</strong>
+                                                        </div>
+                                                        {pedidos.find(p => p.id === soporteChatActivo.pedidoId) && (
+                                                            <div style={{ display: 'flex', gap: '1rem', color: 'var(--color-text-muted)' }}>
+                                                                <span>Monto: <strong style={{ color: '#fff' }}>{formatCOP(pedidos.find(p => p.id === soporteChatActivo.pedidoId).total)}</strong></span>
+                                                                <span>Estado: <strong style={{
+                                                                    color: pedidos.find(p => p.id === soporteChatActivo.pedidoId).estado === 'ENTREGADO' ? '#34d399' : '#fb923c'
+                                                                }}>{pedidos.find(p => p.id === soporteChatActivo.pedidoId).estado}</strong></span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+
+                                                {/* Zona de Mensajes */}
+                                                <div style={{
+                                                    flex: 1,
+                                                    overflowY: 'auto',
+                                                    padding: '1rem',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    gap: '0.75rem',
+                                                    maxHeight: '400px',
+                                                    minHeight: '280px',
+                                                    background: 'rgba(0,0,0,0.1)'
+                                                }}>
+                                                    {soporteCargandoChat ? (
+                                                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                                                            <div className="spinner" style={{ borderTopColor: 'var(--color-primary)' }}></div>
+                                                        </div>
+                                                    ) : soporteMensajes.length === 0 ? (
+                                                        <div style={{ textAlign: 'center', color: 'var(--color-text-faint)', fontSize: '0.85rem', marginTop: '2rem' }}>
+                                                            No hay mensajes en esta conversación.
+                                                        </div>
+                                                    ) : (
+                                                        soporteMensajes.map((msg, i) => {
+                                                            const esUsuario = msg.remitente === 'USUARIO';
+                                                            const esIA = msg.remitente === 'IA';
+                                                            const esAdmin = msg.remitente === 'ADMIN';
+
+                                                            let alignment = 'flex-start';
+                                                            let bubbleBg = 'rgba(255, 255, 255, 0.05)';
+                                                            let bubbleColor = '#fff';
+                                                            let bubbleBorder = '1px solid rgba(255,255,255,0.06)';
+                                                            let label = 'Cliente';
+
+                                                            if (esUsuario) {
+                                                                alignment = 'flex-start';
+                                                                bubbleBg = 'rgba(255, 255, 255, 0.04)';
+                                                            } else if (esIA) {
+                                                                alignment = 'flex-end';
+                                                                bubbleBg = 'linear-gradient(135deg, rgba(124, 58, 237, 0.25), rgba(79, 70, 229, 0.25))';
+                                                                bubbleBorder = '1px solid rgba(124, 58, 237, 0.35)';
+                                                                label = 'Asistente Virtual 🤖';
+                                                            } else if (esAdmin) {
+                                                                alignment = 'flex-end';
+                                                                bubbleBg = 'linear-gradient(135deg, rgba(249, 115, 22, 0.25), rgba(234, 88, 12, 0.25))';
+                                                                bubbleBorder = '1px solid rgba(249, 115, 22, 0.4)';
+                                                                label = 'Soporte Humano 🧑‍💻';
+                                                            } else {
+                                                                // Sistema
+                                                                alignment = 'center';
+                                                                bubbleBg = 'rgba(255, 255, 255, 0.02)';
+                                                                bubbleColor = 'var(--color-text-muted)';
+                                                                label = 'Sistema';
+                                                            }
+
+                                                            return (
+                                                                <div key={msg.id || i} style={{ display: 'flex', flexDirection: 'column', alignItems: alignment === 'flex-start' ? 'flex-start' : alignment === 'flex-end' ? 'flex-end' : 'center', width: '100%' }}>
+                                                                    <div style={{
+                                                                        maxWidth: '75%',
+                                                                        padding: '0.75rem 1rem',
+                                                                        borderRadius: esUsuario ? '12px 12px 12px 4px' : esIA || esAdmin ? '12px 12px 4px 12px' : '8px',
+                                                                        background: bubbleBg,
+                                                                        border: bubbleBorder,
+                                                                        color: bubbleColor,
+                                                                        fontSize: '0.85rem',
+                                                                        lineHeight: 1.4,
+                                                                        wordBreak: 'break-word',
+                                                                        whiteSpace: 'pre-wrap',
+                                                                        boxShadow: '0 4px 10px rgba(0,0,0,0.1)'
+                                                                    }}>
+                                                                        {msg.contenido}
+                                                                    </div>
+                                                                    <div style={{
+                                                                        fontSize: '0.7rem',
+                                                                        color: 'var(--color-text-faint)',
+                                                                        marginTop: '0.2rem',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        gap: '0.4rem'
+                                                                    }}>
+                                                                        <span style={{ fontWeight: 600 }}>{label}</span>
+                                                                        <span>•</span>
+                                                                        <span>{msg.fechaCreacion ? new Date(msg.fechaCreacion).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+                                                                        {msg.sentiment && msg.sentiment !== 'NEUTRAL' && (
+                                                                            <>
+                                                                                <span>•</span>
+                                                                                <span style={{ color: msg.sentiment === 'FRUSTRADO' ? '#ef4444' : '#34d399', textTransform: 'lowercase', fontSize: '0.65rem' }}>{msg.sentiment}</span>
+                                                                            </>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })
+                                                    )}
+                                                    <div ref={soporteMessagesEndRef} />
+                                                </div>
+
+                                                {/* Formulario de Entrada */}
+                                                <div style={{
+                                                    padding: '0.75rem 1rem 0 1rem',
+                                                    borderTop: '1px solid rgba(255, 255, 255, 0.08)'
+                                                }}>
+                                                    {soporteChatActivo.estado === 'RESUELTA' ? (
+                                                        <div style={{
+                                                            width: '100%',
+                                                            padding: '0.75rem',
+                                                            background: 'rgba(16, 185, 129, 0.1)',
+                                                            border: '1px solid rgba(16, 185, 129, 0.2)',
+                                                            borderRadius: '8px',
+                                                            color: '#34d399',
+                                                            textAlign: 'center',
+                                                            fontSize: '0.85rem',
+                                                            fontWeight: 600
+                                                        }}>
+                                                            Este ticket ya fue resuelto. Envía un mensaje si deseas reabrirlo.
+                                                        </div>
+                                                    ) : null}
+
+                                                    {soporteChatActivo.estado !== 'RESUELTA' && (
+                                                        <form onSubmit={handleEnviarMensajeAdmin} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                                            <input
+                                                                type="text"
+                                                                placeholder="Escribe una respuesta para el cliente..."
+                                                                value={soporteNuevoMensaje}
+                                                                onChange={e => setSoporteNuevoMensaje(e.target.value)}
+                                                                disabled={soporteEnviando}
+                                                                style={{
+                                                                    flex: 1,
+                                                                    padding: '0.75rem 1rem',
+                                                                    background: 'rgba(0, 0, 0, 0.3)',
+                                                                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                                                                    borderRadius: '8px',
+                                                                    color: '#fff',
+                                                                    fontSize: '0.88rem'
+                                                                }}
+                                                            />
+                                                            <motion.button
+                                                                type="submit"
+                                                                whileHover={{ scale: 1.05 }}
+                                                                whileTap={{ scale: 0.95 }}
+                                                                disabled={soporteEnviando || !soporteNuevoMensaje.trim()}
+                                                                className="btn btn-primary"
+                                                                style={{
+                                                                    padding: '0.75rem 1.25rem',
+                                                                    borderRadius: '8px',
+                                                                    fontWeight: 800,
+                                                                    display: 'inline-flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center',
+                                                                    minWidth: '90px'
+                                                                }}
+                                                            >
+                                                                {soporteEnviando ? 'Enviando...' : 'Enviar'}
+                                                            </motion.button>
+                                                        </form>
+                                                    )}
+                                                </div>
+                                            </div>
                                         )}
                                     </div>
                                 </div>
-                            )}
-                        </div>
-                    </div>
-                </motion.div>
-            )}
+                            </motion.div>
+                        )}
 
                     </section>
                 </div>

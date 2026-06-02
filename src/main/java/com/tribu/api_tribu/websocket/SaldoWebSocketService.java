@@ -51,7 +51,7 @@ public class SaldoWebSocketService {
                 payload
         );
 
-        log.info("📡 WS → usuario {}: +${} ({})", usuarioId, monto, tipo);
+        log.info("📡 WS → usuario {}: +{} pts ({})", usuarioId, monto, tipo);
     }
 
     /**

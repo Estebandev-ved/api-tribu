@@ -390,7 +390,7 @@ export default function TelegramConfigPage() {
               { key: 'stockCritico', label: 'Stock crítico (≤ umbral crítico)' },
               { key: 'stockBajo', label: 'Stock bajo (≤ umbral mínimo)' },
               { key: 'reporteDiario', label: 'Reporte diario 7:00 AM' },
-              { key: 'pedidoGrande', label: 'Pedidos grandes (≥ $500.000)' },
+              { key: 'pedidoGrande', label: 'Pedidos grandes (≥ 500.000 pts)' },
               { key: 'nuevoUsuario', label: 'Nuevo usuario registrado' },
               { key: 'errorSistema', label: 'Error del sistema' },
               { key: 'grupoConfirmado', label: 'Grupo de compra confirmado' }

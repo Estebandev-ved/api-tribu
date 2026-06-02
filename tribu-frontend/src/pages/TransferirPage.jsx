@@ -9,6 +9,8 @@ import { formatCOP } from '../utils/formatters'
 import { getTierColor, getTierFromOrden } from '../utils/tierColors'
 import TierBadge from '../components/TierBadge'
 import toast from 'react-hot-toast'
+import { dbOfflineQueue } from '../services/dbOfflineQueue'
+import { verificarQrCobro, transferirPorQr } from '../api'
 
 const QUICK_AMOUNTS = [10000, 20000, 50000, 100000]
 
@@ -30,6 +32,13 @@ export default function TransferirPage() {
   const [pinSetup, setPinSetup] = useState('')
   const [pinConfirm, setPinConfirm] = useState('')
   const [transferResult, setTransferResult] = useState(null)
+
+  // QR P2P Cobro States
+  const [mostrarModalQr, setMostrarModalQr] = useState(false)
+  const [payloadQrStr, setPayloadQrStr] = useState('')
+  const [qrVerificado, setQrVerificado] = useState(null)
+  const [verificandoQr, setVerificandoQr] = useState(false)
+  const [pagandoQr, setPagandoQr] = useState(false)
 
   const saldo = saldoRealtime !== null ? saldoRealtime : (saldoBase !== null ? saldoBase : 0)
 
@@ -109,9 +118,33 @@ export default function TransferirPage() {
     }
 
     setEnviando(true)
+    const dest = destinatario.codigoReferido || busqueda
+
+    if (!navigator.onLine) {
+      try {
+        await dbOfflineQueue.addTransfer(dest, parseInt(monto), mensaje, pin)
+        setTransferResult({
+          referencia: 'OFFLINE-PENDIENTE',
+          monto: parseInt(monto),
+          contraparte: destinatario.nombre,
+          nuevoSaldo: saldo - parseInt(monto),
+          fecha: new Date().toLocaleDateString('es-CO', {
+            day: '2-digit', month: '2-digit', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+          })
+        })
+        toast.success(`⚠️ ¡Sin conexión! Transferencia encolada para envío automático al recuperar internet.`, { duration: 6000 })
+      } catch (dbErr) {
+        toast.error('Error al guardar la transferencia en la cola offline')
+      } finally {
+        setEnviando(false)
+      }
+      return
+    }
+
     try {
       const res = await transferenciaService.enviar(
-        destinatario.codigoReferido || busqueda,
+        dest,
         parseInt(monto),
         mensaje,
         pin
@@ -128,10 +161,93 @@ export default function TransferirPage() {
       })
       toast.success(`¡${formatCOP(monto)} enviados a ${destinatario.nombre}!`)
     } catch (err) {
-      const msg = err.response?.data?.message || 'Error al realizar transferencia'
-      toast.error(msg)
+      if (!err.response) {
+        // Falló la red pero navigator dice online (por ejemplo, servidor inalcanzable)
+        try {
+          await dbOfflineQueue.addTransfer(dest, parseInt(monto), mensaje, pin)
+          setTransferResult({
+            referencia: 'OFFLINE-PENDIENTE',
+            monto: parseInt(monto),
+            contraparte: destinatario.nombre,
+            nuevoSaldo: saldo - parseInt(monto),
+            fecha: new Date().toLocaleDateString('es-CO', {
+              day: '2-digit', month: '2-digit', year: 'numeric',
+              hour: '2-digit', minute: '2-digit'
+            })
+          })
+          toast.success(`⚠️ Servidor inalcanzable. Transferencia encolada de forma segura para envío automático en segundo plano.`, { duration: 6000 })
+        } catch (dbErr) {
+          toast.error('Error al guardar la transferencia en la cola offline')
+        }
+      } else {
+        const msg = err.response?.data?.message || 'Error al realizar transferencia'
+        toast.error(msg)
+      }
     } finally {
       setEnviando(false)
+    }
+  }
+
+  const handleVerificarQr = async () => {
+    if (!payloadQrStr.trim()) {
+      toast.error('Por favor, ingresa el payload firmado del QR.')
+      return
+    }
+
+    setVerificandoQr(true)
+    try {
+      const parsedData = JSON.parse(payloadQrStr.trim())
+      const res = await verificarQrCobro(parsedData)
+      setQrVerificado(res.data)
+      toast.success('🛡️ ¡Firma digital HMAC-SHA256 verificada con éxito!')
+    } catch (err) {
+      console.error(err)
+      toast.error(err.response?.data?.message || 'El código QR es inválido, manipulado o ha expirado.')
+    } finally {
+      setVerificandoQr(false)
+    }
+  }
+
+  const handlePagarQr = async () => {
+    if (!pin || pin.length < 4) {
+      toast.error('Ingresa tu PIN de seguridad.')
+      return
+    }
+
+    setPagandoQr(true)
+    try {
+      const payload = {
+        email: qrVerificado.destinatarioEmail,
+        monto: qrVerificado.monto,
+        mensaje: qrVerificado.mensaje,
+        timestamp: qrVerificado.timestamp,
+        signature: qrVerificado.signature,
+        pin: pin
+      }
+
+      const res = await transferirPorQr(payload)
+
+      setTransferResult({
+        referencia: res.data.referencia,
+        monto: qrVerificado.monto,
+        contraparte: qrVerificado.destinatarioNombre,
+        nuevoSaldo: res.data.nuevoSaldo,
+        fecha: new Date().toLocaleDateString('es-CO', {
+          day: '2-digit', month: '2-digit', year: 'numeric',
+          hour: '2-digit', minute: '2-digit'
+        })
+      })
+
+      setMostrarModalQr(false)
+      setQrVerificado(null)
+      setPayloadQrStr('')
+      setPin('')
+      toast.success('¡Transferencia P2P procesada con éxito!')
+    } catch (err) {
+      console.error(err)
+      toast.error(err.response?.data?.message || 'Error al procesar el cobro QR.')
+    } finally {
+      setPagandoQr(false)
     }
   }
 
@@ -287,6 +403,43 @@ export default function TransferirPage() {
                 <h3 style={{ color: '#fff', fontSize: '1rem', marginBottom: '1rem' }}>
                   ¿A quien quieres enviar?
                 </h3>
+
+                {/* Opción Premium: Pagar con QR de Cobro */}
+                <div style={{
+                  background: 'rgba(255, 87, 34, 0.05)',
+                  border: '1px dashed rgba(255, 87, 34, 0.3)',
+                  borderRadius: 12,
+                  padding: '1rem',
+                  marginBottom: '1.25rem',
+                  textAlign: 'center'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, color: '#fff', fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.25rem' }}>
+                    <Shield size={18} color="#FF5722" />
+                    Pagar con QR de Cobro
+                  </div>
+                  <p style={{ color: '#888', fontSize: '0.8rem', margin: '0 0 0.75rem' }}>
+                    Pega el payload firmado del QR de cobro para realizar una transferencia digital inmediata.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setMostrarModalQr(true)}
+                    style={{
+                      width: '100%',
+                      padding: '0.6rem',
+                      borderRadius: 8,
+                      background: 'linear-gradient(135deg, #FF5722, #FF9800)',
+                      color: '#FFF',
+                      border: 'none',
+                      fontWeight: 800,
+                      fontSize: '0.85rem',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 10px rgba(255, 87, 34, 0.15)'
+                    }}
+                  >
+                    Abrir Escáner / Pegar Payload
+                  </button>
+                </div>
+
                 <div style={{ position: 'relative' }}>
                   <Search size={18} style={{
                     position: 'absolute',
@@ -449,7 +602,7 @@ export default function TransferirPage() {
                   marginBottom: '1.5rem',
                   fontFamily: 'monospace'
                 }}>
-                  ${parseInt(monto || 0).toLocaleString('es-CO')}
+                  {parseInt(monto || 0).toLocaleString('es-CO')} pts
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 16 }}>
@@ -679,6 +832,225 @@ export default function TransferirPage() {
                   </>
                 )}
               </motion.button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* MODAL PREMIUM DE PAGO CON QR FIRMADO */}
+        <AnimatePresence>
+          {mostrarModalQr && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'rgba(0, 0, 0, 0.85)',
+                backdropFilter: 'blur(10px)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 9999,
+                padding: '1rem'
+              }}
+            >
+              <motion.div
+                initial={{ scale: 0.9, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.9, y: 20 }}
+                style={{
+                  background: 'rgba(26, 26, 26, 0.95)',
+                  border: '1px solid rgba(255, 87, 34, 0.25)',
+                  borderRadius: '24px',
+                  padding: '2rem',
+                  maxWidth: '440px',
+                  width: '100%',
+                  boxShadow: '0 20px 40px rgba(0,0,0,0.8)'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                  <h3 style={{ color: '#fff', fontSize: '1.25rem', fontWeight: 900, margin: 0 }}>
+                    ⚡ Escáner QR Digital
+                  </h3>
+                  <button
+                    onClick={() => {
+                      setMostrarModalQr(false)
+                      setQrVerificado(null)
+                      setPayloadQrStr('')
+                      setPin('')
+                    }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#888',
+                      fontSize: '1.25rem',
+                      cursor: 'pointer',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {!qrVerificado ? (
+                  // Sección para pegar el payload firmado
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                    <p style={{ color: '#aaa', fontSize: '0.88rem', margin: 0 }}>
+                      Copia el texto del payload firmado que te compartió tu contraparte y pégalo abajo:
+                    </p>
+                    <textarea
+                      placeholder='Pega el JSON de cobro firmado aquí...'
+                      value={payloadQrStr}
+                      onChange={(e) => setPayloadQrStr(e.target.value)}
+                      style={{
+                        width: '100%',
+                        height: '120px',
+                        padding: '0.75rem',
+                        borderRadius: '12px',
+                        background: 'rgba(255,255,255,0.03)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        color: '#DDD',
+                        fontFamily: 'monospace',
+                        fontSize: '0.85rem',
+                        resize: 'none',
+                        outline: 'none'
+                      }}
+                    />
+                    <button
+                      onClick={handleVerificarQr}
+                      disabled={verificandoQr}
+                      style={{
+                        padding: '0.85rem',
+                        borderRadius: '12px',
+                        background: 'linear-gradient(135deg, #FF5722, #FF9800)',
+                        color: '#FFF',
+                        border: 'none',
+                        fontWeight: 800,
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 15px rgba(255, 87, 34, 0.25)',
+                        transition: 'filter 0.2s'
+                      }}
+                      onMouseOver={(e) => e.target.style.filter = 'brightness(1.1)'}
+                      onMouseOut={(e) => e.target.style.filter = 'none'}
+                    >
+                      {verificandoQr ? 'Verificando firma criptográfica...' : 'Validar y Continuar'}
+                    </button>
+                  </div>
+                ) : (
+                  // Sección de detalles del cobro verificado + PIN
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                    
+                    {/* Tarjeta de verificación verde brillante con Escudo */}
+                    <div style={{
+                      background: 'rgba(0, 200, 150, 0.08)',
+                      border: '1px solid rgba(0, 200, 150, 0.3)',
+                      padding: '1rem',
+                      borderRadius: '16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.75rem'
+                    }}>
+                      <Shield size={24} color="#00C896" />
+                      <div>
+                        <div style={{ color: '#00C896', fontWeight: 800, fontSize: '0.88rem' }}>
+                          FIRMA DIGITAL VERIFICADA
+                        </div>
+                        <div style={{ color: '#888', fontSize: '0.75rem' }}>
+                          Autenticado por HMAC-SHA256
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Detalles del cobro */}
+                    <div style={{
+                      background: 'rgba(255,255,255,0.02)',
+                      border: '1px solid rgba(255,255,255,0.05)',
+                      padding: '1.25rem',
+                      borderRadius: '16px',
+                      textAlign: 'center'
+                    }}>
+                      <div style={{ fontSize: '0.8rem', color: '#888', textTransform: 'uppercase', fontWeight: 600 }}>Destinatario</div>
+                      <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#FFF' }}>{qrVerificado.destinatarioNombre}</div>
+
+                      <div style={{ marginTop: '0.75rem', fontSize: '0.8rem', color: '#888', textTransform: 'uppercase', fontWeight: 600 }}>Monto a Transferir</div>
+                      <div style={{ fontWeight: 950, fontSize: '1.75rem', color: '#FF5722' }}>{qrVerificado.monto?.toLocaleString()} Puntos Tribu</div>
+
+                      {qrVerificado.mensaje && (
+                        <>
+                          <div style={{ marginTop: '0.75rem', fontSize: '0.8rem', color: '#888', textTransform: 'uppercase', fontWeight: 600 }}>Concepto</div>
+                          <div style={{ color: '#DDD', fontSize: '0.9rem', fontStyle: 'italic' }}>"{qrVerificado.mensaje}"</div>
+                        </>
+                      )}
+                    </div>
+
+                    {/* PIN de seguridad */}
+                    <div>
+                      <label style={{ display: 'block', color: '#BBB', fontSize: '0.82rem', fontWeight: 600, marginBottom: '0.5rem', textTransform: 'uppercase' }}>
+                        PIN de Seguridad
+                      </label>
+                      <input
+                        type="password"
+                        maxLength={6}
+                        value={pin}
+                        onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
+                        placeholder="Ingresa tu PIN"
+                        style={{
+                          width: '100%',
+                          padding: '0.875rem',
+                          background: 'rgba(255, 255, 255, 0.05)',
+                          border: '1px solid rgba(255, 255, 255, 0.1)',
+                          borderRadius: '12px',
+                          color: '#fff',
+                          fontSize: '1.2rem',
+                          textAlign: 'center',
+                          letterSpacing: '8px',
+                          outline: 'none'
+                        }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '0.75rem' }}>
+                      <button
+                        onClick={() => setQrVerificado(null)}
+                        style={{
+                          flex: 1,
+                          padding: '0.85rem',
+                          borderRadius: '12px',
+                          background: 'rgba(255,255,255,0.05)',
+                          color: '#FFF',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          fontWeight: 700,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Atrás
+                      </button>
+
+                      <button
+                        onClick={handlePagarQr}
+                        disabled={pagandoQr || pin.length < 4}
+                        style={{
+                          flex: 1,
+                          padding: '0.85rem',
+                          borderRadius: '12px',
+                          background: pin.length >= 4 ? 'linear-gradient(135deg, #FF5722, #FF9800)' : '#333',
+                          color: pin.length >= 4 ? '#FFF' : '#666',
+                          border: 'none',
+                          fontWeight: 800,
+                          cursor: pin.length >= 4 ? 'pointer' : 'not-allowed'
+                        }}
+                      >
+                        {pagandoQr ? 'Procesando...' : 'Confirmar Pago'}
+                      </button>
+                    </div>
+
+                  </div>
+                )}
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>

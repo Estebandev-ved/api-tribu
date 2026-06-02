@@ -107,7 +107,7 @@ public class CuponService {
             return CuponValidacionDTO.builder()
                     .valido(false)
                     .codigo(codigo)
-                    .error("Monto mínimo: $" + formatCOP(cupon.getMontoMinimo()))
+                    .error("Monto mínimo: " + formatCOP(cupon.getMontoMinimo()) + " pts")
                     .build();
         }
 
@@ -132,7 +132,7 @@ public class CuponService {
 
         String descripcion = cupon.getTipo() == Cupon.TipoCupon.PORCENTAJE
                 ? cupon.getValor() + "% de descuento"
-                : "- $" + formatCOP(descuento);
+                : "- " + formatCOP(descuento) + " pts";
 
         return CuponValidacionDTO.builder()
                 .valido(true)
@@ -279,7 +279,6 @@ public class CuponService {
     }
 
     private String formatCOP(double monto) {
-        NumberFormat formatter = NumberFormat.getCurrencyInstance(new Locale("es", "CO"));
-        return formatter.format(monto).replace("$", "");
+        return String.format("%,.0f", monto);
     }
 }

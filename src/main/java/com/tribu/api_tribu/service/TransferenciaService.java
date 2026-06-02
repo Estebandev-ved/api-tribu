@@ -12,6 +12,9 @@ import com.tribu.api_tribu.repository.TransferenciaRepository;
 import com.tribu.api_tribu.repository.UsuarioRepository;
 import com.tribu.api_tribu.websocket.AdminMonitoringWebSocketService;
 import com.tribu.api_tribu.websocket.SaldoWebSocketService;
+import org.redisson.api.RBucket;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +25,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
+/**
+ * 💸 TransferenciaService - Motor de Concurrencia y Sincronización Financiera.
+ *
+ * PROPÓSITO:
+ *   Gestionar las transferencias P2P entre usuarios asegurando integridad total, protecciones contra doble gasto
+ *   y condiciones de carrera en alta concurrencia mediante bloqueos distribuidos de exclusión mutua gestionados en Redis (Redisson).
+ *
+ * MEDIDAS DE SEGURIDAD IMPLEMENTADAS:
+ *   1. Bloqueo Distribuido Mutuo y Determinista (Redisson): Evita el bloqueo del nivel de base de datos que provoca
+ *      gridlocks y demoras infinitas. Bloquea emisor y receptor de forma ordenada por ID para evitar situaciones de Deadlock.
+ *   2. Desacoplamiento de Transacciones: El bloqueo se adquiere y libera *fuera* de la transacción de base de datos
+ *      (JPA/Hibernate), previniendo que lecturas fantasma o estados intermedios no confirmados (dirty reads) causen doble gasto.
+ *   3. Saneamiento de Datos (HTML escaping): Saneado riguroso del mensaje de la transferencia para evitar ataques XSS almacenado.
+ *   4. Validación de Límites por Nivel VIP: Controles estrictos de montos mínimos, máximos y transacciones diarias acumuladas.
+ */
 @Service
 public class TransferenciaService {
 
@@ -32,6 +51,7 @@ public class TransferenciaService {
     private final SaldoWebSocketService wsService;
     private final AdminMonitoringWebSocketService adminWsService;
     private final PasswordEncoder passwordEncoder;
+    private final RedissonClient redissonClient;
 
     // Límites por nivel VIP: [montoMin, montoMax, transaccionesDiarias]
     private static final double[][] LIMITES_POR_NIVEL = {
@@ -46,21 +66,80 @@ public class TransferenciaService {
             SaldoService saldoService,
             SaldoWebSocketService wsService,
             AdminMonitoringWebSocketService adminWsService,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            RedissonClient redissonClient) {
         this.transferenciaRepo = transferenciaRepo;
         this.usuarioRepo = usuarioRepo;
         this.saldoService = saldoService;
         this.wsService = wsService;
         this.adminWsService = adminWsService;
         this.passwordEncoder = passwordEncoder;
+        this.redissonClient = redissonClient;
     }
 
-    @Transactional
+    /**
+     * Orquestador de transferencia de alta concurrencia.
+     * Adquiere los bloqueos distribuidos de forma segura en Redis y delega la escritura transaccional a la base de datos.
+     */
     public TransferenciaP2P transferir(String emailEmisor, String emailOCodigo, double monto, String mensaje) {
         Usuario emisorInicial = usuarioRepo.findByEmail(emailEmisor)
                 .orElseThrow(() -> new TransferenciaException("Emisor no encontrado"));
-        Usuario emisor = usuarioRepo.findByIdForUpdate(emisorInicial.getId())
+        
+        Usuario receptorInicial = buscarReceptor(emailOCodigo);
+
+        Long idEmisor = emisorInicial.getId();
+        Long idReceptor = receptorInicial.getId();
+
+        if (idEmisor.equals(idReceptor)) {
+            throw new TransferenciaException.AutoTransferenciaException();
+        }
+
+        // Definir orden determinista para prevenir interbloqueos (Deadlocks)
+        Long firstId = Math.min(idEmisor, idReceptor);
+        Long secondId = Math.max(idEmisor, idReceptor);
+
+        RLock lock1 = redissonClient.getLock("tribu:user:lock:" + firstId);
+        RLock lock2 = redissonClient.getLock("tribu:user:lock:" + secondId);
+
+        try {
+            // Intentar adquirir bloqueos distribuidos en Redis (espera máxima 5s, liberación automática en 10s ante fallas de red)
+            boolean acquired1 = lock1.tryLock(5, 10, TimeUnit.SECONDS);
+            if (!acquired1) {
+                throw new TransferenciaException("Tu cuenta se encuentra procesando otra transacción. Por favor, espera.");
+            }
+
+            boolean acquired2 = lock2.tryLock(5, 10, TimeUnit.SECONDS);
+            if (!acquired2) {
+                throw new TransferenciaException("El destinatario está ocupado recibiendo fondos. Por favor, intenta de nuevo.");
+            }
+
+            // Invocar el método transaccional que asegura consistencia ACID en la base de datos
+            return ejecutarTransferenciaTransaccional(idEmisor, idReceptor, monto, mensaje);
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new TransferenciaException("La transacción fue cancelada debido a alta latencia o concurrencia del sistema.");
+        } finally {
+            // Liberar locks de forma ordenada
+            if (lock2.isHeldByCurrentThread()) {
+                lock2.unlock();
+            }
+            if (lock1.isHeldByCurrentThread()) {
+                lock1.unlock();
+            }
+        }
+    }
+
+    /**
+     * Ejecuta la lógica transaccional de débito/crédito y validación de reglas de negocio financieras.
+     */
+    @Transactional
+    public TransferenciaP2P ejecutarTransferenciaTransaccional(Long idEmisor, Long idReceptor, double monto, String mensaje) {
+        // Carga fresca con el bloqueo distribuido activo
+        Usuario emisor = usuarioRepo.findById(idEmisor)
                 .orElseThrow(() -> new TransferenciaException("Emisor no encontrado"));
+        Usuario receptor = usuarioRepo.findById(idReceptor)
+                .orElseThrow(() -> new TransferenciaException("Receptor no encontrado"));
 
         // 1. Validar PIN
         if (emisor.getPinSeguridadHash() == null || emisor.getPinSeguridadHash().isBlank()) {
@@ -69,12 +148,6 @@ public class TransferenciaService {
 
         String mensajeSaneado = mensaje != null ? HtmlUtils.htmlEscape(mensaje) : null;
 
-        Usuario receptor = buscarReceptor(emailOCodigo);
-
-        if (emisor.getId().equals(receptor.getId())) {
-            throw new TransferenciaException.AutoTransferenciaException();
-        }
-
         // 2. Validar montos por nivel VIP
         int nivel = getNivelSeguro(emisor.getNivelVip());
         double montoMin = LIMITES_POR_NIVEL[nivel - 1][0];
@@ -82,11 +155,11 @@ public class TransferenciaService {
         int maxDiarias = (int) LIMITES_POR_NIVEL[nivel - 1][2];
 
         if (monto < montoMin) {
-            throw new TransferenciaException("El monto mínimo es $" + String.format("%,.0f", montoMin));
+            throw new TransferenciaException("El monto mínimo es " + String.format("%,.0f", montoMin) + " Puntos Tribu");
         }
 
         if (monto > montoMax) {
-            throw new TransferenciaException("El monto máximo para tu nivel es $" + String.format("%,.0f", montoMax));
+            throw new TransferenciaException("El monto máximo para tu nivel es " + String.format("%,.0f", montoMax) + " Puntos Tribu");
         }
 
         double saldoActual = saldoService.consultarSaldoReal(emisor.getId());
@@ -123,8 +196,8 @@ public class TransferenciaService {
                 emisor, -monto, TipoMovimiento.TRANSFERENCIA_ENVIADA, null, descripcionEmisor
         );
 
-        String descripcionReceptor = emisor.getNombreCompleto() + " te envió $" +
-                String.format(Locale.US, "%.0f", monto);
+        String descripcionReceptor = emisor.getNombreCompleto() + " te envió " +
+                String.format(Locale.US, "%.0f", monto) + " Puntos Tribu";
         if (mensajeSaneado != null && !mensajeSaneado.isBlank()) {
             descripcionReceptor += " · " + mensajeSaneado;
         }
@@ -157,9 +230,39 @@ public class TransferenciaService {
             throw new TransferenciaException("Debes configurar un PIN de seguridad antes de transferir");
         }
 
-        if (pin == null || !passwordEncoder.matches(pin, emisor.getPinSeguridadHash())) {
-            throw new TransferenciaException.PinIncorrectoException();
+        // Ciberseguridad: Evitar fuerza bruta (Brute-force PIN protection) usando Redis Lockout
+        RBucket<Integer> maxAttemptsBucket = redissonClient.getBucket("tribu:security:pinAttemptsLimit");
+        int maxAttempts = maxAttemptsBucket.isExists() ? maxAttemptsBucket.get() : 3;
+
+        RBucket<Integer> lockoutTimeBucket = redissonClient.getBucket("tribu:security:pinLockoutTime");
+        int lockoutTime = lockoutTimeBucket.isExists() ? lockoutTimeBucket.get() : 15;
+
+        RBucket<Boolean> pinLock = redissonClient.getBucket("tribu:pin:lock:" + emisor.getId());
+        if (pinLock.isExists()) {
+            throw new TransferenciaException("Has superado el límite de intentos de PIN. Transferencias congeladas por " + lockoutTime + " minutos.");
         }
+
+        if (pin == null || !passwordEncoder.matches(pin, emisor.getPinSeguridadHash())) {
+            RBucket<Integer> pinAttempts = redissonClient.getBucket("tribu:pin:attempts:" + emisor.getId());
+            Integer attempts = pinAttempts.get();
+            if (attempts == null) {
+                attempts = 0;
+            }
+            attempts++;
+            pinAttempts.set(attempts, java.time.Duration.ofMinutes(lockoutTime));
+
+            if (attempts >= maxAttempts) {
+                pinLock.set(true, java.time.Duration.ofMinutes(lockoutTime));
+                pinAttempts.delete();
+                throw new TransferenciaException("Límite de intentos de PIN superado. Tu cuenta ha sido congelada para transferencias por " + lockoutTime + " minutos.");
+            }
+
+            int restantes = maxAttempts - attempts;
+            throw new TransferenciaException("PIN de seguridad incorrecto. Te quedan " + restantes + " intentos antes del bloqueo temporal.");
+        }
+
+        // Limpiar contador de intentos fallidos al ingresar el PIN correcto
+        redissonClient.getBucket("tribu:pin:attempts:" + emisor.getId()).delete();
 
         return transferir(emailEmisor, emailOCodigo, monto, mensaje);
     }
@@ -172,9 +275,39 @@ public class TransferenciaService {
             throw new TransferenciaException("PIN no configurado");
         }
 
-        if (pin == null || !passwordEncoder.matches(pin, usuario.getPinSeguridadHash())) {
-            throw new TransferenciaException.PinIncorrectoException();
+        // Ciberseguridad: Evitar fuerza bruta (Brute-force PIN protection) usando Redis Lockout
+        RBucket<Integer> maxAttemptsBucket = redissonClient.getBucket("tribu:security:pinAttemptsLimit");
+        int maxAttempts = maxAttemptsBucket.isExists() ? maxAttemptsBucket.get() : 3;
+
+        RBucket<Integer> lockoutTimeBucket = redissonClient.getBucket("tribu:security:pinLockoutTime");
+        int lockoutTime = lockoutTimeBucket.isExists() ? lockoutTimeBucket.get() : 15;
+
+        RBucket<Boolean> pinLock = redissonClient.getBucket("tribu:pin:lock:" + usuarioId);
+        if (pinLock.isExists()) {
+            throw new TransferenciaException("Límite de intentos de PIN superado. Transferencias congeladas por " + lockoutTime + " minutos.");
         }
+
+        if (pin == null || !passwordEncoder.matches(pin, usuario.getPinSeguridadHash())) {
+            RBucket<Integer> pinAttempts = redissonClient.getBucket("tribu:pin:attempts:" + usuarioId);
+            Integer attempts = pinAttempts.get();
+            if (attempts == null) {
+                attempts = 0;
+            }
+            attempts++;
+            pinAttempts.set(attempts, java.time.Duration.ofMinutes(lockoutTime));
+
+            if (attempts >= maxAttempts) {
+                pinLock.set(true, java.time.Duration.ofMinutes(lockoutTime));
+                pinAttempts.delete();
+                throw new TransferenciaException("Límite de intentos de PIN superado. Tu cuenta ha sido congelada para transferencias por " + lockoutTime + " minutos.");
+            }
+
+            int restantes = maxAttempts - attempts;
+            throw new TransferenciaException("PIN incorrecto. Intentos restantes: " + restantes);
+        }
+
+        // Limpiar contador al ingresar PIN correcto
+        redissonClient.getBucket("tribu:pin:attempts:" + usuarioId).delete();
     }
 
     public boolean tieneSaldoSuficiente(Long usuarioId, double monto) {

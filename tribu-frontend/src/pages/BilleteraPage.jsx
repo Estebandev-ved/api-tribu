@@ -305,22 +305,22 @@ const BilleteraPage = () => {
                             </div>
 
                             {/* Actions Row */}
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', width: '100%' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', width: '100%' }}>
                                 {canSpinToday() ? (
                                     <motion.button
                                         whileHover={{ scale: 1.02, translateY: -2 }}
                                         whileTap={{ scale: 0.98 }}
                                         onClick={() => setShowRuleta(true)}
-                                        style={{ background: '#E8621A', color: '#fff', border: 'none', borderRadius: '14px', padding: '13px 0', fontSize: '15px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', boxShadow: '0 8px 20px rgba(232, 98, 26, 0.3)' }}
+                                        style={{ background: '#E8621A', color: '#fff', border: 'none', borderRadius: '14px', padding: '13px 0', fontSize: '13px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', width: '100%', boxShadow: '0 8px 20px rgba(232, 98, 26, 0.3)' }}
                                     >
-                                        <Gift size={18} /> Ruleta diaria
+                                        <Gift size={16} /> Ruleta diaria
                                     </motion.button>
                                 ) : (
                                     <button
                                         disabled
-                                        style={{ background: 'rgba(255, 255, 255, 0.05)', color: 'rgba(255, 255, 255, 0.3)', border: 'none', borderRadius: '14px', padding: '13px 0', fontSize: '15px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', cursor: 'not-allowed' }}
+                                        style={{ background: 'rgba(255, 255, 255, 0.05)', color: 'rgba(255, 255, 255, 0.3)', border: 'none', borderRadius: '14px', padding: '13px 0', fontSize: '13px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', width: '100%', cursor: 'not-allowed' }}
                                     >
-                                        <Gift size={18} /> Ruleta jugada
+                                        <Gift size={16} /> Ruleta jugada
                                     </button>
                                 )}
 
@@ -328,9 +328,19 @@ const BilleteraPage = () => {
                                     <motion.button
                                         whileHover={{ scale: 1.02, translateY: -2 }}
                                         whileTap={{ scale: 0.98 }}
-                                        style={{ background: 'transparent', color: '#00C896', border: '1.5px solid #00C896', borderRadius: '14px', padding: '11.5px 0', fontSize: '15px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%' }}
+                                        style={{ background: 'transparent', color: '#00C896', border: '1.5px solid #00C896', borderRadius: '14px', padding: '11.5px 0', fontSize: '13px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', width: '100%' }}
                                     >
-                                        <Zap size={18} /> Transferir
+                                        <Zap size={16} /> Transferir
+                                    </motion.button>
+                                </Link>
+
+                                <Link to="/cobro-qr" style={{ textDecoration: 'none', width: '100%' }}>
+                                    <motion.button
+                                        whileHover={{ scale: 1.02, translateY: -2 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        style={{ background: 'transparent', color: '#ffb84d', border: '1.5px solid #ffb84d', borderRadius: '14px', padding: '11.5px 0', fontSize: '13px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', width: '100%' }}
+                                    >
+                                        <Coins size={16} /> Cobro QR
                                     </motion.button>
                                 </Link>
                             </div>

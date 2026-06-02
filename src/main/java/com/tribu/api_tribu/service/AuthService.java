@@ -338,7 +338,7 @@ public class AuthService {
                     .orElse(null);
 
             if (referente != null) {
-                // Bono para el referente (10.000 COP) — Ledger CLEARED inmediato
+                // Bono para el referente (10.000 pts) — Ledger CLEARED inmediato
                 saldoService.registrarBonoReferente(referente, savedUsuario.getNombreCompleto());
 
                 // Notificar al referente en tiempo real si está conectado
@@ -346,9 +346,9 @@ public class AuthService {
                         referente.getId(),
                         SaldoService.BONO_REFERENTE,
                         "REFERIDO",
-                        savedUsuario.getNombreCompleto() + " se unió con tu código. ¡+$10.000!");
+                        savedUsuario.getNombreCompleto() + " se unió con tu código. ¡+10.000 pts!");
 
-                // Bono para el nuevo usuario (5.000 COP) — Ledger CLEARED inmediato
+                // Bono para el nuevo usuario (5.000 pts) — Ledger CLEARED inmediato
                 saldoService.registrarBonoNuevoUsuario(savedUsuario, codigoPromo.toUpperCase());
             }
         }
