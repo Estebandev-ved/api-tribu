@@ -4,7 +4,7 @@ import { Flame, Calendar, Gift, Trophy, Star } from 'lucide-react'
 import AgeVerification from '../components/AgeVerification'
 import { rachaService } from '../services/services'
 import { useAuth } from '../context/AuthContext'
-import { formatCOP, formatFecha } from '../utils/formatters'
+import { formatPts, formatFecha } from '../utils/formatters'
 import { getTierColor, getTierFromOrden } from '../utils/tierColors'
 import Skeleton from '../components/Skeleton'
 import EmptyState from '../components/EmptyState'
@@ -172,7 +172,7 @@ export default function RachaPage() {
                   <span style={{ color: '#fff', fontWeight: 600 }}>{bonus.dias} días más</span>
                   <span style={{ color: '#888', marginLeft: 8 }}>→</span>
                   <span style={{ color: tierColor.primary, fontWeight: 700, marginLeft: 8 }}>
-                    {formatCOP(bonus.monto)}
+                    {formatPts(bonus.monto)}
                   </span>
                 </div>
                 <div style={{ flex: 1, marginLeft: 16 }}>
@@ -241,7 +241,7 @@ export default function RachaPage() {
                     </p>
                   </div>
                   <span style={{ color: tierColor.primary, fontWeight: 700, fontSize: '1rem' }}>
-                    +{formatCOP(item.monto)}
+                    +{formatPts(item.monto)}
                   </span>
                 </motion.div>
               ))}

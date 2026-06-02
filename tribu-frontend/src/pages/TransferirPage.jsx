@@ -5,7 +5,7 @@ import { transferenciaService, pinService } from '../services/services'
 import profileService from '../services/profileService'
 import { useAuth } from '../context/AuthContext'
 import { useNotification } from '../context/NotificationContext'
-import { formatCOP } from '../utils/formatters'
+import { formatPts } from '../utils/formatters'
 import { getTierColor, getTierFromOrden } from '../utils/tierColors'
 import TierBadge from '../components/TierBadge'
 import toast from 'react-hot-toast'
@@ -99,13 +99,13 @@ export default function TransferirPage() {
     const val = parseInt(monto)
     if (!val || val <= 0) return { ok: false, msg: 'Ingresa un monto valido' }
     if (limite && val < limite.minimoPorTransferencia) {
-      return { ok: false, msg: `El monto minimo es ${formatCOP(limite.minimoPorTransferencia)}` }
+      return { ok: false, msg: `El monto minimo es ${formatPts(limite.minimoPorTransferencia)}` }
     }
     if (limite && val > limite.maximoPorTransferencia) {
-      return { ok: false, msg: `El monto maximo para tu nivel es ${formatCOP(limite.maximoPorTransferencia)}` }
+      return { ok: false, msg: `El monto maximo para tu nivel es ${formatPts(limite.maximoPorTransferencia)}` }
     }
     if (val > saldo) {
-      return { ok: false, msg: `Saldo insuficiente. Tienes ${formatCOP(saldo)}` }
+      return { ok: false, msg: `Saldo insuficiente. Tienes ${formatPts(saldo)}` }
     }
     return { ok: true }
   }
@@ -159,7 +159,7 @@ export default function TransferirPage() {
           hour: '2-digit', minute: '2-digit'
         })
       })
-      toast.success(`¡${formatCOP(monto)} enviados a ${destinatario.nombre}!`)
+      toast.success(`¡${formatPts(monto)} enviados a ${destinatario.nombre}!`)
     } catch (err) {
       if (!err.response) {
         // Falló la red pero navigator dice online (por ejemplo, servidor inalcanzable)
@@ -298,7 +298,7 @@ export default function TransferirPage() {
           }}>
             <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
               <div style={{ fontSize: 12, color: '#888', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Monto transferido</div>
-              <div style={{ fontSize: '2rem', fontWeight: 800, color: '#00C896' }}>{formatCOP(transferResult.monto)}</div>
+              <div style={{ fontSize: '2rem', fontWeight: 800, color: '#00C896' }}>{formatPts(transferResult.monto)}</div>
             </div>
 
             <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '0.8rem' }}>
@@ -316,7 +316,7 @@ export default function TransferirPage() {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
                 <span style={{ color: '#888' }}>Nuevo saldo</span>
-                <span style={{ color: '#fff', fontWeight: 700 }}>{formatCOP(transferResult.nuevoSaldo)}</span>
+                <span style={{ color: '#fff', fontWeight: 700 }}>{formatPts(transferResult.nuevoSaldo)}</span>
               </div>
             </div>
           </div>
@@ -573,13 +573,13 @@ export default function TransferirPage() {
                 <div>
                   <p style={{ color: '#888', fontSize: '0.8rem', margin: 0 }}>Saldo disponible</p>
                   <p style={{ color: '#fff', fontSize: '1.2rem', fontWeight: 700, margin: '2px 0 0' }}>
-                    {formatCOP(saldo)}
+                    {formatPts(saldo)}
                   </p>
                 </div>
                 {limite && (
                   <div style={{ textAlign: 'right' }}>
                     <p style={{ color: '#888', fontSize: '0.75rem', margin: 0 }}>
-                      Limite: {formatCOP(limite.maximoPorTransferencia)} / trans.
+                      Limite: {formatPts(limite.maximoPorTransferencia)} / trans.
                     </p>
                     <p style={{ color: '#666', fontSize: '0.75rem', margin: '2px 0 0' }}>
                       Hoy: {limite.transaccionesHoy}/{limite.limiteTransaccionesDiarias} trans.
@@ -648,7 +648,7 @@ export default function TransferirPage() {
                         cursor: 'pointer'
                       }}
                     >
-                      +{formatCOP(amt)}
+                      +{formatPts(amt)}
                     </button>
                   ))}
                 </div>
@@ -732,7 +732,7 @@ export default function TransferirPage() {
                   )}
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                     <span style={{ color: '#888', fontSize: '0.85rem' }}>Monto</span>
-                    <span style={{ color: '#fff', fontWeight: 800 }}>{formatCOP(monto)}</span>
+                    <span style={{ color: '#fff', fontWeight: 800 }}>{formatPts(monto)}</span>
                   </div>
                   {mensaje && (
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
