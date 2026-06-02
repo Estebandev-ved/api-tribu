@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ShoppingCart, ArrowLeft, ShieldCheck, Truck, RotateCcw } from 'lucide-react'
 import OptimizedImage from '../components/OptimizedImage'
 import toast from 'react-hot-toast'
+import { formatCOP } from '../utils/formatters'
 
 export default function ProductoDetailPage() {
     const { id } = useParams()
@@ -62,8 +63,6 @@ export default function ProductoDetailPage() {
         }
         fetchProducto()
     }, [id])
-
-    const formatCOP = (n) => `${Math.round(n).toLocaleString('es-CO')} pts`
 
     const handleAddToCart = () => {
         if (producto && producto.stock > 0) {

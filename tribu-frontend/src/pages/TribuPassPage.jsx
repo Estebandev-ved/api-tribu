@@ -23,8 +23,7 @@ import {
 import { useAuth } from '../context/AuthContext'
 import { toast } from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
-
-const formatCurrency = (monto) => `${new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 }).format(monto || 0)} Puntos Tribu`;
+import { formatCOP as formatCurrency } from '../utils/formatters';
 
 const trustItems = [
     { icon: <Lock size={20} />, title: 'Pago 100% Seguro', desc: 'Cifrado SSL + métodos verificados' },
