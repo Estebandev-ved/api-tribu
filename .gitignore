@@ -39,3 +39,44 @@ build/
 tribu-frontend/.env
 tribu-frontend/.env.local
 tribu-frontend/.env.*.local
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+log_utf8.tmp
+server_log.txt
+startup_log.txt
+build_debug.log
+build_errors.log
+build_errors.txt
+compile.log
+compile-email.log
+compile_errors.txt
+compile_errors_utf8.txt
+compile_output.log
+compile_result.log
+compile_utf8.log
+error.log
+error_utf8.log
+spring_boot.log
+tribu-frontend/build_error.txt
+
+# JSON Backups and Scratches
+productos.json
+productos_rechecked.json
+productos_utf8.json
+login_token.json
+
+# Tokens & Secrets
+token.txt
+token_utf8.txt
+*.token
+*.key
+*.cert
+*.pem
+cloudflared-config.yml
+
+# Test Evidence
+test_evidence.jpg
+
