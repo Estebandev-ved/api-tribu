@@ -94,7 +94,13 @@ public class AdminProductoAiController {
 
             ProcessBuilder processBuilder = new ProcessBuilder(command);
             processBuilder.redirectErrorStream(true); // Capturar stderr y stdout juntos
-            Process process = processBuilder.start();
+            Process process;
+            try {
+                process = processBuilder.start();
+            } catch (IOException startErr) {
+                log.warn("⚠️ [AdminProductoAi] No se pudo ejecutar Python. Fallback local. Razón: {}", startErr.getMessage());
+                return ResponseEntity.ok(buildFallbackResponse(sanitizedConcepto, sanitizedCategoria, sanitizedTarget));
+            }
 
             // Leer respuesta
             StringBuilder output = new StringBuilder();
@@ -108,9 +114,8 @@ public class AdminProductoAiController {
 
             int exitCode = process.waitFor();
             if (exitCode != 0) {
-                log.error("❌ [AdminProductoAi] El script de Python terminó con código de error {}. Detalles: {}", exitCode, output);
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(Map.of("error", "El Agente Creativo IA falló al procesar el concepto.", "details", output.toString()));
+                log.error("❌ [AdminProductoAi] El script de Python terminó con código de error {}. Fallback local. Detalles: {}", exitCode, output);
+                return ResponseEntity.ok(buildFallbackResponse(sanitizedConcepto, sanitizedCategoria, sanitizedTarget));
             }
 
             // 3. Parsear JSON de salida
@@ -140,8 +145,7 @@ public class AdminProductoAiController {
 
         } catch (Exception e) {
             log.error("❌ [AdminProductoAi] Error catastrófico en la generación IA: ", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error interno en el backend al procesar la solicitud de IA", "message", e.getMessage()));
+            return ResponseEntity.ok(buildFallbackResponse(sanitizedConcepto, sanitizedCategoria, sanitizedTarget));
         }
     }
 
@@ -229,5 +233,91 @@ public class AdminProductoAiController {
         if (lowercase.contains(".webp")) return ".webp";
         if (lowercase.contains(".gif")) return ".gif";
         return ".jpg";
+    }
+
+    private Map<String, Object> buildFallbackResponse(String concepto, String categoria, String targetAudience) {
+        Random random = new Random();
+        int precioSugerido = (35 + random.nextInt(91)) * 1000;
+        int costoProveedor = (int) Math.round(precioSugerido * (0.32 + (random.nextDouble() * 0.10)));
+        int costoEmpaqueEnvio = (8 + random.nextInt(7)) * 1000;
+        int comisionPasarelaFija = (2 + random.nextInt(3)) * 1000;
+
+        String targetLower = targetAudience == null ? "" : targetAudience.toLowerCase(Locale.ROOT);
+        String descripcion;
+        if (targetLower.contains("joven") || targetLower.contains("chico") || targetLower.contains("street")) {
+            descripcion = "Disena tu estilo con " + concepto + ". Una pieza pensada para quienes buscan impacto y durabilidad en el dia a dia.\n\n" +
+                    "Caracteristicas principales:\n" +
+                    "- Materiales premium con acabados de alta resistencia.\n" +
+                    "- Diseno ergonomico y uso comodo.\n" +
+                    "- Edicion limitada con empaque de coleccion.\n\n" +
+                    "Consiguelo hoy y haz que tu tribu hable de ti.";
+        } else if (targetLower.contains("empren") || targetLower.contains("negoc") || targetLower.contains("ejec")) {
+            descripcion = "Potencia tu presencia profesional con " + concepto + ". Pensado para ejecutivos que valoran precision, estilo y rendimiento.\n\n" +
+                    "Beneficios clave:\n" +
+                    "- Construccion minimalista premium.\n" +
+                    "- Funcionalidad avanzada y durabilidad superior.\n" +
+                    "- Garantia Tribu Care incluida.\n\n" +
+                    "Invierte en tu imagen y proyecta autoridad.";
+        } else {
+            descripcion = "Descubre la armonia entre diseno innovador y practicidad diaria con " + concepto + ".\n\n" +
+                    "Por que elegir Tribu:\n" +
+                    "- Materiales certificados y de alta durabilidad.\n" +
+                    "- Uso sencillo y mantenimiento amigable.\n" +
+                    "- Empaque premium incluido.\n\n" +
+                    "Compra hoy y eleva tu experiencia.";
+        }
+
+        String imagenUrl = mapImagenUrl(concepto);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("nombre", concepto + " Premium Edicion Tribu");
+        response.put("descripcion", descripcion);
+        response.put("precioSugerido", precioSugerido);
+        response.put("costoProveedor", costoProveedor);
+        response.put("costoEmpaqueEnvio", costoEmpaqueEnvio);
+        response.put("comisionPasarelaFija", comisionPasarelaFija);
+        response.put("searchKeywords", (categoria == null || categoria.isBlank() ? "producto" : categoria.toLowerCase(Locale.ROOT)) + ", premium, tribu, original");
+        response.put("imagenUrl", imagenUrl);
+        response.put("isAiGenerated", false);
+        response.put("aiModelUsed", "Fallback Local Tribu");
+        return response;
+    }
+
+    private String mapImagenUrl(String concepto) {
+        String base = "https://images.unsplash.com/";
+        List<String> imgIds = List.of(
+                "photo-1523275335684-37898b6baf30",
+                "photo-1542291026-7eec264c27ff",
+                "photo-1572635196237-14b3f281503f",
+                "photo-1560343090-f0409e92791a",
+                "photo-1505740420928-5e560c06d30e",
+                "photo-1583394838336-acd977736f90",
+                "photo-1526170375885-4d8ecf77b99f",
+                "photo-1585386959984-a4155224a1ad",
+                "photo-1581655353564-df123a1eb820",
+                "photo-1608231387042-66d1773070a5"
+        );
+
+        String conceptLower = concepto == null ? "" : concepto.toLowerCase(Locale.ROOT);
+        if (conceptLower.contains("gorra") || conceptLower.contains("cap")) {
+            return base + "photo-1588850561407-ed78c282e89b?q=80&w=600&auto=format&fit=crop";
+        }
+        if (conceptLower.contains("termo") || conceptLower.contains("botella") || conceptLower.contains("vaso")) {
+            return base + "photo-1585386959984-a4155224a1ad?q=80&w=600&auto=format&fit=crop";
+        }
+        if (conceptLower.contains("reloj") || conceptLower.contains("smartwatch")) {
+            return base + "photo-1523275335684-37898b6baf30?q=80&w=600&auto=format&fit=crop";
+        }
+        if (conceptLower.contains("audifono") || conceptLower.contains("auricular") || conceptLower.contains("headphone")) {
+            return base + "photo-1505740420928-5e560c06d30e?q=80&w=600&auto=format&fit=crop";
+        }
+        if (conceptLower.contains("zapato") || conceptLower.contains("tennis") || conceptLower.contains("zapatilla")) {
+            return base + "photo-1542291026-7eec264c27ff?q=80&w=600&auto=format&fit=crop";
+        }
+        if (conceptLower.contains("camiseta") || conceptLower.contains("shirt") || conceptLower.contains("buzo")) {
+            return base + "photo-1521572267360-ee0c2909d518?q=80&w=600&auto=format&fit=crop";
+        }
+
+        return base + imgIds.get(new Random().nextInt(imgIds.size())) + "?q=80&w=600&auto=format&fit=crop";
     }
 }

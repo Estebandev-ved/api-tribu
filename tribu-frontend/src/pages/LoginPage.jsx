@@ -52,7 +52,7 @@ export default function LoginPage() {
                 });
                 window.google.accounts.id.renderButton(
                     document.getElementById("googleBtn"),
-                    { theme: "dark", size: "large", width: "100%", type: "standard", shape: "rectangular", logo_alignment: "left" }
+                    { theme: "dark", size: "large", width: 320, type: "standard", shape: "rectangular", logo_alignment: "left" }
                 );
             }
         };
