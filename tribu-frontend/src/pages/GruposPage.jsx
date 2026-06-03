@@ -135,7 +135,7 @@ export default function GruposPage() {
               <HelpCircle size={16} color="#FF5722" />
               ¿Qué pueden comprar en Grupo?
             </h4>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: 10 }}>
               <div style={{
                 background: 'rgba(255,255,255,0.03)',
                 border: '1px solid rgba(255,255,255,0.05)',
@@ -335,7 +335,8 @@ export default function GruposPage() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: 6
+                gap: 6,
+                minHeight: '44px'
               }}
             >
               <t.icon size={16} />

@@ -156,7 +156,7 @@ export default function RecompensasPage() {
 
         {/* Tab Contents */}
         {activeTab === 'catalogo' && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '1.5rem', alignItems: 'start' }}>
+          <div className="responsive-grid-1" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '1.5rem', alignItems: 'start' }}>
             {/* Catalog Grid */}
             <div style={cardStyles}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.5rem' }}>

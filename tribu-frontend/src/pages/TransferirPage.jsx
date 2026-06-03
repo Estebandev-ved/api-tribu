@@ -460,7 +460,7 @@ export default function TransferirPage() {
                       border: '1px solid var(--color-border-tertiary, #333)',
                       borderRadius: 10,
                       color: '#fff',
-                      fontSize: '1rem',
+                      fontSize: '16px',
                       outline: 'none'
                     }}
                   />
@@ -666,7 +666,7 @@ export default function TransferirPage() {
                   border: '1px solid var(--color-border-tertiary, #333)',
                   borderRadius: 10,
                   color: '#fff',
-                  fontSize: '0.9rem',
+                  fontSize: '16px',
                   marginBottom: '1rem',
                   outline: 'none'
                 }}
@@ -790,7 +790,7 @@ export default function TransferirPage() {
                       border: '1px solid var(--color-border-tertiary, #333)',
                       borderRadius: 10,
                       color: '#fff',
-                      fontSize: '1.2rem',
+                      fontSize: '16px',
                       textAlign: 'center',
                       letterSpacing: 12,
                       outline: 'none'
@@ -915,7 +915,7 @@ export default function TransferirPage() {
                         border: '1px solid rgba(255,255,255,0.1)',
                         color: '#DDD',
                         fontFamily: 'monospace',
-                        fontSize: '0.85rem',
+                        fontSize: '16px',
                         resize: 'none',
                         outline: 'none'
                       }}

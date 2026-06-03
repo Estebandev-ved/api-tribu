@@ -20,13 +20,18 @@ export const NotificationProvider = ({ children }) => {
     // Conectamos al WebSocket usando nuestro hook
     const { ultimoEvento, conectado } = useSaldoWebSocket(user?.id, token);
 
+    console.log('[NotificationContext] Rendering NotificationProvider. user:', user?.email, 'conectado:', conectado);
+
     // Sincronizador de transacciones guardadas fuera de línea (IndexedDB)
     const syncOfflineTransfers = async () => {
+        console.log('[NotificationContext] syncOfflineTransfers called. isSyncing:', isSyncing, 'onLine:', navigator.onLine, 'hasUser:', !!user);
         if (isSyncing || !navigator.onLine || !user) return;
         setIsSyncing(true);
+        console.log('[NotificationContext] Starting sync of offline transfers...');
         
         try {
             const pending = await dbOfflineQueue.getPendingTransfers();
+            console.log('[NotificationContext] Pending transfers count:', pending.length);
             if (pending.length === 0) {
                 setIsSyncing(false);
                 return;
@@ -36,6 +41,7 @@ export const NotificationProvider = ({ children }) => {
 
             for (const tx of pending) {
                 try {
+                    console.log('[NotificationContext] Syncing tx id:', tx.id);
                     // Actualizar el estado de IndexedDB a 'syncing' para evitar doble envío en ráfaga
                     await dbOfflineQueue.updateTransferStatus(tx.id, 'syncing');
                     
@@ -70,33 +76,38 @@ export const NotificationProvider = ({ children }) => {
                 }
             }
         } catch (error) {
-            console.warn('Sincronización en segundo plano detenida temporalmente:', error.message);
+            console.warn('[NotificationContext] Sincronización en segundo plano detenida temporalmente:', error.message);
         } finally {
             toast.dismiss('offline-sync-toast');
             setIsSyncing(false);
+            console.log('[NotificationContext] Sync completed.');
         }
     };
 
     // Escuchar eventos de red y disparar sincronización al montar o recuperar conexión
     useEffect(() => {
+        console.log('[NotificationContext] useEffect [user] triggered. user:', user?.email);
         if (!user) return;
         
         // Ejecutar al montar
         syncOfflineTransfers();
 
         const handleOnline = () => {
+            console.log('[NotificationContext] window online event triggered');
             toast.success('🌐 ¡Conexión recuperada! Sincronizando transacciones en la cola de seguridad...', { icon: '⚡' });
             syncOfflineTransfers();
         };
 
         window.addEventListener('online', handleOnline);
         return () => {
+            console.log('[NotificationContext] cleaning up online event listener');
             window.removeEventListener('online', handleOnline);
         };
     }, [user]);
 
     // Escuchamos cambios en ultimoEvento para disparar notificaciones
     useEffect(() => {
+        console.log('[NotificationContext] useEffect [ultimoEvento] triggered. event:', ultimoEvento);
         if (ultimoEvento) {
             agregarNuevaNotificacion({
                 id: Date.now(),

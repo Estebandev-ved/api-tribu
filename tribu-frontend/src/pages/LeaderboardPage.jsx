@@ -69,7 +69,7 @@ export default function LeaderboardPage() {
       </div>
 
       {leaderboard.length >= 3 && (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: '1.5rem', marginBottom: '4rem' }}>
+        <div className="responsive-gap-md" style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: '1.5rem', marginBottom: '4rem' }}>
           {[1, 0, 2].map((idx) => {
             const item = leaderboard[idx]
             const pos = item.posicion
@@ -83,17 +83,17 @@ export default function LeaderboardPage() {
                 style={{ 
                     display: 'flex', 
                     flexDirection: 'column', 
-                    items: 'center', 
+                    alignItems: 'center', 
                     order: idx === 0 ? 2 : idx === 1 ? 1 : 3,
-                    width: isFirst ? '120px' : '100px',
+                    width: isFirst ? 'clamp(90px, 28vw, 120px)' : 'clamp(80px, 24vw, 100px)',
                     textAlign: 'center'
                 }}
               >
-                <div style={{ fontSize: isFirst ? '3rem' : '2.5rem', marginBottom: '0.5rem' }}>
+                <div style={{ fontSize: isFirst ? 'clamp(2rem, 8vw, 3rem)' : 'clamp(1.6rem, 6vw, 2.5rem)', marginBottom: '0.5rem' }}>
                   {pos === 1 ? '🥇' : pos === 2 ? '🥈' : '🥉'}
                 </div>
                 <div style={{ 
-                    height: pos === 1 ? '140px' : pos === 2 ? '110px' : '90px', 
+                    height: pos === 1 ? 'clamp(100px, 30vw, 140px)' : pos === 2 ? 'clamp(80px, 24vw, 110px)' : 'clamp(70px, 20vw, 90px)', 
                     width: '100%',
                     borderRadius: '12px 12px 0 0',
                     background: `linear-gradient(to top, ${pos === 1 ? '#FFD700' : pos === 2 ? '#C0C0C0' : '#CD7F32'}, transparent)`,
@@ -105,8 +105,8 @@ export default function LeaderboardPage() {
                     overflow: 'hidden'
                 }}>
                   <div style={{
-                      width: isFirst ? '60px' : '48px',
-                      height: isFirst ? '60px' : '48px',
+                      width: isFirst ? 'clamp(44px, 14vw, 60px)' : 'clamp(36px, 11vw, 48px)',
+                      height: isFirst ? 'clamp(44px, 14vw, 60px)' : 'clamp(36px, 11vw, 48px)',
                       borderRadius: '50%',
                       background: 'linear-gradient(135deg, #FF5722, #FF9800)',
                       display: 'flex',

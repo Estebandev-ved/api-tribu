@@ -202,6 +202,7 @@ const BilleteraPage = () => {
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, y: -50, scale: 0.9 }}
                             transition={{ duration: 0.5 }}
+                            className="mobile-p-md"
                             style={{ background: 'var(--color-card-bg)', border: '1px solid var(--color-card-border)', borderRadius: '24px', padding: '3rem', textAlign: 'center', position: 'relative', overflow: 'hidden' }}
                         >
                             <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(255,87,34,0.15) 0%, transparent 70%)', filter: 'blur(30px)', pointerEvents: 'none' }} />
@@ -280,7 +281,7 @@ const BilleteraPage = () => {
                             </div>
 
                             {/* Stats Row */}
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', width: '100%' }}>
+                            <div className="responsive-grid-1" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', width: '100%' }}>
                                 <div style={{ background: 'var(--color-card-bg-soft)', borderRadius: '14px', padding: '0.75rem 1rem', border: '1px solid var(--color-card-border)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                                     <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-text)' }}>
                                         +{new Intl.NumberFormat('es-CO').format(stats.ganadosHoy)}
@@ -305,7 +306,7 @@ const BilleteraPage = () => {
                             </div>
 
                             {/* Actions Row */}
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', width: '100%' }}>
+                            <div className="responsive-grid-1" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', width: '100%' }}>
                                 {canSpinToday() ? (
                                     <motion.button
                                         whileHover={{ scale: 1.02, translateY: -2 }}
@@ -351,7 +352,7 @@ const BilleteraPage = () => {
                             </div>
 
                             {/* Quick Actions Grid */}
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', width: '100%' }}>
+                            <div className="responsive-grid-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', width: '100%' }}>
                                 <motion.div 
                                     whileHover={{ scale: 1.04, backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
                                     whileTap={{ scale: 0.96 }}
@@ -433,7 +434,7 @@ const BilleteraPage = () => {
                             )}
 
                             {/* Terms & Conditions Section */}
-                            <div style={{
+                            <div className="mobile-p-md" style={{
                                 background: 'rgba(255, 255, 255, 0.01)',
                                 border: '1px solid rgba(255, 255, 255, 0.03)',
                                 borderRadius: '1.5rem',
@@ -462,7 +463,7 @@ const BilleteraPage = () => {
                             </div>
 
                             {/* Movements List Section */}
-                            <div id="historial-movimientos" style={{ background: 'rgba(20,20,20,0.6)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '1.5rem', padding: '2rem' }}>
+                            <div id="historial-movimientos" className="mobile-p-md" style={{ background: 'rgba(20,20,20,0.6)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '1.5rem', padding: '2rem' }}>
                                 <h3 style={{ fontSize: '1.4rem', fontWeight: 700, margin: '0 0 1.5rem 0', color: '#fff', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                     Últimos Movimientos
                                 </h3>

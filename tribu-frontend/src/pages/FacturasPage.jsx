@@ -103,9 +103,9 @@ export default function FacturasPage() {
             <div className="container" style={{ maxWidth: 1100 }}>
                 
                 {/* Header */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem' }}>
+                    <div className="responsive-flex-col" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem', gap: '1.2rem' }}>
                         <div>
-                            <h1 style={{ fontSize: '2.5rem', fontWeight: 900, color: '#fff', margin: 0 }}>Facturación Electrónica</h1>
+                            <h1 style={{ fontSize: 'clamp(2rem, 6vw, 2.5rem)', fontWeight: 900, color: '#fff', margin: 0 }}>Facturación Electrónica</h1>
                             <p style={{ color: 'var(--color-text-muted)', marginTop: '0.5rem' }}>Tus facturas se emiten automáticamente al pagar</p>
                         </div>
                         <motion.button
@@ -139,19 +139,20 @@ export default function FacturasPage() {
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: i * 0.05 }}
+                                className="responsive-flex-col mobile-p-md"
                                 style={{ 
                                     background: 'rgba(20,20,25,0.6)', border: '1px solid rgba(255,255,255,0.05)', 
                                     borderRadius: '20px', padding: '1.5rem', display: 'flex', 
                                     justifyContent: 'space-between', alignItems: 'center',
-                                    backdropFilter: 'blur(10px)'
+                                    backdropFilter: 'blur(10px)', gap: '1.5rem'
                                 }}
                             >
-                                <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-                                    <div style={{ width: '50px', height: '50px', background: 'rgba(255,255,255,0.03)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <div style={{ display: 'flex', gap: '1.2rem', alignItems: 'center', width: '100%' }}>
+                                    <div style={{ width: '50px', height: '50px', background: 'rgba(255,255,255,0.03)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                         <FileText size={24} color="var(--color-primary)" />
                                     </div>
-                                    <div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', flexWrap: 'wrap' }}>
                                             <h4 style={{ color: '#fff', margin: 0, fontSize: '1.1rem' }}>{f.numeroFactura}</h4>
                                             <span style={{ 
                                                 fontSize: '0.65rem', fontWeight: 800, padding: '0.2rem 0.6rem', borderRadius: '6px',
@@ -167,8 +168,8 @@ export default function FacturasPage() {
                                     </div>
                                 </div>
 
-                                <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
-                                    <div style={{ textAlign: 'right' }}>
+                                <div className="mobile-w-full" style={{ display: 'flex', gap: '2rem', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    <div style={{ textAlign: 'left' }}>
                                         <p style={{ color: '#888', fontSize: '0.75rem', margin: 0 }}>TOTAL</p>
                                         <p style={{ color: '#fff', fontWeight: 700, fontSize: '1.1rem', margin: 0 }}>{formatCurrency(f.total)}</p>
                                     </div>

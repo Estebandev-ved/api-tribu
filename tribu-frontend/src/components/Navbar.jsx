@@ -74,9 +74,15 @@ function DropdownMenu({ label, Icon, links, isActive }) {
                     >
                         {links.map((link, i) => (
                             <Link
-                                key={link.to}
+                                key={link.to + '-' + i}
                                 to={link.to}
-                                onClick={() => setIsOpen(false)}
+                                onClick={(e) => {
+                                    setIsOpen(false);
+                                    if (link.onClick) {
+                                        e.preventDefault();
+                                        link.onClick();
+                                    }
+                                }}
                                 style={{ textDecoration: 'none' }}
                             >
                                 <motion.div

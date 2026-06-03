@@ -679,14 +679,53 @@ tr:hover td {
     font-size: 1.6rem !important;
   }
 
-  /*  SECCI�N FEATURES  */
-  /* 2 columnas en tablets, 1 en m�vil peque�o */
+  /*  SECCIN FEATURES  */
+  /* 2 columnas en tablets, 1 en mvil pequeo */
   .features-grid {
     grid-template-columns: repeat(2, 1fr) !important;
   }
+
+  /* Utilities for mobile responsiveness optimization */
+  .responsive-flex-col {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .responsive-grid-1 {
+    grid-template-columns: 1fr !important;
+  }
+  .responsive-grid-2 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .responsive-gap-lg {
+    gap: 1rem !important;
+  }
+  .responsive-gap-md {
+    gap: 0.75rem !important;
+  }
+  .responsive-title {
+    font-size: clamp(1.8rem, 5vw, 2.5rem) !important;
+    letter-spacing: -1px !important;
+  }
+  .touch-target {
+    min-height: 44px !important;
+    min-width: 44px !important;
+  }
+  .mobile-w-full {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  .mobile-p-md {
+    padding: 1.25rem !important;
+  }
+  .mobile-p-sm {
+    padding: 0.75rem !important;
+  }
+  input, select, textarea, .input {
+    font-size: 16px !important;
+  }
 }
 
-/*  Pantallas muy peque�as (480px)  */
+/*  Pantallas muy pequeas (480px)  */
 @media (max-width: 480px) {
   :root { font-size: 14px; }
 

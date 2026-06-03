@@ -197,7 +197,7 @@ export default function ReferidoArbolPage() {
               <Share2 size={16} /> PROGRAMA DE REFERIDOS
             </div>
             <h1 style={{ 
-              fontSize: '3.5rem', 
+              fontSize: 'clamp(2rem, 8vw, 3.5rem)', 
               fontWeight: 900, 
               color: '#fff', 
               margin: 0, 
@@ -296,11 +296,15 @@ export default function ReferidoArbolPage() {
                 overflowX: 'auto',
                 minHeight: '500px',
                 display: 'flex',
-                justifyContent: 'center'
+                flexDirection: 'column',
+                justifyContent: 'flex-start',
+                alignItems: 'center'
               }}
             >
               {arbol ? (
-                <Nodo nodo={arbol} />
+                <div style={{ minWidth: 'max-content', margin: '0 auto', padding: '0 2rem' }}>
+                  <Nodo nodo={arbol} />
+                </div>
               ) : (
                 <div style={{ textAlign: 'center', color: '#666', marginTop: '6rem' }}>
                     <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🌱</div>
@@ -318,7 +322,7 @@ export default function ReferidoArbolPage() {
               style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}
             >
               {/* Main Stat Card */}
-              <div style={{ 
+              <div className="responsive-flex-col mobile-p-md" style={{ 
                 background: 'linear-gradient(225deg, #1a1a1a, #0a0a0a)',
                 borderRadius: '32px', 
                 padding: '3rem', 
@@ -328,7 +332,8 @@ export default function ReferidoArbolPage() {
                 boxShadow: '0 20px 50px rgba(0,0,0,0.4)',
                 display: 'flex',
                 justifyContent: 'space-between',
-                alignItems: 'center'
+                alignItems: 'center',
+                gap: '1.5rem'
               }}>
                 <div style={{ 
                   position: 'absolute', top: '-10%', right: '-5%', width: '300px', height: '300px',
@@ -338,7 +343,7 @@ export default function ReferidoArbolPage() {
                 
                 <div style={{ position: 'relative', zIndex: 1 }}>
                   <p style={{ fontSize: '1.1rem', fontWeight: 600, color: '#888', margin: '0 0 0.5rem 0' }}>Ganancias Totales Acumuladas</p>
-                  <h2 style={{ fontSize: '4.5rem', fontWeight: 950, color: '#fff', margin: 0, letterSpacing: '-3px' }}>
+                  <h2 style={{ fontSize: 'clamp(2.5rem, 8vw, 4.5rem)', fontWeight: 950, color: '#fff', margin: 0, letterSpacing: '-3px' }}>
                     {stats?.totalGanancias?.toLocaleString() || 0}
                     <span style={{ fontSize: '1.5rem', color: '#FF5722', marginLeft: '8px', letterSpacing: 'normal' }}> Pts</span>
                   </h2>
@@ -361,7 +366,7 @@ export default function ReferidoArbolPage() {
               </div>
 
               {/* Grid Stats */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '2rem' }}>
                 {[
                   { label: 'Total Referidos', value: stats?.totalReferidos || 0, icon: Users, color: '#3b82f6', desc: 'Comunidad total' },
                   { label: 'Activos Este Mes', value: stats?.activosEsteMes || 0, icon: Activity, color: '#00C896', desc: 'Usuarios en racha' },
@@ -392,7 +397,7 @@ export default function ReferidoArbolPage() {
               </div>
 
               {/* Levels & Breakdown */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '2rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 350px), 1fr))', gap: '2rem' }}>
                 <div style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '28px', padding: '2rem', border: '1px solid rgba(255,255,255,0.05)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '2rem' }}>
                     <div style={{ width: 40, height: 40, borderRadius: '12px', background: 'rgba(255, 255, 255, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

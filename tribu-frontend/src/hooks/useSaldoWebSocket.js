@@ -8,27 +8,44 @@ export function useSaldoWebSocket(usuarioId, token) {
   const clientRef = useRef(null);
 
   useEffect(() => {
-    if (!usuarioId || !token) return;
-
-    const getUrl = () => {
-      let url = import.meta.env.VITE_WS_URL
-      if (url) {
-        if (url.startsWith('wss://')) {
-          url = url.replace('wss://', 'https://')
-        } else if (url.startsWith('ws://')) {
-          url = url.replace('ws://', 'http://')
-        }
-        return url
-      }
-      if (window.location.port === '3000' || window.location.port === '5173') {
-        return 'http://localhost:8080/ws'
-      }
-      // En producción, conectar directamente con el backend en Render (Vercel no soporta WebSockets)
-      return 'https://api-tribu.onrender.com/ws'
+    console.log('[WebSocket] useEffect triggered with usuarioId:', usuarioId, 'token exists:', !!token);
+    if (!usuarioId || !token) {
+      console.log('[WebSocket] Missing usuarioId or token, skipping connection.');
+      return;
     }
 
+    const getUrl = () => {
+      let url = import.meta.env.VITE_WS_URL;
+      if (url) {
+        if (url.startsWith('wss://')) {
+          url = url.replace('wss://', 'https://');
+        } else if (url.startsWith('ws://')) {
+          url = url.replace('ws://', 'http://');
+        }
+        console.log('[WebSocket] Using configured VITE_WS_URL:', url);
+        return url;
+      }
+      // Check ports, including common dev ports
+      const port = window.location.port;
+      if (port === '3000' || port === '5173' || port === '5174' || port === '5175' || window.location.hostname === 'localhost') {
+        const localUrl = `http://${window.location.hostname}:8080/ws`;
+        console.log('[WebSocket] Local environment detected. Connecting to:', localUrl);
+        return localUrl;
+      }
+      // Production fallback
+      const prodUrl = 'https://api-tribu.onrender.com/ws';
+      console.log('[WebSocket] Production environment detected. Connecting to:', prodUrl);
+      return prodUrl;
+    };
+
+    const targetUrl = getUrl();
+    console.log('[WebSocket] Instantiating STOMP client targeting:', targetUrl);
+
     const client = new Client({
-      webSocketFactory: () => new SockJS(getUrl()),
+      webSocketFactory: () => {
+        console.log('[WebSocket] Creating new SockJS connection to:', targetUrl);
+        return new SockJS(targetUrl);
+      },
 
       connectHeaders: {
         Authorization: `Bearer ${token}`,
@@ -37,31 +54,47 @@ export function useSaldoWebSocket(usuarioId, token) {
       reconnectDelay: 5000,
 
       onConnect: () => {
+        console.log('[WebSocket] Connected successfully!');
         setConectado(true);
 
-        client.subscribe('/user/queue/saldo', (message) => {
+        const subscriptionPath = '/user/queue/saldo';
+        console.log('[WebSocket] Subscribing to:', subscriptionPath);
+        client.subscribe(subscriptionPath, (message) => {
           try {
+            console.log('[WebSocket] Message received:', message.body);
             const evento = JSON.parse(message.body);
             setUltimoEvento(evento);
           } catch (e) {
-            console.error('Error parseando evento WS:', e);
+            console.error('[WebSocket] Error parsing WS event:', e);
           }
         });
       },
 
       onDisconnect: () => {
+        console.log('[WebSocket] Disconnected.');
         setConectado(false);
       },
 
       onStompError: (frame) => {
-        console.error('Error STOMP:', frame.headers['message']);
+        console.error('[WebSocket] STOMP Error:', frame.headers['message'], frame.body);
       },
+
+      onWebSocketClose: (event) => {
+        console.warn('[WebSocket] Connection closed:', event);
+        setConectado(false);
+      },
+
+      onWebSocketError: (error) => {
+        console.error('[WebSocket] Error occurred:', error);
+      }
     });
 
+    console.log('[WebSocket] Activating STOMP client...');
     client.activate();
     clientRef.current = client;
 
     return () => {
+      console.log('[WebSocket] Deactivating STOMP client on cleanup...');
       client.deactivate();
     };
   }, [usuarioId, token]);

@@ -394,7 +394,7 @@ export default function TribuPassPage() {
                             </div>
                         </div>
                         
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.8rem' }}>
+                        <div className="responsive-grid-1" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.8rem' }}>
                             {benefits.map((b, i) => (
                                 <motion.div 
                                     key={i} 
@@ -600,36 +600,38 @@ export default function TribuPassPage() {
                         </h3>
                         
                         <div style={{ background: 'var(--color-card-bg)', borderRadius: '24px', border: '1px solid var(--color-card-border)', overflow: 'hidden' }}>
-                            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                                <thead>
-                                    <tr style={{ background: 'var(--color-card-bg-soft)' }}>
-                                        <th style={{ padding: '1.2rem', color: 'var(--color-text-muted)', fontSize: '0.8rem', fontWeight: 800 }}>FECHA</th>
-                                        <th style={{ padding: '1.2rem', color: 'var(--color-text-muted)', fontSize: '0.8rem', fontWeight: 800 }}>MONTO</th>
-                                        <th style={{ padding: '1.2rem', color: 'var(--color-text-muted)', fontSize: '0.8rem', fontWeight: 800 }}>ESTADO</th>
-                                        <th style={{ padding: '1.2rem', color: 'var(--color-text-muted)', fontSize: '0.8rem', fontWeight: 800 }}>REF. MOVIMIENTO</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {historial.map((h, i) => (
-                                        <tr key={h.id} style={{ borderTop: '1px solid var(--color-card-border)' }}>
-                                            <td style={{ padding: '1.2rem', color: 'var(--color-text)', fontSize: '0.9rem' }}>
-                                                {new Date(h.fecha).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' })}
-                                            </td>
-                                            <td style={{ padding: '1.2rem', color: 'var(--color-text)', fontWeight: 700 }}>{formatCurrency(h.monto)}</td>
-                                            <td style={{ padding: '1.2rem' }}>
-                                                <span style={{ 
-                                                    background: h.estado === 'EXITOSA' ? 'rgba(0, 200, 150, 0.1)' : 'rgba(255, 77, 77, 0.1)', 
-                                                    color: h.estado === 'EXITOSA' ? '#00c896' : '#ff4d4d',
-                                                    padding: '0.4rem 0.8rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 700
-                                                }}>
-                                                    {h.estado}
-                                                </span>
-                                            </td>
-                                            <td style={{ padding: '1.2rem', color: 'var(--color-text-muted)', fontSize: '0.9rem', fontFamily: 'monospace' }}>#{h.movimientoId || 'N/A'}</td>
+                            <div className="table-wrap">
+                                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                                    <thead>
+                                        <tr style={{ background: 'var(--color-card-bg-soft)' }}>
+                                            <th style={{ padding: '1.2rem', color: 'var(--color-text-muted)', fontSize: '0.8rem', fontWeight: 800 }}>FECHA</th>
+                                            <th style={{ padding: '1.2rem', color: 'var(--color-text-muted)', fontSize: '0.8rem', fontWeight: 800 }}>MONTO</th>
+                                            <th style={{ padding: '1.2rem', color: 'var(--color-text-muted)', fontSize: '0.8rem', fontWeight: 800 }}>ESTADO</th>
+                                            <th style={{ padding: '1.2rem', color: 'var(--color-text-muted)', fontSize: '0.8rem', fontWeight: 800 }}>REF. MOVIMIENTO</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        {historial.map((h, i) => (
+                                            <tr key={h.id} style={{ borderTop: '1px solid var(--color-card-border)' }}>
+                                                <td style={{ padding: '1.2rem', color: 'var(--color-text)', fontSize: '0.9rem' }}>
+                                                    {new Date(h.fecha).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                </td>
+                                                <td style={{ padding: '1.2rem', color: 'var(--color-text)', fontWeight: 700 }}>{formatCurrency(h.monto)}</td>
+                                                <td style={{ padding: '1.2rem' }}>
+                                                    <span style={{ 
+                                                        background: h.estado === 'EXITOSA' ? 'rgba(0, 200, 150, 0.1)' : 'rgba(255, 77, 77, 0.1)', 
+                                                        color: h.estado === 'EXITOSA' ? '#00c896' : '#ff4d4d',
+                                                        padding: '0.4rem 0.8rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 700
+                                                    }}>
+                                                        {h.estado}
+                                                    </span>
+                                                </td>
+                                                <td style={{ padding: '1.2rem', color: 'var(--color-text-muted)', fontSize: '0.9rem', fontFamily: 'monospace' }}>#{h.movimientoId || 'N/A'}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </motion.div>
                 )}

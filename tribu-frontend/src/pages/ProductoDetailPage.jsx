@@ -126,10 +126,10 @@ export default function ProductoDetailPage() {
                     Volver
                 </button>
 
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3rem' }}>
+                <div className="responsive-gap-lg" style={{ display: 'flex', flexWrap: 'wrap', gap: '3rem' }}>
 
                     {/* Columna Izquierda: Imagen con Zoom y Galería */}
-                    <div style={{ flex: '1 1 400px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div style={{ flex: '1 1 320px', display: 'flex', flexDirection: 'column', gap: '1rem', minWidth: 0 }}>
                         {/* Contenedor cuadrado estable para navegadores móviles y desktop */}
                         <div style={{ position: 'relative', width: '100%', paddingTop: '100%' }}>
                             <div
@@ -213,7 +213,7 @@ export default function ProductoDetailPage() {
                     </div>
 
                     {/* Columna Derecha: Detalles del Producto */}
-                    <div style={{ flex: '1 1 400px', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ flex: '1 1 320px', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
                         <div style={{ marginBottom: '0.5rem' }}>
                             <span style={{ fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.05em', color: 'var(--color-primary)', textTransform: 'uppercase' }}>
                                 {producto.categoria?.nombre || 'General'}
@@ -297,7 +297,8 @@ export default function ProductoDetailPage() {
                                     marginTop: '1.25rem',
                                     paddingTop: '1rem',
                                     borderTop: '1px solid var(--color-border)',
-                                    gap: '0.5rem'
+                                    gap: '0.5rem',
+                                    flexWrap: 'wrap'
                                 }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.72rem', color: 'var(--color-text-muted)' }}>
                                         <ShieldCheck size={14} style={{ color: 'var(--color-success)', flexShrink: 0 }} />

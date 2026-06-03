@@ -132,7 +132,7 @@ export default function MiPerfilPage() {
                             <p style={{ color: 'var(--color-text-faint)', fontSize: '0.9rem', margin: 0 }}>Gestiona tu cuenta y sigue tus compras.</p>
                         </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
                         {canSpinToday() && (
                             <motion.button
                                 whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
@@ -156,7 +156,8 @@ export default function MiPerfilPage() {
                                 color: activeTab === tab.id ? 'var(--color-primary)' : 'var(--color-text-muted)',
                                 borderBottom: activeTab === tab.id ? '2px solid var(--color-primary)' : '2px solid transparent',
                                 fontWeight: activeTab === tab.id ? 700 : 500, fontSize: '1rem',
-                                display: 'flex', alignItems: 'center', gap: '0.5rem', transition: 'all 0.2s'
+                                display: 'flex', alignItems: 'center', gap: '0.5rem', transition: 'all 0.2s',
+                                minHeight: '44px'
                             }}>
                             {tab.icon} {tab.label}
                             {tab.count > 0 && <span style={{ background: 'var(--color-surface-2)', padding: '2px 8px', borderRadius: '12px', fontSize: '0.75rem' }}>{tab.count}</span>}
